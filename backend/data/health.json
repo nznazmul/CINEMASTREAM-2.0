@@ -3,8 +3,8 @@
     "status": "online",
     "latency": 0,
     "successRate": 99.4,
-    "lastChecked": 1786706459734,
-    "lastSuccess": 1786706459734
+    "lastChecked": 1786706927527,
+    "lastSuccess": 1786706927527
   },
   "superstream": {
     "status": "online",
@@ -15,17 +15,17 @@
   },
   "smashy": {
     "status": "online",
-    "latency": 1,
+    "latency": 0,
     "successRate": 97.5,
-    "lastChecked": 1786706459736,
-    "lastSuccess": 1786706459736
+    "lastChecked": 1786706927528,
+    "lastSuccess": 1786706927528
   },
   "streamwish": {
     "status": "online",
     "latency": 0,
     "successRate": 95,
-    "lastChecked": 1786706459741,
-    "lastSuccess": 1786706459741
+    "lastChecked": 1786706927531,
+    "lastSuccess": 1786706927531
   },
   "iptv": {
     "status": "online",
@@ -36,19 +36,19 @@
   "vidsrc": {
     "status": "online",
     "latency": 0,
-    "lastSuccess": 1786706459738,
-    "lastChecked": 1786706459738
+    "lastSuccess": 1786706927529,
+    "lastChecked": 1786706927529
   },
   "multiembed": {
     "status": "online",
     "latency": 0,
-    "lastSuccess": 1786706459740,
-    "lastChecked": 1786706459740
+    "lastSuccess": 1786706927530,
+    "lastChecked": 1786706927530
   },
   "autoembed": {
     "status": "online",
     "latency": 0,
-    "lastSuccess": 1786706459732,
-    "lastChecked": 1786706459732
+    "lastSuccess": 1786706927526,
+    "lastChecked": 1786706927526
   }
 }

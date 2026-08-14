@@ -1,5 +1,21 @@
 [
   {
+    "id": "his_1oza545",
+    "userId": "guest_d45l827x",
+    "mediaId": 1284041,
+    "mediaType": "movie",
+    "title": "The Last House",
+    "poster": "https://image.tmdb.org/t/p/w500/6JU7E8Vv2M11egkctWVOScxWR75.jpg",
+    "backdrop": "https://image.tmdb.org/t/p/original/2mPmccLg8QCD4ZF6v8kSsUijPPW.jpg",
+    "season": 1,
+    "episode": 1,
+    "episodeId": null,
+    "currentTime": 1800,
+    "duration": 3600,
+    "progressPercent": 50,
+    "updatedAt": "2026-08-14T11:28:47.588Z"
+  },
+  {
     "id": "his_u6n3nvc",
     "userId": "guest_d45l827x",
     "mediaId": 80278,

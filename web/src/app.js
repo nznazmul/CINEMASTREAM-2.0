@@ -63,11 +63,6 @@ class App {
     const heroContainer = document.getElementById('hero-container');
     const mediaContainer = document.getElementById('media-sections-container');
     const root = document.getElementById('main-content');
-    
-    // Hide legacy category tabs in Netflix mode
-    const categoryTabs = document.getElementById('category-tabs');
-    if (categoryTabs) categoryTabs.style.display = 'none';
-
     mediaContainer.innerHTML = '';
 
     if (this.currentRoute === 'home') {

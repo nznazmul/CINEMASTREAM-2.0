@@ -126,12 +126,6 @@ export class MediaGrid {
       </div>
     `;
   }
-
-  static renderCategoryTabs() { return ''; }
-  static renderSection(title, icon, items) {
-    return this.renderRow((icon || '') + ' ' + title, items, 'row-' + Math.random().toString(36).substr(2, 6));
-  }
-  static renderLiveTVSection() { return ''; }
 }
 
 window.MediaGrid = MediaGrid;

@@ -573,10 +573,12 @@ body {
   cursor: pointer;
   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .nf-card:hover {
-  transform: scale(1.18) translateY(-6px);
+  transform: scale(1.15) translateY(-6px);
   z-index: 100;
   box-shadow: 0 14px 30px rgba(0,0,0,0.85);
 }
@@ -584,13 +586,89 @@ body {
 .nf-card:first-child:hover { transform-origin: left center; }
 .nf-card:last-child:hover { transform-origin: right center; }
 
-.nf-card-img {
+.nf-card-poster-wrap {
+  position: relative;
   width: 100%;
   aspect-ratio: 2/3;
-  object-fit: cover;
   border-radius: var(--card-radius);
-  display: block;
+  overflow: hidden;
   background: var(--netflix-dark-gray);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+}
+
+.nf-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.nf-card-rating-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.8);
+  color: #ffb800;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,184,0,0.3);
+  z-index: 2;
+}
+
+.nf-card-quality-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(229,9,20,0.9);
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.nf-card-info {
+  padding: 8px 4px 2px;
+}
+
+.nf-card-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+  margin-bottom: 3px;
+  letter-spacing: 0.2px;
+}
+
+.nf-card-sub {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.nf-card-year {
+  color: #bbb;
+  font-weight: 600;
+}
+
+.nf-card-dot {
+  color: #666;
+}
+
+.nf-card-type {
+  color: #00f0ff;
+  font-weight: 600;
+  font-size: 0.72rem;
 }
 
 /* Hover Card Overlay */

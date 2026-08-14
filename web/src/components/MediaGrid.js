@@ -71,6 +71,7 @@ export class MediaGrid {
     const title = (item.title || item.name || 'Untitled').replace(/"/g, '&quot;');
     const cleanTitle = (item.title || item.name || 'Untitled').replace(/'/g, "\\'");
     const poster = item.poster_path || 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
+    const rating = item.vote_average ? Number(item.vote_average).toFixed(1) : '7.5';
     const score = Math.round((item.vote_average || 7.5) * 10);
     const year = (item.release_date || item.first_air_date || '2024').substring(0, 4);
     const isTv = item.media_type === 'tv' || Boolean(item.first_air_date) || Boolean(item.seasons_count);
@@ -84,11 +85,23 @@ export class MediaGrid {
     return `
       <div class="nf-card" style="transform-origin: ${transformOrigin};"
            onclick="window.App.showDetails(${item.id}, '${type}')">
-        <img class="nf-card-img" 
-             src="${poster}" 
-             alt="${title}" 
-             loading="lazy"
-             onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
+        <div class="nf-card-poster-wrap">
+          <img class="nf-card-img" 
+               src="${poster}" 
+               alt="${title}" 
+               loading="lazy"
+               onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
+          <div class="nf-card-rating-badge">★ ${rating}</div>
+          <div class="nf-card-quality-badge">4K</div>
+        </div>
+        <div class="nf-card-info">
+          <div class="nf-card-title" title="${title}">${title}</div>
+          <div class="nf-card-sub">
+            <span class="nf-card-year">${year}</span>
+            <span class="nf-card-dot">•</span>
+            <span class="nf-card-type">${type === 'tv' ? 'TV Series' : 'Movie'}</span>
+          </div>
+        </div>
         <div class="nf-card-hover">
           <div class="nf-card-hover-title">${title}</div>
           <div class="nf-card-hover-actions">
@@ -100,7 +113,7 @@ export class MediaGrid {
             <span class="nf-card-match">${score}% Match</span>
             <span class="nf-card-age">${type === 'tv' ? 'TV-MA' : 'PG-13'}</span>
             ${dur ? '<span class="nf-card-dur">' + dur + '</span>' : ''}
-            <span class="nf-card-hd">HD</span>
+            <span class="nf-card-hd">4K HD</span>
           </div>
           <div class="nf-card-genres">${genreStr}</div>
         </div>

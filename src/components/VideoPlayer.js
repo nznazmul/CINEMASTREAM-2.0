@@ -534,6 +534,15 @@ export class VideoPlayer {
   }
 
   switchServer(serverId) {
+    const relYear = parseInt((this.currentMedia?.release_date || this.currentMedia?.first_air_date || '2024').substring(0, 4));
+    const isUpcoming = relYear >= 2026 && this.currentMedia?.mediaType === 'movie';
+
+    if (isUpcoming && serverId !== 'trailer') {
+      const relDate = this.currentMedia?.release_date || '2026';
+      window.App.showToast(`🗓️ Scheduled for theatrical release (${relDate}). Digital movie streams will activate on premiere date! Playing Official 4K Trailer.`);
+      serverId = 'trailer';
+    }
+
     this.activeServerId = serverId;
     
     // Update select dropdown
@@ -543,14 +552,16 @@ export class VideoPlayer {
     // Update pill states
     const pills = document.querySelectorAll('.btn-server-pill');
     pills.forEach(p => {
-      if (p.getAttribute('onclick')?.includes(serverId)) {
+      if (p.getAttribute('onclick')?.includes(`'${serverId}'`)) {
         p.classList.add('active');
       } else {
         p.classList.remove('active');
       }
     });
 
-    window.App.showToast(`Switched to ${serverId.toUpperCase()} server`);
+    if (!isUpcoming) {
+      window.App.showToast(`Switched to ${serverId.toUpperCase()} server`);
+    }
     this.mountStream();
   }
 

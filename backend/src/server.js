@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import apiRoutes from './routes/api.routes.js';
 import { CONFIG } from './config/constants.js';
 import { rateLimiter, adShieldHeaders } from './middleware/security.middleware.js';
+import { SEOService } from './services/seo.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,10 +34,32 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(rateLimiter);
 
-// 4. API Endpoints
+// 4. Dynamic SEO Endpoints (Sitemap & Robots.txt)
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const protocol = req.protocol || 'http';
+    const host = req.get('host') || 'localhost:4000';
+    const baseUrl = `${protocol}://${host}`;
+    const xml = await SEOService.generateSitemap(baseUrl);
+    res.header('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (e) {
+    res.status(500).send('Error generating sitemap');
+  }
+});
+
+app.get('/robots.txt', (req, res) => {
+  const protocol = req.protocol || 'http';
+  const host = req.get('host') || 'localhost:4000';
+  const robots = SEOService.generateRobotsTxt(`${protocol}://${host}`);
+  res.header('Content-Type', 'text/plain');
+  res.send(robots);
+});
+
+// 5. API Endpoints
 app.use('/api/v1', apiRoutes);
 
-// 5. Serve Web Frontend
+// 6. Serve Web Frontend
 const webPath = path.resolve(__dirname, '../../web');
 app.use(express.static(webPath));
 

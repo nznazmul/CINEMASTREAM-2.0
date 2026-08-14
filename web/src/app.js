@@ -847,6 +847,31 @@ class App {
     const seasons = item.seasons || [];
     const trailerKey = item.trailer_key;
 
+    // Dynamic Title & Structured Data for Search Engine Rich Cards
+    document.title = `Watch ${title} (${year}) Online Free in 4K Ultra HD — CinemaStream`;
+    let schemaEl = document.getElementById('dynamic-media-schema');
+    if (!schemaEl) {
+      schemaEl = document.createElement('script');
+      schemaEl.id = 'dynamic-media-schema';
+      schemaEl.type = 'application/ld+json';
+      document.head.appendChild(schemaEl);
+    }
+    schemaEl.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": isTv ? "TVSeries" : "Movie",
+      "name": title,
+      "image": item.poster_path || backdrop,
+      "description": item.overview || `Watch ${title} in 4K Ultra HD online.`,
+      "datePublished": item.release_date || item.first_air_date,
+      "genre": item.genres || [],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": item.vote_average || 8.0,
+        "bestRating": "10",
+        "ratingCount": item.vote_count || 1200
+      }
+    });
+
     modalContainer.innerHTML = `
       <div class="nf-modal-overlay" onclick="if(event.target===this) window.App.closeDetails()">
         <div class="nf-modal">

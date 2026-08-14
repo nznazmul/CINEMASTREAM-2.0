@@ -1,4 +1,4 @@
-﻿export class Navbar {
+export class Navbar {
   static searchOpen = false;
   static searchTimeout = null;
 
@@ -10,12 +10,13 @@
           <li><a href="#" class="${route === 'home' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('home')">Home</a></li>
           <li><a href="#" class="${route === 'movies' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('movies')">Movies</a></li>
           <li><a href="#" class="${route === 'tv' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('tv')">TV Shows</a></li>
+          <li><a href="#" class="${route === 'anime' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('anime')">⛩️ Anime</a></li>
           <li><a href="#" class="${route === 'bookmarks' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('bookmarks')">My List</a></li>
         </ul>
         <div class="nf-nav-right">
           <div class="nf-search-wrap" id="nf-search-wrap">
             <span class="nf-search-icon" onclick="Navbar.toggleSearch()" title="Search">🔍</span>
-            <input type="text" class="nf-search-input" id="nf-search-input" placeholder="Titles, genres..." 
+            <input type="text" class="nf-search-input" id="nf-search-input" placeholder="Titles, anime, genres..." 
               oninput="Navbar.handleSearch(this.value)"
               onkeydown="if(event.key==='Escape') Navbar.closeSearch()">
           </div>
@@ -37,6 +38,10 @@
         <a class="nf-mobile-nav-item ${route === 'tv' ? 'active' : ''}" onclick="window.Router.navigate('tv')">
           <span class="icon">📺</span>
           <span>TV Shows</span>
+        </a>
+        <a class="nf-mobile-nav-item ${route === 'anime' ? 'active' : ''}" onclick="window.Router.navigate('anime')">
+          <span class="icon">⛩️</span>
+          <span>Anime</span>
         </a>
         <a class="nf-mobile-nav-item ${route === 'bookmarks' ? 'active' : ''}" onclick="window.Router.navigate('bookmarks')">
           <span class="icon">❤️</span>

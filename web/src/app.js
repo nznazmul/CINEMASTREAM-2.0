@@ -71,6 +71,7 @@ class App {
         root.classList.remove('non-hero-active');
       }
       heroContainer.style.display = 'block';
+      this.renderContinueWatching();
       await this.renderHomeView(heroContainer, mediaContainer);
     } else {
       if (root) {
@@ -78,14 +79,44 @@ class App {
         root.classList.add('non-hero-active');
       }
       heroContainer.style.display = 'none';
+      const cw = document.getElementById('continue-watching-section');
+      if (cw) { cw.style.display = 'none'; cw.innerHTML = ''; }
+
       if (this.currentRoute === 'movies') {
         await this.renderMoviesView(mediaContainer);
       } else if (this.currentRoute === 'tv') {
         await this.renderTVView(mediaContainer);
+      } else if (this.currentRoute === 'anime') {
+        await this.renderAnimeView(mediaContainer);
       } else if (this.currentRoute === 'bookmarks') {
         await this.renderBookmarksView(mediaContainer);
       }
     }
+  }
+
+  renderContinueWatching() {
+    try {
+      const history = JSON.parse(localStorage.getItem('cinemastream_continue_watching') || '[]');
+      const container = document.getElementById('continue-watching-section');
+      if (!container) return;
+      if (history.length > 0 && this.currentRoute === 'home') {
+        container.style.display = 'block';
+        container.innerHTML = MediaGrid.renderContinueWatchingRow(history);
+      } else {
+        container.style.display = 'none';
+        container.innerHTML = '';
+      }
+    } catch(e) {}
+  }
+
+  removeFromContinueWatching(id) {
+    try {
+      let history = JSON.parse(localStorage.getItem('cinemastream_continue_watching') || '[]');
+      history = history.filter(h => Number(h.id) !== Number(id));
+      localStorage.setItem('cinemastream_continue_watching', JSON.stringify(history));
+      this.renderContinueWatching();
+      this.showToast('Removed from Continue Watching');
+    } catch(e) {}
   }
 
   async renderHomeView(heroContainer, mediaContainer) {
@@ -93,15 +124,19 @@ class App {
     mediaContainer.innerHTML = `
       ${MediaGrid.renderRow('🔥 Trending This Week', [], 'row-trend')}
       ${MediaGrid.renderRow('🍿 Popular Movies', [], 'row-movies')}
+      ${MediaGrid.renderRow('⛩️ Trending Anime Hits', [], 'row-anime')}
       ${MediaGrid.renderRow('📺 Popular TV Shows', [], 'row-tv')}
     `;
 
-    // Fetch all content categories in parallel
-    const [heroData, trending, movies, tv, topRatedMovies, topRatedTV, nowPlaying, onAir] = await Promise.all([
+    // Fetch all content categories in parallel (Expanded Global Catalog)
+    const [heroData, trending, movies, tv, anime, kdramas, indian, topRatedMovies, topRatedTV, nowPlaying, onAir] = await Promise.all([
       ApiService.getHero().catch(() => ({ results: [] })),
       ApiService.getTrending(1).catch(() => ({ results: [] })),
       ApiService.getMovies('popular', null, 1).catch(() => ({ results: [] })),
       ApiService.getTVSeries('popular', null, 1).catch(() => ({ results: [] })),
+      ApiService.getAnime('popular', 1).catch(() => ({ results: [] })),
+      ApiService.getKDramas(1).catch(() => ({ results: [] })),
+      ApiService.getIndianHits(1).catch(() => ({ results: [] })),
       ApiService.getMovies('top_rated', null, 1).catch(() => ({ results: [] })),
       ApiService.getTVSeries('top_rated', null, 1).catch(() => ({ results: [] })),
       ApiService.getMovies('now_playing', null, 1).catch(() => ({ results: [] })),
@@ -121,15 +156,21 @@ class App {
     if ((nowPlaying.results || []).length > 0)
       html += MediaGrid.renderRow('🎬 Now Playing in Cinemas', nowPlaying.results, 'row-nowplaying');
     if ((movies.results || []).length > 0)
-      html += MediaGrid.renderRow('🍿 Popular Movies', movies.results, 'row-movies');
-    if ((topRatedMovies.results || []).length > 0)
-      html += MediaGrid.renderRow('⭐ Top Rated Movies', topRatedMovies.results, 'row-top-movies');
+      html += MediaGrid.renderRow('🍿 Blockbuster Movies', movies.results, 'row-movies');
+    if ((anime.results || []).length > 0)
+      html += MediaGrid.renderRow('⛩️ Top Trending Anime Series', anime.results, 'row-anime-trend');
     if ((tv.results || []).length > 0)
-      html += MediaGrid.renderRow('📺 Popular TV Shows', tv.results, 'row-tv');
-    if ((onAir.results || []).length > 0)
-      html += MediaGrid.renderRow('📡 Currently On Air', onAir.results, 'row-onair');
+      html += MediaGrid.renderRow('📺 Binge-Worthy TV Shows', tv.results, 'row-tv');
+    if ((kdramas.results || []).length > 0)
+      html += MediaGrid.renderRow('🇰🇷 Popular K-Dramas & Asian Series', kdramas.results, 'row-kdramas');
+    if ((indian.results || []).length > 0)
+      html += MediaGrid.renderRow('🇮🇳 Bollywood & Regional Blockbusters', indian.results, 'row-indian');
+    if ((topRatedMovies.results || []).length > 0)
+      html += MediaGrid.renderRow('⭐ All-Time Classic Movies', topRatedMovies.results, 'row-top-movies');
     if ((topRatedTV.results || []).length > 0)
-      html += MediaGrid.renderRow('🏆 Top Rated Series', topRatedTV.results, 'row-top-tv');
+      html += MediaGrid.renderRow('🏆 Critically Acclaimed Series', topRatedTV.results, 'row-top-tv');
+    if ((onAir.results || []).length > 0)
+      html += MediaGrid.renderRow('📡 Broadcast TV & On Air', onAir.results, 'row-onair');
 
     mediaContainer.innerHTML = html;
   }
@@ -163,6 +204,22 @@ class App {
     html += MediaGrid.renderRow('📡 Broadcast TV & On Air', onAir.results || [], 'row-tv-onair');
     html += MediaGrid.renderRow('📺 Airing Today', airingToday.results || [], 'row-tv-today');
     html += MediaGrid.renderRow('⭐ Top Rated Series', topRated.results || [], 'row-tv-top');
+    container.innerHTML = html;
+  }
+
+  async renderAnimeView(container) {
+    container.innerHTML = '<div style="padding:40px 50px; color:#888;">Loading Latest Anime Universes...</div>';
+    const [popularAnime, topAnime, actionAnime, fantasyAnime] = await Promise.all([
+      ApiService.getAnime('popular', 1).catch(() => ({ results: [] })),
+      ApiService.getAnime('top_rated', 1).catch(() => ({ results: [] })),
+      ApiService.getAnime('popular', 2).catch(() => ({ results: [] })),
+      ApiService.getAnime('popular', 3).catch(() => ({ results: [] }))
+    ]);
+    let html = '';
+    html += MediaGrid.renderRow('🔥 Top Trending Anime', popularAnime.results || [], 'row-ani-popular');
+    html += MediaGrid.renderRow('⭐ Masterpiece Anime (All-Time Top Rated)', topAnime.results || [], 'row-ani-top');
+    html += MediaGrid.renderRow('⚔️ Action & Shonen Anime Hits', actionAnime.results || [], 'row-ani-action');
+    html += MediaGrid.renderRow('🌸 Fantasy & Supernatural Anime', fantasyAnime.results || [], 'row-ani-fantasy');
     container.innerHTML = html;
   }
 

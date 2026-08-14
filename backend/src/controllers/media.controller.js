@@ -76,8 +76,39 @@ export class MediaController {
     }
   }
 
+  static async getAnime(req, res) {
+    try {
+      const category = req.query.category || 'popular';
+      const page = parseInt(req.query.page) || 1;
+      const items = await TMDBService.getAnime(category, page);
+      res.json({ success: true, results: items });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  static async getKDramas(req, res) {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const items = await TMDBService.getKDramas(page);
+      res.json({ success: true, results: items });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  static async getIndianHits(req, res) {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const items = await TMDBService.getIndianHits(page);
+      res.json({ success: true, results: items });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
   static async getGenres(req, res) {
-    const genres = TMDBService.genres || TMDBService.fallbackCatalog?.genres || [];
+    const genres = TMDBService.genres || [];
     res.json({ success: true, results: genres });
   }
 }

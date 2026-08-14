@@ -823,6 +823,135 @@ body {
 }
 
 /* ==========================================================================
+   CONTINUE WATCHING (NETFLIX STYLE AUTO-HISTORY)
+   ========================================================================== */
+.nf-cw-row {
+  margin-bottom: 42px;
+}
+
+.nf-cw-card {
+  flex: 0 0 240px;
+  position: relative;
+  border-radius: var(--card-radius);
+  background: #1c1c1c;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+  z-index: 1;
+}
+
+.nf-cw-card:hover {
+  transform: scale(1.08) translateY(-4px);
+  z-index: 50;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.9);
+}
+
+.nf-cw-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #252525;
+}
+
+.nf-cw-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.nf-cw-play-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.nf-cw-card:hover .nf-cw-play-overlay {
+  opacity: 1;
+}
+
+.nf-cw-play-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(229,9,20,0.9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+  padding-left: 3px;
+}
+
+.nf-cw-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  z-index: 10;
+}
+
+.nf-cw-card:hover .nf-cw-remove {
+  opacity: 1;
+}
+
+.nf-cw-remove:hover {
+  background: #E50914;
+}
+
+.nf-cw-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255,255,255,0.25);
+}
+
+.nf-cw-progress-fill {
+  height: 100%;
+  background: var(--netflix-red);
+  box-shadow: 0 0 8px rgba(229,9,20,0.8);
+}
+
+.nf-cw-info {
+  padding: 10px 12px;
+}
+
+.nf-cw-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nf-cw-sub {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 3px;
+}
+
+/* ==========================================================================
    AUDIO & SUBTITLES SELECTOR (NETFLIX STYLE)
    ========================================================================== */
 .nf-audio-modal-body {

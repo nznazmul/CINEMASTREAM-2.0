@@ -64,6 +64,18 @@ export class ApiService {
     return this.request(`/tv?category=${category}${genre ? `&genre=${genre}` : ''}&page=${page}`);
   }
 
+  static async getAnime(category = 'popular', page = 1) {
+    return this.request(`/anime?category=${category}&page=${page}`);
+  }
+
+  static async getKDramas(page = 1) {
+    return this.request(`/kdramas?page=${page}`);
+  }
+
+  static async getIndianHits(page = 1) {
+    return this.request(`/indian?page=${page}`);
+  }
+
   static async getDetails(id, type = 'movie') {
     return this.request(`/details/${id}?type=${type}`);
   }

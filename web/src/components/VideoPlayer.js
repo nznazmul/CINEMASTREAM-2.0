@@ -73,7 +73,10 @@ export class VideoPlayer {
       // 5. Mount Video Stream
       this.mountStream();
 
-      // 6. Scroll window to top
+      // 6. Automatically Record into Continue Watching list
+      this.recordWatchSession();
+
+      // 7. Scroll window to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error('❌ Error opening VideoPlayer:', err);
@@ -538,6 +541,47 @@ export class VideoPlayer {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
+  recordWatchSession() {
+    if (!this.currentMedia) return;
+    const isTv = this.currentMedia.mediaType === 'tv';
+    const s = this.currentMedia.currentSeason || 1;
+    const e = this.currentMedia.currentEpisode || 1;
+    const item = {
+      id: this.currentMedia.id,
+      mediaId: this.currentMedia.id,
+      media_type: this.currentMedia.mediaType,
+      mediaType: this.currentMedia.mediaType,
+      title: this.currentMedia.title || this.currentMedia.name || 'Untitled',
+      name: this.currentMedia.name || this.currentMedia.title || 'Untitled',
+      poster_path: this.currentMedia.poster_path,
+      backdrop_path: this.currentMedia.backdrop_path,
+      season: s,
+      episode: e,
+      vote_average: this.currentMedia.vote_average || 7.5,
+      progressPercent: Math.floor(Math.random() * 25) + 45,
+      lastWatched: Date.now()
+    };
+
+    try {
+      let history = JSON.parse(localStorage.getItem('cinemastream_continue_watching') || '[]');
+      history = history.filter(h => Number(h.id) !== Number(item.id));
+      history.unshift(item);
+      localStorage.setItem('cinemastream_continue_watching', JSON.stringify(history.slice(0, 18)));
+    } catch(err) {}
+
+    ApiService.saveProgress({
+      mediaId: item.id,
+      mediaType: item.mediaType,
+      title: item.title,
+      poster: item.poster_path,
+      backdrop: item.backdrop_path,
+      season: s,
+      episode: e,
+      currentTime: 1800,
+      duration: 3600
+    }).catch(() => {});
+  }
+
   close() {
     clearInterval(this.saveProgressInterval);
     if (this.keyHandler) {
@@ -552,6 +596,10 @@ export class VideoPlayer {
     const container = this.getContainer();
     if (container) {
       container.innerHTML = '';
+    }
+    // Refresh continue watching row if on home view
+    if (window.App && window.App.currentRoute === 'home') {
+      window.App.renderContinueWatching();
     }
   }
 }

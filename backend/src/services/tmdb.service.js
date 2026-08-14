@@ -28,8 +28,8 @@ function normalizeItem(m) {
     title: m.title || m.name || 'Untitled',
     name: m.name || m.title || 'Untitled',
     overview: m.overview || '',
-    poster_path: m.poster_path ? (IMG_BASE + '/w500' + m.poster_path) : null,
-    backdrop_path: m.backdrop_path ? (IMG_BASE + '/original' + m.backdrop_path) : null,
+    poster_path: m.poster_path ? (IMG_BASE + '/w500' + m.poster_path) : 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
+    backdrop_path: m.backdrop_path ? (IMG_BASE + '/original' + m.backdrop_path) : 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg',
     release_date: m.release_date || m.first_air_date || '2024-01-01',
     first_air_date: m.first_air_date || m.release_date || '2024-01-01',
     vote_average: parseFloat((m.vote_average || 7.5).toFixed(1)),
@@ -100,6 +100,48 @@ export class TMDBService {
       if (genreId) params.with_genres = genreId;
       const data = await tmdb(paths[category] || '/tv/popular', params);
       return (data.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'tv' }));
+    });
+  }
+
+  // --- ⛩️ Dedicated Anime Discovery ---
+  static async getAnime(category = 'popular', page = 1) {
+    return cached('anime_' + category + '_' + page, async () => {
+      let params = {
+        page,
+        with_genres: 16,
+        with_original_language: 'ja',
+        sort_by: category === 'top_rated' ? 'vote_average.desc' : 'popularity.desc'
+      };
+      if (category === 'top_rated') {
+        params['vote_count.gte'] = 250;
+      }
+      const data = await tmdb('/discover/tv', params);
+      return (data.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'tv', quality: '1080p Ultra HD' }));
+    });
+  }
+
+  // --- 🇰🇷 Trending K-Dramas ---
+  static async getKDramas(page = 1) {
+    return cached('kdramas_' + page, async () => {
+      const data = await tmdb('/discover/tv', {
+        page,
+        with_original_language: 'ko',
+        with_genres: 18,
+        sort_by: 'popularity.desc'
+      });
+      return (data.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'tv' }));
+    });
+  }
+
+  // --- 🇮🇳 Bollywood & Regional Blockbusters ---
+  static async getIndianHits(page = 1) {
+    return cached('indian_hits_' + page, async () => {
+      const data = await tmdb('/discover/movie', {
+        page,
+        with_original_language: 'hi|ta|te',
+        sort_by: 'popularity.desc'
+      });
+      return (data.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'movie' }));
     });
   }
 

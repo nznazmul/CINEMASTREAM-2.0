@@ -1,4 +1,50 @@
-﻿export class MediaGrid {
+export class MediaGrid {
+  static renderContinueWatchingRow(items) {
+    if (!items || items.length === 0) return '';
+    const cards = items.map((item, idx) => {
+      const title = (item.title || item.name || 'Untitled').replace(/"/g, '&quot;');
+      const poster = item.backdrop_path || item.poster_path || 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
+      const isTv = item.media_type === 'tv' || item.mediaType === 'tv' || item.season;
+      const progress = item.progressPercent || 50;
+      const s = item.season || 1;
+      const e = item.episode || 1;
+
+      return `
+        <div class="nf-cw-card" onclick="window.App.playMedia(${item.id}, '${item.media_type || item.mediaType || 'movie'}', ${s}, ${e})">
+          <div class="nf-cw-img-wrap">
+            <img class="nf-cw-img" src="${poster}" alt="${title}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+            <div class="nf-cw-play-overlay">
+              <span class="nf-cw-play-icon">▶</span>
+            </div>
+            <button class="nf-cw-remove" onclick="event.stopPropagation(); window.App.removeFromContinueWatching(${item.id})" title="Remove from list">✕</button>
+            <div class="nf-cw-progress-bar">
+              <div class="nf-cw-progress-fill" style="width: ${progress}%;"></div>
+            </div>
+          </div>
+          <div class="nf-cw-info">
+            <div class="nf-cw-title">${title}</div>
+            <div class="nf-cw-sub">${isTv ? `S${s} : E${e}` : 'Movie'} • ${progress}% watched</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="nf-row nf-cw-row" id="continue-watching-row">
+        <div class="nf-row-title">
+          <span>▶️ Continue Watching for You</span>
+        </div>
+        <div class="nf-slider-wrap">
+          <button class="nf-scroll-btn left" onclick="MediaGrid.scroll('row-cw', -1)" aria-label="Scroll Left">&#8249;</button>
+          <div class="nf-slider" id="row-cw">
+            ${cards}
+          </div>
+          <button class="nf-scroll-btn right" onclick="MediaGrid.scroll('row-cw', 1)" aria-label="Scroll Right">&#8250;</button>
+        </div>
+      </div>
+    `;
+  }
+
   static renderRow(title, items, rowId) {
     if (!items || items.length === 0) return '';
     const cards = items.map((item, idx) => this.renderCard(item, idx, items.length)).join('');

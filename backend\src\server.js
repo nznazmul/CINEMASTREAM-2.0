@@ -37,8 +37,9 @@ app.use(rateLimiter);
 // 4. Dynamic SEO Endpoints (Sitemap & Robots.txt)
 app.get('/sitemap.xml', async (req, res) => {
   try {
-    const protocol = req.protocol || 'http';
-    const host = req.get('host') || 'localhost:4000';
+    const isLocal = (req.get('host') || '').includes('localhost');
+    const protocol = isLocal ? 'http' : (req.headers['x-forwarded-proto'] || 'https');
+    const host = req.get('host') || 'cinemastream2.vercel.app';
     const baseUrl = `${protocol}://${host}`;
     const xml = await SEOService.generateSitemap(baseUrl);
     res.header('Content-Type', 'application/xml');
@@ -49,8 +50,9 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 app.get('/robots.txt', (req, res) => {
-  const protocol = req.protocol || 'http';
-  const host = req.get('host') || 'localhost:4000';
+  const isLocal = (req.get('host') || '').includes('localhost');
+  const protocol = isLocal ? 'http' : (req.headers['x-forwarded-proto'] || 'https');
+  const host = req.get('host') || 'cinemastream2.vercel.app';
   const robots = SEOService.generateRobotsTxt(`${protocol}://${host}`);
   res.header('Content-Type', 'text/plain');
   res.send(robots);

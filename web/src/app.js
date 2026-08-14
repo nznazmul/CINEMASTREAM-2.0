@@ -1448,7 +1448,7 @@ class App {
 
                 <div class="nf-media-btns">
                   <button class="nf-btn-watch-main" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode})">
-                    <span>${parseInt(year) >= 2026 ? '🎬' : '▶'}</span> ${parseInt(year) >= 2026 ? 'Watch 4K Trailer' : 'Watch Now in 4K'}
+                    <span>▶</span> Watch Now in 4K
                   </button>
                   ${trailerKey ? `<button class="nf-btn-trailer" onclick="window.App.playTrailer('${trailerKey}')">🎬 Official Trailer</button>` : ''}
                   <button class="nf-btn-bookmark-main" onclick="window.App.toggleBookmark(${item.id}, '${title.replace(/'/g, "\\'")}', '${poster}', ${item.vote_average || 7.5}, '${year}', '${type}')" title="Save to My List">
@@ -1648,7 +1648,7 @@ class App {
               <h1 class="nf-modal-title">${title}</h1>
               <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                 <button class="nf-modal-play-btn" onclick="window.App.playMedia(${item.id}, '${type}')">
-                  ${parseInt(year) >= 2026 ? '🎬 Watch 4K Trailer' : '▶ Play Now'}
+                  ▶ Play Now
                 </button>
                 <button class="nf-modal-btn-sec" onclick="window.App.openAudioModal()">
                   <span>🌐</span> Audio & Dubs

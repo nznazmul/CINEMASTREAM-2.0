@@ -57,7 +57,7 @@ export class HeroBanner {
           <p class="nf-hero-desc">${desc}</p>
           <div class="nf-hero-actions">
             <button class="nf-btn-play" onclick="window.App.playMedia(${item.id}, '${item.media_type || 'movie'}')">
-              ${parseInt(year) >= 2026 ? '🎬 Watch 4K Trailer' : '▶ Play Now'}
+              ▶ Play Now in 4K
             </button>
             <button class="nf-btn-info" onclick="window.App.showDetails(${item.id}, '${item.media_type || 'movie'}')">
               ℹ More Info

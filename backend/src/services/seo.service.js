@@ -4,21 +4,40 @@ export class SEOService {
   static async generateSitemap(baseUrl = 'http://localhost:4000') {
     const staticRoutes = [
       { path: '', priority: '1.0', changefreq: 'daily' },
-      { path: '#movies', priority: '0.9', changefreq: 'daily' },
-      { path: '#tv', priority: '0.9', changefreq: 'daily' },
-      { path: '#anime', priority: '0.9', changefreq: 'daily' },
-      { path: '#years', priority: '0.8', changefreq: 'weekly' },
-      { path: '#faq', priority: '0.7', changefreq: 'monthly' },
-      { path: '#privacy', priority: '0.5', changefreq: 'monthly' },
-      { path: '#terms', priority: '0.5', changefreq: 'monthly' },
-      { path: '#contact', priority: '0.6', changefreq: 'monthly' },
-      { path: '#speedtest', priority: '0.6', changefreq: 'monthly' }
+      { path: 'movie', priority: '0.95', changefreq: 'daily' },
+      { path: 'movies', priority: '0.95', changefreq: 'daily' },
+      { path: 'tv', priority: '0.95', changefreq: 'daily' },
+      { path: 'tv-shows', priority: '0.95', changefreq: 'daily' },
+      { path: 'series', priority: '0.95', changefreq: 'daily' },
+      { path: 'anime', priority: '0.95', changefreq: 'daily' },
+      { path: 'kdrama', priority: '0.90', changefreq: 'daily' },
+      { path: 'kdramas', priority: '0.90', changefreq: 'daily' },
+      { path: 'indian', priority: '0.90', changefreq: 'daily' },
+      { path: 'bollywood', priority: '0.90', changefreq: 'daily' },
+      { path: 'trending', priority: '0.90', changefreq: 'daily' },
+      { path: 'years', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/action', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/comedy', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/horror', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/scifi', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/romance', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/drama', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/thriller', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/animation', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/adventure', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/fantasy', priority: '0.85', changefreq: 'weekly' },
+      { path: 'genre/crime', priority: '0.85', changefreq: 'weekly' },
+      { path: 'faq', priority: '0.70', changefreq: 'monthly' },
+      { path: 'privacy', priority: '0.50', changefreq: 'monthly' },
+      { path: 'terms', priority: '0.50', changefreq: 'monthly' },
+      { path: 'contact', priority: '0.60', changefreq: 'monthly' },
+      { path: 'speedtest', priority: '0.60', changefreq: 'monthly' }
     ];
 
     // Add 2000 to 2026 Yearly Archives
     const yearRoutes = [];
     for (let y = 2026; y >= 2000; y--) {
-      yearRoutes.push({ path: `#years?y=${y}`, priority: '0.8', changefreq: 'weekly' });
+      yearRoutes.push({ path: `year/${y}`, priority: '0.8', changefreq: 'weekly' });
     }
 
     // Fetch trending and top-rated movies/shows for rich indexing

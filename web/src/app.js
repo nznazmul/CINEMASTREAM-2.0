@@ -57,7 +57,7 @@ class App {
     let hash = window.location.hash.replace(/^#\/?/, '');
     const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '');
 
-    // Support direct clean URLs like /movies, /tv, /anime, /movie/533535, /watch/533535
+    // Support direct clean URLs like /movies, /tv, /anime, /kdrama, /indian, /trending, /genre/action, /movie/533535
     if (!hash && pathname) {
       hash = pathname;
     }
@@ -67,6 +67,7 @@ class App {
       return;
     }
 
+    // Individual Movie / TV / Anime deep link: /movie/533535 or /tv/94997 or /anime/124159
     if (hash.startsWith('movie/') || hash.startsWith('tv/') || hash.startsWith('anime/')) {
       const parts = hash.split('/');
       const type = parts[0] === 'anime' ? 'tv' : parts[0];
@@ -76,6 +77,62 @@ class App {
         await this.renderDedicatedMediaPage(id, type);
         return;
       }
+    }
+
+    // Category Hubs: /movie, /movies, /tv, /tv-shows, /series, /anime, /kdrama, /kdramas, /korean, /indian, /bollywood, /trending
+    if (hash === 'movie' || hash === 'movies' || hash.startsWith('movies?') || hash.startsWith('movie?')) {
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const filter = params.get('filter') || 'all';
+      await this.renderCategoryHub('movies', filter, 1);
+      return;
+    }
+
+    if (hash === 'tv' || hash === 'tv-shows' || hash === 'series' || hash.startsWith('tv?') || hash.startsWith('tv-shows?')) {
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const filter = params.get('filter') || 'all';
+      await this.renderCategoryHub('tv', filter, 1);
+      return;
+    }
+
+    if (hash === 'anime' || hash.startsWith('anime?')) {
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const filter = params.get('filter') || 'all';
+      await this.renderCategoryHub('anime', filter, 1);
+      return;
+    }
+
+    if (hash === 'kdrama' || hash === 'kdramas' || hash === 'korean' || hash.startsWith('kdrama?') || hash.startsWith('kdramas?')) {
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const filter = params.get('filter') || 'all';
+      await this.renderCategoryHub('kdrama', filter, 1);
+      return;
+    }
+
+    if (hash === 'indian' || hash === 'bollywood' || hash === 'hindi-dubbed' || hash.startsWith('indian?')) {
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const filter = params.get('filter') || 'all';
+      await this.renderCategoryHub('indian', filter, 1);
+      return;
+    }
+
+    if (hash === 'trending' || hash.startsWith('trending?')) {
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const filter = params.get('filter') || 'all';
+      await this.renderCategoryHub('trending', filter, 1);
+      return;
+    }
+
+    // Genre Hub: /genre/action or /genre?g=action or /genres
+    if (hash.startsWith('genre/') || hash.startsWith('genre?') || hash === 'genres') {
+      let gName = 'action';
+      if (hash.startsWith('genre/')) {
+        gName = hash.split('/')[1] || 'action';
+      } else if (hash.includes('?')) {
+        const params = new URLSearchParams(hash.split('?')[1]);
+        gName = params.get('g') || params.get('genre') || 'action';
+      }
+      await this.renderCategoryHub('genre', gName, 1);
+      return;
     }
 
     if (hash.startsWith('watch')) {
@@ -108,16 +165,22 @@ class App {
     }
 
     if (hash.startsWith('years') || hash.startsWith('year')) {
-      const params = new URLSearchParams(hash.replace(/^years?\??/, ''));
-      const y = parseInt(params.get('y')) || 2026;
-      const type = params.get('type') || 'movie';
+      let y = 2026;
+      let type = 'movie';
+      if (hash.startsWith('year/')) {
+        y = parseInt(hash.split('/')[1]) || 2026;
+      } else {
+        const params = new URLSearchParams(hash.replace(/^years?\??/, ''));
+        y = parseInt(params.get('y')) || 2026;
+        type = params.get('type') || 'movie';
+      }
       this.selectedYear = y;
       this.selectedYearType = type;
       await this.navigate('years');
       return;
     }
 
-    // Standard static route (movies, tv, anime, bookmarks, faq, etc.)
+    // Standard static route (bookmarks, faq, privacy, contact, terms, speedtest)
     await this.navigate(hash);
   }
 
@@ -151,12 +214,18 @@ class App {
       const cw = document.getElementById('continue-watching-section');
       if (cw) { cw.style.display = 'none'; cw.innerHTML = ''; }
 
-      if (this.currentRoute === 'movies') {
-        await this.renderMoviesView(mediaContainer);
-      } else if (this.currentRoute === 'tv') {
-        await this.renderTVView(mediaContainer);
+      if (this.currentRoute === 'movies' || this.currentRoute === 'movie') {
+        await this.renderCategoryHub('movies', 'all', 1);
+      } else if (this.currentRoute === 'tv' || this.currentRoute === 'tv-shows' || this.currentRoute === 'series') {
+        await this.renderCategoryHub('tv', 'all', 1);
       } else if (this.currentRoute === 'anime') {
-        await this.renderAnimeView(mediaContainer);
+        await this.renderCategoryHub('anime', 'all', 1);
+      } else if (this.currentRoute === 'kdrama' || this.currentRoute === 'kdramas') {
+        await this.renderCategoryHub('kdrama', 'all', 1);
+      } else if (this.currentRoute === 'indian' || this.currentRoute === 'bollywood') {
+        await this.renderCategoryHub('indian', 'all', 1);
+      } else if (this.currentRoute === 'trending') {
+        await this.renderCategoryHub('trending', 'all', 1);
       } else if (this.currentRoute === 'bookmarks') {
         await this.renderBookmarksView(mediaContainer);
       } else if (this.currentRoute === 'years') {
@@ -173,6 +242,267 @@ class App {
         this.renderSpeedTestView(mediaContainer);
       }
     }
+  }
+
+  // ── Unified Dedicated Category Hub Engine ────────────────────────
+  async renderCategoryHub(catKey, subFilter = 'all', page = 1, append = false) {
+    this.currentCategory = { key: catKey, filter: subFilter, page: page };
+    const container = document.getElementById('media-sections-container');
+    const heroContainer = document.getElementById('hero-container');
+    const cw = document.getElementById('continue-watching-section');
+    const root = document.getElementById('main-content');
+    if (heroContainer) heroContainer.style.display = 'none';
+    if (cw) { cw.style.display = 'none'; cw.innerHTML = ''; }
+    if (root) {
+      root.classList.remove('home-active');
+      root.classList.add('non-hero-active');
+    }
+
+    Navbar.render(document.getElementById('navbar-container'), catKey);
+
+    const catConfigs = {
+      movies: {
+        title: "Blockbuster Movies",
+        icon: "🎬",
+        badge: "Cinema Hub",
+        desc: "Stream thousands of blockbuster Hollywood releases, trending cinema hits, and critically acclaimed movies in 4K Ultra HD.",
+        type: "movie",
+        filters: [
+          { id: "all", label: "🔥 All Popular" },
+          { id: "trending", label: "⚡ Trending Now" },
+          { id: "top_rated", label: "⭐ Critically Acclaimed" },
+          { id: "now_playing", label: "🎟️ In Theaters" },
+          { id: "upcoming", label: "🗓️ Upcoming" },
+          { id: "action", label: "💥 Action", genreId: 28 },
+          { id: "comedy", label: "😂 Comedy", genreId: 35 },
+          { id: "horror", label: "👻 Horror", genreId: 27 },
+          { id: "scifi", label: "🚀 Sci-Fi", genreId: 878 },
+          { id: "romance", label: "💖 Romance", genreId: 10749 },
+          { id: "thriller", label: "🔪 Thriller", genreId: 53 }
+        ]
+      },
+      tv: {
+        title: "TV Shows & Series",
+        icon: "📺",
+        badge: "Binge Hub",
+        desc: "Watch award-winning television series, Netflix originals, HBO/Max hits, and complete seasons in 1080p and 4K.",
+        type: "tv",
+        filters: [
+          { id: "all", label: "🔥 All Popular" },
+          { id: "trending", label: "⚡ Trending Now" },
+          { id: "top_rated", label: "⭐ Highest Rated" },
+          { id: "on_the_air", label: "📡 On Air" },
+          { id: "airing_today", label: "📺 Today's Episodes" },
+          { id: "drama", label: "🎭 Drama", genreId: 18 },
+          { id: "crime", label: "🕵️ Crime", genreId: 80 },
+          { id: "scifi", label: "🚀 Sci-Fi & Fantasy", genreId: 10765 },
+          { id: "animation", label: "🎨 Animation", genreId: 16 }
+        ]
+      },
+      anime: {
+        title: "Anime Hub & Simulcasts",
+        icon: "⛩️",
+        badge: "Anime Nation",
+        desc: "Stream the latest Japanese anime episodes, simulcasts, and legendary anime movies with original Japanese audio and multi-language dubs.",
+        type: "anime",
+        filters: [
+          { id: "all", label: "🔥 Top Trending" },
+          { id: "top_rated", label: "⭐ Masterpieces" },
+          { id: "action", label: "⚔️ Action & Shonen" },
+          { id: "fantasy", label: "🌸 Fantasy & Isekai" }
+        ]
+      },
+      kdrama: {
+        title: "Korean Dramas & Cinema",
+        icon: "🌸",
+        badge: "Hallyu Wave",
+        desc: "Explore top-rated Korean dramas, romantic K-dramas, thrilling revenge sagas, and historical period masterpieces with English subtitles.",
+        type: "kdramas",
+        filters: [
+          { id: "all", label: "🔥 All K-Dramas" },
+          { id: "trending", label: "⚡ Trending Now" },
+          { id: "romance", label: "💖 Romance" },
+          { id: "thriller", label: "🔪 Thrillers" }
+        ]
+      },
+      indian: {
+        title: "Indian Cinema & Dubs",
+        icon: "🎭",
+        badge: "Bollywood & South Hits",
+        desc: "Watch the biggest Bollywood blockbusters, Tollywood & Kollywood action spectacles, and multi-language Hindi, Tamil & Telugu dubs.",
+        type: "indian",
+        filters: [
+          { id: "all", label: "🔥 All Indian Hits" },
+          { id: "bollywood", label: "🎬 Bollywood" },
+          { id: "south", label: "💥 South Cinema" },
+          { id: "hindi", label: "🌐 Hindi Dubbed" }
+        ]
+      },
+      trending: {
+        title: "Trending Worldwide",
+        icon: "🔥",
+        badge: "Hot Right Now",
+        desc: "The most-watched movies and TV shows across the world today, updated in real time.",
+        type: "trending",
+        filters: [
+          { id: "all", label: "🔥 All Trending" },
+          { id: "movies", label: "🎬 Trending Movies" },
+          { id: "tv", label: "📺 Trending Shows" }
+        ]
+      },
+      genre: {
+        title: `${subFilter.toUpperCase()} Movies & Series`,
+        icon: "🎨",
+        badge: "Genre Collection",
+        desc: `Explore top-rated ${subFilter} movies, series, and recommendations in 4K Ultra HD.`,
+        type: "genre",
+        filters: [
+          { id: "action", label: "💥 Action" },
+          { id: "comedy", label: "😂 Comedy" },
+          { id: "horror", label: "👻 Horror" },
+          { id: "scifi", label: "🚀 Sci-Fi" },
+          { id: "romance", label: "💖 Romance" },
+          { id: "drama", label: "🎭 Drama" },
+          { id: "thriller", label: "🔪 Thriller" },
+          { id: "animation", label: "🎨 Animation" },
+          { id: "adventure", label: "🗺️ Adventure" },
+          { id: "fantasy", label: "🧙 Fantasy" },
+          { id: "crime", label: "🕵️ Crime" }
+        ]
+      }
+    };
+
+    const cfg = catConfigs[catKey] || catConfigs['movies'];
+
+    // Dynamic Title Update for SEO
+    document.title = `${cfg.title} — Watch Online Free in 4K Ultra HD | CinemaStream`;
+
+    if (!append) {
+      if (catKey === 'genre') {
+        window.history.replaceState(null, '', `/genre/${subFilter}`);
+      } else {
+        window.history.replaceState(null, '', `/${catKey === 'movies' ? 'movie' : catKey}${subFilter !== 'all' ? `?filter=${subFilter}` : ''}`);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      container.innerHTML = `
+        <div class="nf-cat-page">
+          <!-- Category Hero -->
+          <div class="nf-cat-hero">
+            <div class="nf-cat-header-content">
+              <div class="nf-cat-badge-wrap">
+                <span class="nf-cat-icon">${cfg.icon}</span>
+                <span class="nf-cat-badge">${cfg.badge}</span>
+              </div>
+              <h1 class="nf-cat-title">${cfg.title}</h1>
+              <p class="nf-cat-desc">${cfg.desc}</p>
+
+              <!-- Filter Bar -->
+              <div class="nf-filter-bar">
+                ${cfg.filters.map(f => `
+                  <button class="nf-filter-tab ${f.id === subFilter ? 'active' : ''}" 
+                          onclick="window.App.switchCategoryFilter('${catKey}', '${f.id}')">
+                    ${f.label}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Media Grid Container -->
+          <div class="nf-cat-grid-container">
+            <div class="nf-cat-grid" id="cat-grid-cards">
+              <div style="color:#888; grid-column:1/-1; padding:40px 0; text-align:center;">Loading ${cfg.title}...</div>
+            </div>
+            <div style="text-align:center; margin-top:20px;">
+              <button id="cat-load-more-btn" class="nf-btn-watch-main" style="display:none; margin:0 auto; background:#252525; border:1px solid rgba(255,255,255,0.2);" onclick="window.App.loadMoreCategoryTitles()">
+                Load More Titles ↓
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    try {
+      let items = [];
+      const filterObj = cfg.filters.find(f => f.id === subFilter) || cfg.filters[0];
+      const genreId = filterObj?.genreId;
+
+      if (catKey === 'movies') {
+        const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'now_playing', 'upcoming'].includes(subFilter) ? subFilter : 'popular');
+        const res = await ApiService.getMovies(endpoint, genreId, page);
+        items = res.results || res || [];
+      } else if (catKey === 'tv') {
+        const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'on_the_air', 'airing_today'].includes(subFilter) ? subFilter : 'popular');
+        const res = await ApiService.getTVSeries(endpoint, genreId, page);
+        items = res.results || res || [];
+      } else if (catKey === 'anime') {
+        const endpoint = subFilter === 'top_rated' ? 'top_rated' : 'popular';
+        const res = await ApiService.getAnime(endpoint, page);
+        items = res.results || res || [];
+      } else if (catKey === 'kdrama') {
+        const res = await ApiService.getKDramas(page);
+        items = res.results || res || [];
+      } else if (catKey === 'indian') {
+        const res = await ApiService.getIndianHits(page);
+        items = res.results || res || [];
+      } else if (catKey === 'trending') {
+        const res = await ApiService.getTrending(page);
+        items = res.results || res || [];
+      } else if (catKey === 'genre') {
+        const genreMap = { action: 28, comedy: 35, horror: 27, scifi: 878, romance: 10749, drama: 18, thriller: 53, animation: 16, adventure: 12, fantasy: 14, crime: 80 };
+        const gId = genreMap[subFilter.toLowerCase()] || 28;
+        const res = await ApiService.getMovies('popular', gId, page);
+        items = res.results || res || [];
+      }
+
+      const grid = document.getElementById('cat-grid-cards');
+      const btn = document.getElementById('cat-load-more-btn');
+
+      if (grid) {
+        if (!append) {
+          if (items.length === 0) {
+            grid.innerHTML = '<div style="color:#888; grid-column:1/-1; padding:60px 0; text-align:center;">No titles found in this category.</div>';
+            if (btn) btn.style.display = 'none';
+            return;
+          }
+          grid.innerHTML = items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join('');
+        } else {
+          grid.insertAdjacentHTML('beforeend', items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join(''));
+        }
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Load More Titles ↓';
+        btn.style.display = items.length >= 8 ? 'inline-block' : 'none';
+      }
+    } catch(err) {
+      console.error('Category fetch error:', err);
+      const grid = document.getElementById('cat-grid-cards');
+      if (grid && !append) grid.innerHTML = '<div style="color:#888; grid-column:1/-1; padding:40px 0; text-align:center;">Unable to load titles.</div>';
+    }
+  }
+
+  async switchCategoryFilter(catKey, filterId) {
+    if (catKey === 'genre') {
+      window.location.hash = `#genre/${filterId}`;
+    } else {
+      window.location.hash = `#${catKey}?filter=${filterId}`;
+    }
+    await this.renderCategoryHub(catKey, filterId, 1);
+  }
+
+  async loadMoreCategoryTitles() {
+    if (!this.currentCategory) return;
+    this.currentCategory.page = (this.currentCategory.page || 1) + 1;
+    const btn = document.getElementById('cat-load-more-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Loading more titles...';
+    }
+    await this.renderCategoryHub(this.currentCategory.key, this.currentCategory.filter, this.currentCategory.page, true);
   }
 
   renderContinueWatching() {

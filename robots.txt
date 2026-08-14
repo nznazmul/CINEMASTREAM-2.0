@@ -1,11 +1,21 @@
 User-agent: *
 Allow: /
-Allow: /movie/
-Allow: /tv/
-Allow: /anime/
-Allow: /watch/
+Allow: /movie
+Allow: /movies
+Allow: /tv
+Allow: /tv-shows
+Allow: /series
+Allow: /anime
+Allow: /kdrama
+Allow: /kdramas
+Allow: /indian
+Allow: /bollywood
+Allow: /trending
+Allow: /genre/
+Allow: /genres
 Allow: /year/
-Allow: /years/
+Allow: /years
+Allow: /watch/
 Disallow: /api/v1/stream/
 Disallow: /api/v1/user/
 

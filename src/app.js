@@ -40,8 +40,9 @@ class App {
         this.genres = g.results || g || [];
       } catch(e) { this.genres = []; }
 
-      // 4. Initial Navigation
-      await this.navigate('home');
+      // 4. Hash Router listener for Direct Deep Linking (/#movie/:id, /#tv/:id, /#anime/:id, /#watch?id=...)
+      window.addEventListener('hashchange', () => this.handleHashRoute());
+      await this.handleHashRoute();
 
       // 5. Service Worker Registration
       if ('serviceWorker' in navigator) {
@@ -50,6 +51,60 @@ class App {
     } catch(err) {
       console.error('App initialization error:', err);
     }
+  }
+
+  async handleHashRoute() {
+    const hash = window.location.hash.replace(/^#/, '');
+    if (!hash || hash === '/' || hash === 'home') {
+      await this.navigate('home');
+      return;
+    }
+
+    if (hash.startsWith('movie/') || hash.startsWith('tv/') || hash.startsWith('anime/')) {
+      const parts = hash.split('/');
+      const type = parts[0] === 'anime' ? 'tv' : parts[0];
+      const idPart = parts[1] || '';
+      const id = parseInt(idPart.split('-')[0]);
+      if (id) {
+        await this.renderDedicatedMediaPage(id, type);
+        return;
+      }
+    }
+
+    if (hash.startsWith('watch')) {
+      const params = new URLSearchParams(hash.replace(/^watch\??/, ''));
+      const id = parseInt(params.get('id'));
+      const type = params.get('type') || 'movie';
+      const s = parseInt(params.get('s')) || 1;
+      const e = parseInt(params.get('e')) || 1;
+      if (id) {
+        await this.renderDedicatedMediaPage(id, type, s, e, true);
+        return;
+      }
+    }
+
+    if (hash.startsWith('details')) {
+      const params = new URLSearchParams(hash.replace(/^details\??/, ''));
+      const id = parseInt(params.get('id'));
+      const type = params.get('type') || 'movie';
+      if (id) {
+        await this.renderDedicatedMediaPage(id, type);
+        return;
+      }
+    }
+
+    if (hash.startsWith('years')) {
+      const params = new URLSearchParams(hash.replace(/^years\??/, ''));
+      const y = parseInt(params.get('y')) || 2026;
+      const type = params.get('type') || 'movie';
+      this.selectedYear = y;
+      this.selectedYearType = type;
+      await this.navigate('years');
+      return;
+    }
+
+    // Standard static route
+    await this.navigate(hash);
   }
 
   async navigate(route) {
@@ -809,29 +864,229 @@ class App {
     }
   }
 
-  // ── Detail Modal (Netflix-Style Overview) ────────────────────────
-  async showDetails(id, type) {
-    const modalContainer = document.getElementById('details-modal-container');
-    document.body.style.overflow = 'hidden';
+  // ── Dedicated Individual Media Showcase View ────────────────────
+  async renderDedicatedMediaPage(id, type = 'movie', season = 1, episode = 1, autoPlay = false) {
+    const root = document.getElementById('main-content');
+    const heroContainer = document.getElementById('hero-container');
+    const mediaContainer = document.getElementById('media-sections-container');
+    const cw = document.getElementById('continue-watching-section');
+    if (heroContainer) heroContainer.style.display = 'none';
+    if (cw) { cw.style.display = 'none'; cw.innerHTML = ''; }
+    if (root) {
+      root.classList.remove('home-active');
+      root.classList.add('non-hero-active');
+    }
 
-    modalContainer.innerHTML = `
-      <div class="nf-modal-overlay" onclick="if(event.target===this) window.App.closeDetails()">
-        <div class="nf-modal">
-          <div style="padding:80px; text-align:center; color:#888;">Loading details...</div>
-        </div>
-      </div>
-    `;
+    mediaContainer.innerHTML = '<div style="padding:100px 50px; text-align:center; color:#888;">Loading 4K Cinema Showcase...</div>';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     try {
       const res = await ApiService.getDetails(id, type);
       const item = res.data || res;
       this.currentDetailItem = item;
-      this.renderDetailModal(item, type);
-    } catch(e) {
-      console.error('Detail error:', e);
-      this.closeDetails();
-      this.showToast('Unable to load title details.', 'error');
+      const title = item.title || item.name || 'Untitled';
+      const year = (item.release_date || item.first_air_date || '2024').substring(0, 4);
+      const backdrop = item.backdrop_path || item.poster_path || '';
+      const poster = item.poster_path || item.backdrop_path || '';
+      const isTv = type === 'tv';
+      const seasons = item.seasons || [];
+      const trailerKey = item.trailer_key;
+      const cast = item.cast || [];
+      const genres = item.genres || [];
+      const pageUrl = encodeURIComponent(`https://cinemastream2.vercel.app/#${type}/${item.id}`);
+      const shareTitle = encodeURIComponent(`Watch ${title} (${year}) in 4K Ultra HD on CinemaStream!`);
+
+      // Dynamic Title and Schema for Googlebot & Bingbot
+      document.title = `Watch ${title} (${year}) Online Free in 4K Ultra HD — CinemaStream`;
+      let schemaEl = document.getElementById('dynamic-media-schema');
+      if (!schemaEl) {
+        schemaEl = document.createElement('script');
+        schemaEl.id = 'dynamic-media-schema';
+        schemaEl.type = 'application/ld+json';
+        document.head.appendChild(schemaEl);
+      }
+      schemaEl.textContent = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": isTv ? "TVSeries" : "Movie",
+        "name": title,
+        "description": item.overview,
+        "image": poster,
+        "datePublished": item.release_date || item.first_air_date,
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": (item.vote_average || 7.5).toString(),
+          "bestRating": "10",
+          "ratingCount": (item.vote_count || 1200).toString()
+        }
+      });
+
+      mediaContainer.innerHTML = `
+        <div class="nf-media-page">
+          <!-- Hero Section with Backdrop -->
+          <div class="nf-media-hero" style="background-image: url('${backdrop}');">
+            <div class="nf-media-hero-content">
+              <div class="nf-media-poster-wrap">
+                <img class="nf-media-poster" src="${poster}" alt="${title}" onerror="this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
+              </div>
+              <div class="nf-media-meta-wrap">
+                <div class="nf-media-badges">
+                  <span class="nf-badge-tag nf-badge-4k">4K Ultra HD</span>
+                  <span class="nf-badge-tag nf-badge-rating">★ ${item.vote_average ? item.vote_average.toFixed(1) : '7.5'}</span>
+                  <span class="nf-badge-tag nf-badge-year">${year}</span>
+                  <span class="nf-badge-tag nf-badge-runtime">${isTv ? `${seasons.length || 1} Season${seasons.length > 1 ? 's' : ''}` : (item.duration || '2h 15m')}</span>
+                  <span class="nf-badge-tag" style="background:rgba(0,240,255,0.2); color:#00f0ff; border:1px solid #00f0ff;">Multi-Audio Dubs</span>
+                </div>
+
+                <h1 class="nf-media-heading">${title}</h1>
+
+                <div class="nf-media-genres">
+                  ${genres.map(g => `<span class="nf-genre-pill">${g}</span>`).join('')}
+                </div>
+
+                <p class="nf-media-overview">${item.overview || 'Stream this title online free in 4K Ultra HD with zero buffering.'}</p>
+
+                <div class="nf-media-btns">
+                  <button class="nf-btn-watch-main" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode})">
+                    <span>▶</span> Watch Now in 4K
+                  </button>
+                  ${trailerKey ? `<button class="nf-btn-trailer" onclick="window.App.playTrailer('${trailerKey}')">🎬 Official Trailer</button>` : ''}
+                  <button class="nf-btn-bookmark-main" onclick="window.App.toggleBookmark(${item.id}, '${title.replace(/'/g, "\\'")}', '${poster}', ${item.vote_average || 7.5}, '${year}', '${type}')" title="Save to My List">
+                    +
+                  </button>
+                  <button class="nf-btn-trailer" onclick="window.App.openAudioModal()">
+                    <span>🌐</span> Multi-Audio (Hindi/Tamil/Eng)
+                  </button>
+                </div>
+
+                <!-- 1-Click Social Share Bar -->
+                <div class="nf-share-bar">
+                  <span style="font-size:0.8rem; color:#888; margin-right:4px;">Share:</span>
+                  <button class="nf-share-btn" onclick="window.open('https://api.whatsapp.com/send?text=' + '${shareTitle}' + '%20' + '${pageUrl}', '_blank')">
+                    💬 WhatsApp
+                  </button>
+                  <button class="nf-share-btn" onclick="window.open('https://t.me/share/url?url=' + '${pageUrl}' + '&text=' + '${shareTitle}', '_blank')">
+                    ✈️ Telegram
+                  </button>
+                  <button class="nf-share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=' + '${shareTitle}' + '&url=' + '${pageUrl}', '_blank')">
+                    🐦 X (Twitter)
+                  </button>
+                  <button class="nf-share-btn" onclick="navigator.clipboard.writeText(window.location.href); window.App.showToast('Link copied to clipboard! 📋');">
+                    🔗 Copy Link
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Page Body & Interactive Features -->
+          <div class="nf-media-body-container">
+            <!-- Multi-Mirror Server Switcher -->
+            <div class="nf-server-picker-strip">
+              <span>⚡ Fast Stream Servers:</span>
+              <button class="nf-server-btn active" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'autoembed')">🚀 Server 1 (AutoEmbed)</button>
+              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'vidsrc')">⚡ Server 2 (VidSrc)</button>
+              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, '2embed')">🎬 Server 3 (2Embed Multi-Audio)</button>
+              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'smashystream')">🍿 Server 4 (SmashyStream)</button>
+              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'superembed')">💎 Server 5 (SuperEmbed VIP)</button>
+            </div>
+
+            <!-- TV Seasons & Episodes Accordion (If TV Series/Anime) -->
+            ${isTv && seasons.length > 0 ? `
+              <div style="margin-bottom:40px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                  <h2 style="font-size:1.4rem; font-weight:800;">📺 Seasons & Episodes</h2>
+                  <select class="nf-season-select" id="page-season-select" onchange="window.App.loadPageSeasonEpisodes(${item.id}, this.value)" style="padding:8px 14px; background:#222; color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:6px; font-family:inherit;">
+                    ${seasons.map(s => `<option value="${s.season_number}">${s.name} (${s.episode_count} eps)</option>`).join('')}
+                  </select>
+                </div>
+                <div id="page-episodes-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;"></div>
+              </div>
+            ` : ''}
+
+            <!-- Top Billed Cast -->
+            ${cast.length > 0 ? `
+              <div style="margin-bottom:40px;">
+                <h2 style="font-size:1.3rem; font-weight:800; margin-bottom:16px;">🌟 Top Billed Cast</h2>
+                <div class="nf-cast-carousel">
+                  ${cast.slice(0, 10).map(c => `
+                    <div class="nf-cast-card">
+                      <img class="nf-cast-avatar" src="${c.profile_path ? 'https://image.tmdb.org/t/p/w185' + c.profile_path : 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}" alt="${c.name}">
+                      <div class="nf-cast-name">${c.name}</div>
+                      <div class="nf-cast-role">${c.character || 'Cast'}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Recommended Titles -->
+            ${(item.similar || []).length > 0 ? `
+              <div>
+                <h2 style="font-size:1.3rem; font-weight:800; margin-bottom:16px;">🍿 More Like This</h2>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:14px;">
+                  ${(item.similar || []).slice(0, 12).map((sim, idx) => MediaGrid.renderCard(sim, idx, item.similar.length)).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      if (isTv && seasons.length > 0) {
+        this.loadPageSeasonEpisodes(item.id, seasons[0].season_number);
+      }
+
+      if (autoPlay) {
+        this.playMedia(item.id, type, season, episode);
+      }
+    } catch(err) {
+      console.error('Dedicated media page error:', err);
+      mediaContainer.innerHTML = '<div style="padding:100px 50px; text-align:center; color:#888;">Title not found. <button onclick="window.Router.navigate(\'home\')" style="background:#E50914; color:#fff; border:none; padding:8px 16px; border-radius:4px; margin-left:12px; cursor:pointer;">Go Home</button></div>';
     }
+  }
+
+  async loadPageSeasonEpisodes(tvId, seasonNumber) {
+    const grid = document.getElementById('page-episodes-grid');
+    if (!grid) return;
+    grid.innerHTML = '<div style="color:#888; grid-column:1/-1;">Loading episodes...</div>';
+
+    try {
+      const res = await ApiService.getEpisodes(tvId, seasonNumber);
+      const eps = res.results || res.episodes || [];
+      if (eps.length === 0) {
+        grid.innerHTML = '<div style="color:#888; grid-column:1/-1;">No episodes available for this season.</div>';
+        return;
+      }
+
+      grid.innerHTML = eps.map(ep => {
+        const still = ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg';
+        return `
+          <div style="background:#1c1c1c; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); cursor:pointer; transition:transform 0.2s, border-color 0.2s;" 
+               onmouseover="this.style.borderColor='#e50914'; this.style.transform='scale(1.02)';" 
+               onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='scale(1)';"
+               onclick="window.App.playMedia(${tvId}, 'tv', ${seasonNumber}, ${ep.episode_number})">
+            <div style="position:relative; width:100%; height:140px;">
+              <img src="${still}" alt="${ep.name}" style="width:100%; height:100%; object-fit:cover; display:block;">
+              <div style="position:absolute; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center;">
+                <span style="background:rgba(229,9,20,0.9); width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.9rem;">▶</span>
+              </div>
+              <span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.8); padding:2px 6px; border-radius:3px; font-size:0.75rem; color:#fff;">E${ep.episode_number}</span>
+            </div>
+            <div style="padding:10px 12px;">
+              <div style="font-weight:700; font-size:0.9rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ep.episode_number}. ${ep.name || 'Episode ' + ep.episode_number}</div>
+              <div style="font-size:0.78rem; color:#888; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:4px;">${ep.overview || 'Watch this episode in Full HD 1080p.'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch(e) {
+      grid.innerHTML = '<div style="color:#888; grid-column:1/-1;">Unable to load episodes.</div>';
+    }
+  }
+
+  // ── Detail & Dedicated Individual Page Trigger ────────────────
+  async showDetails(id, type) {
+    window.location.hash = `#${type}/${id}`;
   }
 
   renderDetailModal(item, type) {

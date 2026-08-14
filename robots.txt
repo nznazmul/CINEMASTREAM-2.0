@@ -1,5 +1,11 @@
 User-agent: *
 Allow: /
+Allow: /movie/
+Allow: /tv/
+Allow: /anime/
+Allow: /watch/
+Allow: /year/
+Allow: /years/
 Disallow: /api/v1/stream/
 Disallow: /api/v1/user/
 

@@ -52,20 +52,22 @@ export class SEOService {
       const title = (item.title || item.name || 'Untitled').replace(/[<>&'"]/g, '');
       const desc = (item.overview || 'Watch in 4K Ultra HD on CinemaStream').replace(/[<>&'"]/g, '');
       const type = item.media_type || 'movie';
+      const year = (item.release_date || item.first_air_date || '2024').substring(0, 4);
       
       xml += `  <url>\n`;
-      xml += `    <loc>${baseUrl}/#${type}-${item.id}</loc>\n`;
+      xml += `    <loc>${baseUrl}/#${type}/${item.id}</loc>\n`;
       xml += `    <lastmod>${today}</lastmod>\n`;
       xml += `    <changefreq>weekly</changefreq>\n`;
       xml += `    <priority>0.85</priority>\n`;
-      if (item.poster_path) {
-        xml += `    <video:video>\n`;
-        xml += `      <video:thumbnail_loc>${item.poster_path}</video:thumbnail_loc>\n`;
-        xml += `      <video:title>${title}</video:title>\n`;
-        xml += `      <video:description>${desc.substring(0, 200)}</video:description>\n`;
-        xml += `      <video:rating>${item.vote_average || 8.0}</video:rating>\n`;
-        xml += `    </video:video>\n`;
-      }
+      xml += `    <video:video>\n`;
+      xml += `      <video:thumbnail_loc>${item.backdrop_path || item.poster_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}</video:thumbnail_loc>\n`;
+      xml += `      <video:title>${title} (${year}) Watch Online Free 4K</video:title>\n`;
+      xml += `      <video:description>${desc}</video:description>\n`;
+      xml += `      <video:player_loc>${baseUrl}/#watch?id=${item.id}&amp;type=${type}</video:player_loc>\n`;
+      xml += `      <video:rating>${item.vote_average || 7.5}</video:rating>\n`;
+      xml += `      <video:family_friendly>yes</video:family_friendly>\n`;
+      xml += `      <video:publication_date>${item.release_date || item.first_air_date || '2024-01-01'}</video:publication_date>\n`;
+      xml += `    </video:video>\n`;
       xml += `  </url>\n`;
     }
 

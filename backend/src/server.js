@@ -58,6 +58,8 @@ app.get('/robots.txt', (req, res) => {
 
 // 5. API Endpoints
 app.use('/api/v1', apiRoutes);
+app.use('/v1', apiRoutes);
+app.use('/api', apiRoutes);
 
 // 6. Serve Web Frontend
 const webPath = path.resolve(__dirname, '../../web');
@@ -65,27 +67,30 @@ app.use(express.static(webPath));
 
 // Fallback SPA routing for Web Client
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/v1/')) {
     return res.status(404).json({ error: 'Endpoint not found' });
   }
   res.sendFile(path.join(webPath, 'index.html'));
 });
 
-// 6. Start Server
-const server = app.listen(CONFIG.PORT, CONFIG.HOST, () => {
-  console.log('================================================================');
-  console.log('🎬 CINEMASTREAM CORE PLATFORM - SECURE FULL-STACK ENGINE 🎬');
-  console.log('================================================================');
-  console.log(`🌐 Server running at : http://${CONFIG.HOST === '0.0.0.0' ? 'localhost' : CONFIG.HOST}:${CONFIG.PORT}`);
-  console.log(`⚡ API Gateway Base  : http://localhost:${CONFIG.PORT}/api/v1`);
-  console.log(`🛡️  Stream Proxy Core : ACTIVE (HMAC-SHA256 Encrypted)`);
-  console.log(`🧼 Ad-Shield Sandbox : ACTIVE (Auto-blocking Malicious Scripts)`);
-  console.log(`📱 Android & TV Sync : READY (ExoPlayer & Leanback Compatible)`);
-  console.log('================================================================\n');
-});
+// 7. Start Server (Only in local/dedicated container environments when executed directly)
+const isDirectEntry = process.argv[1] && (process.argv[1].endsWith('server.js') || process.argv[1].endsWith('server'));
+if (isDirectEntry && !process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  const server = app.listen(CONFIG.PORT, CONFIG.HOST, () => {
+    console.log('================================================================');
+    console.log('🎬 CINEMASTREAM CORE PLATFORM - SECURE FULL-STACK ENGINE 🎬');
+    console.log('================================================================');
+    console.log(`🌐 Server running at : http://${CONFIG.HOST === '0.0.0.0' ? 'localhost' : CONFIG.HOST}:${CONFIG.PORT}`);
+    console.log(`⚡ API Gateway Base  : http://localhost:${CONFIG.PORT}/api/v1`);
+    console.log(`🛡️  Stream Proxy Core : ACTIVE (HMAC-SHA256 Encrypted)`);
+    console.log(`🧼 Ad-Shield Sandbox : ACTIVE (Auto-blocking Malicious Scripts)`);
+    console.log(`📱 Android & TV Sync : READY (ExoPlayer & Leanback Compatible)`);
+    console.log('================================================================\n');
+  });
 
-process.on('SIGTERM', () => {
-  server.close(() => console.log('CinemaStream Server Stopped.'));
-});
+  process.on('SIGTERM', () => {
+    server.close(() => console.log('CinemaStream Server Stopped.'));
+  });
+}
 
 export default app;

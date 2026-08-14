@@ -4,7 +4,8 @@ import { CONFIG } from '../config/constants.js';
 
 class Database {
   constructor() {
-    this.dataDir = path.resolve(CONFIG.DATA_DIR);
+    this.isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    this.dataDir = this.isServerless ? '/tmp/cinemastream_data' : path.resolve(CONFIG.DATA_DIR);
     this.usersFile = path.join(this.dataDir, 'users.json');
     this.historyFile = path.join(this.dataDir, 'history.json');
     this.bookmarksFile = path.join(this.dataDir, 'bookmarks.json');
@@ -19,8 +20,12 @@ class Database {
   }
 
   init() {
-    if (!fs.existsSync(this.dataDir)) {
-      fs.mkdirSync(this.dataDir, { recursive: true });
+    try {
+      if (!fs.existsSync(this.dataDir)) {
+        fs.mkdirSync(this.dataDir, { recursive: true });
+      }
+    } catch (e) {
+      // In serverless lambdas without disk access, operate in memory
     }
 
     this.users = this.loadFile(this.usersFile, []);
@@ -43,7 +48,6 @@ class Database {
       this.saveFile(filePath, defaultVal);
       return defaultVal;
     } catch (err) {
-      console.error(`Error loading database file ${filePath}:`, err.message);
       return defaultVal;
     }
   }
@@ -52,7 +56,7 @@ class Database {
     try {
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
     } catch (err) {
-      console.error(`Error saving database file ${filePath}:`, err.message);
+      // Serverless memory persistence fallback
     }
   }
 

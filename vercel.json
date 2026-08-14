@@ -2,6 +2,13 @@
   "version": 2,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/v1/(.*)", "destination": "/api/index.js" }
+    { "source": "/v1/(.*)", "destination": "/api/index.js" },
+    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+    { "source": "/robots.txt", "destination": "/robots.txt" },
+    { "source": "/src/(.*)", "destination": "/src/$1" },
+    { "source": "/styles/(.*)", "destination": "/styles/$1" },
+    { "source": "/manifest.json", "destination": "/manifest.json" },
+    { "source": "/sw.js", "destination": "/sw.js" },
+    { "source": "/((?!api/|v1/|src/|styles/|sitemap\\.xml|robots\\.txt|manifest\\.json|sw\\.js).*)", "destination": "/index.html" }
   ]
 }

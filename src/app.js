@@ -54,7 +54,14 @@ class App {
   }
 
   async handleHashRoute() {
-    const hash = window.location.hash.replace(/^#/, '');
+    let hash = window.location.hash.replace(/^#\/?/, '');
+    const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '');
+
+    // Support direct clean URLs like /movies, /tv, /anime, /movie/533535, /watch/533535
+    if (!hash && pathname) {
+      hash = pathname;
+    }
+
     if (!hash || hash === '/' || hash === 'home') {
       await this.navigate('home');
       return;
@@ -72,6 +79,13 @@ class App {
     }
 
     if (hash.startsWith('watch')) {
+      const parts = hash.split('/');
+      if (parts.length >= 2 && parseInt(parts[1])) {
+        const id = parseInt(parts[1]);
+        const type = parts[2] || 'movie';
+        await this.renderDedicatedMediaPage(id, type, 1, 1, true);
+        return;
+      }
       const params = new URLSearchParams(hash.replace(/^watch\??/, ''));
       const id = parseInt(params.get('id'));
       const type = params.get('type') || 'movie';
@@ -93,8 +107,8 @@ class App {
       }
     }
 
-    if (hash.startsWith('years')) {
-      const params = new URLSearchParams(hash.replace(/^years\??/, ''));
+    if (hash.startsWith('years') || hash.startsWith('year')) {
+      const params = new URLSearchParams(hash.replace(/^years?\??/, ''));
       const y = parseInt(params.get('y')) || 2026;
       const type = params.get('type') || 'movie';
       this.selectedYear = y;
@@ -103,7 +117,7 @@ class App {
       return;
     }
 
-    // Standard static route
+    // Standard static route (movies, tv, anime, bookmarks, faq, etc.)
     await this.navigate(hash);
   }
 

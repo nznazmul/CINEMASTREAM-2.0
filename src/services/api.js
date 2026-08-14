@@ -119,20 +119,35 @@ export class ApiService {
     } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getAnimeMovies(category, page) {
+  static async getAnimeMovies(category, page, genre) {
     category = category || 'popular'; page = page || 1;
     try {
-      const params = { page: page, with_genres: 16, with_original_language: 'ja', sort_by: 'popularity.desc' };
-      if (category === 'top_rated') { params.sort_by = 'vote_average.desc'; params['vote_count.gte'] = 250; }
+      const params = { page: page, with_genres: genre ? `16,${genre}` : 16, with_original_language: 'ja', sort_by: 'popularity.desc' };
+      if (category === 'top_rated') { params.sort_by = 'vote_average.desc'; params['vote_count.gte'] = 200; }
       const data = await this.tmdb('/discover/movie', params);
       return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'movie'))) };
     } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getAsianDrama(page) {
+  static async getAsianDrama(page, subFilter) {
     page = page || 1;
     try {
-      const data = await this.tmdb('/discover/tv', { page: page, with_original_language: 'ko', sort_by: 'popularity.desc' });
+      let params = { page: page, sort_by: 'popularity.desc' };
+      if (subFilter === 'chinese') {
+        params.with_original_language = 'zh';
+      } else if (subFilter === 'japanese') {
+        params.with_original_language = 'ja';
+      } else if (subFilter === 'romance') {
+        params.with_original_language = 'ko|zh|ja';
+        params.with_genres = 10749;
+      } else if (subFilter === 'thriller') {
+        params.with_original_language = 'ko|zh|ja';
+        params.with_genres = '18,80,9648';
+      } else {
+        // All / kdrama
+        params.with_original_language = 'ko|zh|ja|th';
+      }
+      const data = await this.tmdb('/discover/tv', params);
       return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'tv'))) };
     } catch (e) { return { success: false, results: [] }; }
   }
@@ -145,17 +160,35 @@ export class ApiService {
     } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getIndianHits(page) {
+  static async getIndianHits(page, subFilter) {
     page = page || 1;
     try {
-      const [res1, res2] = await Promise.all([
-        this.tmdb('/discover/movie', { page: page, with_original_language: 'hi', sort_by: 'popularity.desc' }),
-        this.tmdb('/discover/movie', { page: page, with_original_language: 'te', sort_by: 'popularity.desc' })
-      ]);
-      return { success: true, results: this.deduplicate([
-        ...(res1.results || []).map(m => this.normalize(m, 'movie')),
-        ...(res2.results || []).map(m => this.normalize(m, 'movie'))
-      ]) };
+      let data;
+      if (subFilter === 'south') {
+        const [te, ta] = await Promise.all([
+          this.tmdb('/discover/movie', { page: page, with_original_language: 'te', sort_by: 'popularity.desc' }),
+          this.tmdb('/discover/movie', { page: page, with_original_language: 'ta', sort_by: 'popularity.desc' })
+        ]);
+        return { success: true, results: this.deduplicate([
+          ...(te.results || []).map(m => this.normalize(m, 'movie')),
+          ...(ta.results || []).map(m => this.normalize(m, 'movie'))
+        ]) };
+      } else if (subFilter === 'bollywood' || subFilter === 'hindi') {
+        data = await this.tmdb('/discover/movie', { page: page, with_original_language: 'hi', sort_by: 'popularity.desc' });
+      } else {
+        // All Indian Hits (Hindi + Telugu + Tamil)
+        const [hi, te, ta] = await Promise.all([
+          this.tmdb('/discover/movie', { page: page, with_original_language: 'hi', sort_by: 'popularity.desc' }),
+          this.tmdb('/discover/movie', { page: page, with_original_language: 'te', sort_by: 'popularity.desc' }),
+          this.tmdb('/discover/movie', { page: page, with_original_language: 'ta', sort_by: 'popularity.desc' })
+        ]);
+        return { success: true, results: this.deduplicate([
+          ...(hi.results || []).map(m => this.normalize(m, 'movie')),
+          ...(te.results || []).map(m => this.normalize(m, 'movie')),
+          ...(ta.results || []).map(m => this.normalize(m, 'movie'))
+        ]) };
+      }
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'movie'))) };
     } catch (e) { return { success: false, results: [] }; }
   }
 

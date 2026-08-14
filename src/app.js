@@ -514,6 +514,13 @@ class App {
       }
     };
 
+    catConfigs['asian-drama'] = catConfigs['asian_drama'];
+    catConfigs['anime-movies'] = catConfigs['animemovie'];
+    catConfigs['anime-movie'] = catConfigs['animemovie'];
+    catConfigs['bollywood'] = catConfigs['indian'];
+    catConfigs['movie'] = catConfigs['movies'];
+    catConfigs['tvseries'] = catConfigs['tv'];
+
     const cfg = catConfigs[catKey] || catConfigs['movies'];
 
     // Dynamic Title Update for SEO
@@ -572,24 +579,24 @@ class App {
       const activeFilterObj = (cfg.filters || []).find(f => f.id === subFilter);
       const genreId = activeFilterObj ? activeFilterObj.genreId : null;
 
-      if (catKey === 'movies') {
+      if (catKey === 'movies' || catKey === 'movie') {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'now_playing', 'upcoming'].includes(subFilter) ? subFilter : 'popular');
         res = await ApiService.getMovies(endpoint, genreId, page);
-      } else if (catKey === 'tv') {
+      } else if (catKey === 'tv' || catKey === 'tvseries') {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'on_the_air', 'airing_today'].includes(subFilter) ? subFilter : 'popular');
         res = await ApiService.getTVSeries(endpoint, genreId, page);
-      } else if (catKey === 'animemovie') {
+      } else if (catKey === 'animemovie' || catKey === 'anime-movies' || catKey === 'anime-movie') {
         const endpoint = subFilter === 'top_rated' ? 'top_rated' : 'popular';
-        res = await ApiService.getAnimeMovies(endpoint, page);
+        res = await ApiService.getAnimeMovies(endpoint, page, genreId);
       } else if (catKey === 'anime') {
         const endpoint = subFilter === 'top_rated' ? 'top_rated' : 'popular';
         res = await ApiService.getAnime(endpoint, page);
-      } else if (catKey === 'asian_drama') {
-        res = await ApiService.getAsianDrama(page);
-      } else if (catKey === 'kdrama') {
+      } else if (catKey === 'asian_drama' || catKey === 'asian-drama' || catKey === 'asiandrama') {
+        res = await ApiService.getAsianDrama(page, subFilter);
+      } else if (catKey === 'kdrama' || catKey === 'kdramas') {
         res = await ApiService.getKDramas(page);
-      } else if (catKey === 'indian') {
-        res = await ApiService.getIndianHits(page);
+      } else if (catKey === 'indian' || catKey === 'bollywood') {
+        res = await ApiService.getIndianHits(page, subFilter);
       } else if (catKey === 'trending') {
         res = await ApiService.getTrending(page);
       } else if (catKey === 'genre') {

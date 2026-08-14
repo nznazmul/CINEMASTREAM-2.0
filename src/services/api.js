@@ -96,60 +96,77 @@ export class ApiService {
     });
 
     try {
+      const pageMatch = endpoint.match(/page=(\d+)/);
+      const page = pageMatch ? pageMatch[1] : '1';
+
       if (endpoint.startsWith('/hero')) {
-        const res = await fetch(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}`);
+        const res = await fetch(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}&page=${page}`);
         const data = await res.json();
         const list = this.deduplicate((data.results || []).map(m => normalize(m)));
         return { success: true, results: list.slice(0, 8) };
       }
       if (endpoint.startsWith('/trending')) {
-        const res = await fetch(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}`);
+        const res = await fetch(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}&page=${page}`);
         const data = await res.json();
         return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m))) };
       }
-      if (endpoint.startsWith('/movies') || endpoint.startsWith('/movie')) {
-        const matchGenre = endpoint.match(/genre=(\d+)/);
-        const genreQuery = matchGenre ? `&with_genres=${matchGenre[1]}` : '';
-        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&sort_by=popularity.desc${genreQuery}`);
+      if (endpoint.startsWith('/animemovie') || endpoint.startsWith('/anime-movie') || endpoint.startsWith('/anime-movies')) {
+        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=${page}`);
         const data = await res.json();
         return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
-      }
-      if (endpoint.startsWith('/tv')) {
-        const matchGenre = endpoint.match(/genre=(\d+)/);
-        const genreQuery = matchGenre ? `&with_genres=${matchGenre[1]}` : '';
-        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&sort_by=popularity.desc${genreQuery}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
-      }
-      if (endpoint.startsWith('/animemovie') || endpoint.startsWith('/anime-movie')) {
-        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
-      }
-      if (endpoint.startsWith('/anime')) {
-        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
       }
       if (endpoint.startsWith('/asian-drama') || endpoint.startsWith('/asiandrama')) {
-        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_original_language=ko|zh|ja|th&sort_by=popularity.desc`);
+        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_original_language=ko|zh|ja|th&sort_by=popularity.desc&page=${page}`);
+        const data = await res.json();
+        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
+      }
+      if (endpoint.startsWith('/anime')) {
+        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=${page}`);
         const data = await res.json();
         return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
       }
       if (endpoint.startsWith('/kdramas') || endpoint.startsWith('/kdrama')) {
-        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_original_language=ko&sort_by=popularity.desc`);
+        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_original_language=ko&sort_by=popularity.desc&page=${page}`);
         const data = await res.json();
         return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
       }
-      if (endpoint.startsWith('/indian')) {
-        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&with_original_language=hi|te|ta&sort_by=popularity.desc`);
+      if (endpoint.startsWith('/indian') || endpoint.startsWith('/bollywood')) {
+        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&with_original_language=hi|te|ta&sort_by=popularity.desc&page=${page}`);
         const data = await res.json();
         return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
+      }
+      if (endpoint.startsWith('/movies') || endpoint.startsWith('/movie')) {
+        const matchCat = endpoint.match(/category=([^&]+)/);
+        const cat = matchCat ? matchCat[1] : 'popular';
+        const matchGenre = endpoint.match(/genre=(\d+)/);
+        const genreQuery = matchGenre ? `&with_genres=${matchGenre[1]}` : '';
+
+        let url = `${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&sort_by=popularity.desc&page=${page}${genreQuery}`;
+        if (!genreQuery && ['top_rated', 'now_playing', 'upcoming'].includes(cat)) {
+          url = `${TMDB_BASE}/movie/${cat}?api_key=${TMDB_KEY}&page=${page}`;
+        }
+        const res = await fetch(url);
+        const data = await res.json();
+        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
+      }
+      if (endpoint.startsWith('/tv')) {
+        const matchCat = endpoint.match(/category=([^&]+)/);
+        const cat = matchCat ? matchCat[1] : 'popular';
+        const matchGenre = endpoint.match(/genre=(\d+)/);
+        const genreQuery = matchGenre ? `&with_genres=${matchGenre[1]}` : '';
+
+        let url = `${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&sort_by=popularity.desc&page=${page}${genreQuery}`;
+        if (!genreQuery && ['top_rated', 'on_the_air', 'airing_today'].includes(cat)) {
+          url = `${TMDB_BASE}/tv/${cat}?api_key=${TMDB_KEY}&page=${page}`;
+        }
+        const res = await fetch(url);
+        const data = await res.json();
+        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
       }
       if (endpoint.startsWith('/year/')) {
         const match = endpoint.match(/\/year\/(\d{4})/);
         const year = match ? match[1] : '2024';
-        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&primary_release_year=${year}&sort_by=popularity.desc`);
+        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&primary_release_year=${year}&sort_by=popularity.desc&page=${page}`);
         const data = await res.json();
         return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
       }

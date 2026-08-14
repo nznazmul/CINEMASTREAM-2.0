@@ -230,10 +230,14 @@ class App {
 
       if (this.currentRoute === 'movies' || this.currentRoute === 'movie') {
         await this.renderCategoryHub('movies', 'all', 1);
-      } else if (this.currentRoute === 'tv' || this.currentRoute === 'tv-shows' || this.currentRoute === 'series') {
+      } else if (this.currentRoute === 'tv' || this.currentRoute === 'tvseries' || this.currentRoute === 'tv-series' || this.currentRoute === 'tv-shows' || this.currentRoute === 'series') {
         await this.renderCategoryHub('tv', 'all', 1);
+      } else if (this.currentRoute === 'animemovie' || this.currentRoute === 'anime-movie' || this.currentRoute === 'anime-movies') {
+        await this.renderCategoryHub('animemovie', 'all', 1);
       } else if (this.currentRoute === 'anime') {
         await this.renderCategoryHub('anime', 'all', 1);
+      } else if (this.currentRoute === 'asian_drama' || this.currentRoute === 'asian-drama' || this.currentRoute === 'asiandrama') {
+        await this.renderCategoryHub('asian_drama', 'all', 1);
       } else if (this.currentRoute === 'kdrama' || this.currentRoute === 'kdramas') {
         await this.renderCategoryHub('kdrama', 'all', 1);
       } else if (this.currentRoute === 'indian' || this.currentRoute === 'bollywood') {
@@ -468,41 +472,43 @@ class App {
 
     try {
       let items = [];
-      const filterObj = cfg.filters.find(f => f.id === subFilter) || cfg.filters[0];
-      const genreId = filterObj?.genreId;
-
+      let res = null;
       if (catKey === 'movies') {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'now_playing', 'upcoming'].includes(subFilter) ? subFilter : 'popular');
-        const res = await ApiService.getMovies(endpoint, genreId, page);
-        items = res.results || res || [];
+        res = await ApiService.getMovies(endpoint, genreId, page);
       } else if (catKey === 'tv') {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'on_the_air', 'airing_today'].includes(subFilter) ? subFilter : 'popular');
-        const res = await ApiService.getTVSeries(endpoint, genreId, page);
-        items = res.results || res || [];
+        res = await ApiService.getTVSeries(endpoint, genreId, page);
       } else if (catKey === 'animemovie') {
-        const res = await ApiService.getAnimeMovies(page);
-        items = res.results || res || [];
+        res = await ApiService.getAnimeMovies(page);
       } else if (catKey === 'anime') {
         const endpoint = subFilter === 'top_rated' ? 'top_rated' : 'popular';
-        const res = await ApiService.getAnime(endpoint, page);
-        items = res.results || res || [];
+        res = await ApiService.getAnime(endpoint, page);
       } else if (catKey === 'asian_drama') {
-        const res = await ApiService.getAsianDrama(page);
-        items = res.results || res || [];
+        res = await ApiService.getAsianDrama(page);
       } else if (catKey === 'kdrama') {
-        const res = await ApiService.getKDramas(page);
-        items = res.results || res || [];
+        res = await ApiService.getKDramas(page);
       } else if (catKey === 'indian') {
-        const res = await ApiService.getIndianHits(page);
-        items = res.results || res || [];
+        res = await ApiService.getIndianHits(page);
       } else if (catKey === 'trending') {
-        const res = await ApiService.getTrending(page);
-        items = res.results || res || [];
+        res = await ApiService.getTrending(page);
       } else if (catKey === 'genre') {
         const genreMap = { action: 28, comedy: 35, horror: 27, scifi: 878, romance: 10749, drama: 18, thriller: 53, animation: 16, adventure: 12, fantasy: 14, crime: 80 };
         const gId = genreMap[subFilter.toLowerCase()] || 28;
-        const res = await ApiService.getMovies('popular', gId, page);
-        items = res.results || res || [];
+        res = await ApiService.getMovies('popular', gId, page);
+      }
+
+      if (res) {
+        if (Array.isArray(res.results)) items = res.results;
+        else if (Array.isArray(res.data)) items = res.data;
+        else if (Array.isArray(res)) items = res;
+      }
+
+      if (!items || items.length === 0) {
+        const fallback = await ApiService.fallbackTMDB(`/${catKey}?page=${page}`);
+        if (fallback && Array.isArray(fallback.results)) {
+          items = fallback.results;
+        }
       }
 
       const grid = document.getElementById('cat-grid-cards');

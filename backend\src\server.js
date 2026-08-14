@@ -21,18 +21,20 @@ app.use(cors({
   exposedHeaders: ['Content-Range', 'Accept-Ranges', 'Content-Length']
 }));
 
-// 2. Helmet Security Headers (Configured for Video Players & Iframes)
-app.use(helmet({
-  contentSecurityPolicy: false, // Permissive for external video stream CDNs & embeds
-  crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: 'cross-origin' }
-}));
+// 2. Helmet Security Headers (Safe for both serverless and dedicated host)
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+  }));
+  app.use(rateLimiter);
+}
 
 // 3. Ad-Shield and Body Parsers
 app.use(adShieldHeaders);
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(rateLimiter);
 
 // 4. Dynamic SEO Endpoints (Sitemap & Robots.txt)
 app.get('/sitemap.xml', async (req, res) => {

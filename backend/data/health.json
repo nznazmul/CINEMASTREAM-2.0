@@ -1,0 +1,54 @@
+{
+  "vidplay": {
+    "status": "online",
+    "latency": 0,
+    "successRate": 99.4,
+    "lastChecked": 1786698110026,
+    "lastSuccess": 1786698110026
+  },
+  "superstream": {
+    "status": "online",
+    "latency": 0,
+    "successRate": 98.9,
+    "lastChecked": 1786659070485,
+    "lastSuccess": 1786659070485
+  },
+  "smashy": {
+    "status": "online",
+    "latency": 0,
+    "successRate": 97.5,
+    "lastChecked": 1786698110029,
+    "lastSuccess": 1786698110029
+  },
+  "streamwish": {
+    "status": "online",
+    "latency": 0,
+    "successRate": 95,
+    "lastChecked": 1786698110035,
+    "lastSuccess": 1786698110035
+  },
+  "iptv": {
+    "status": "online",
+    "latency": 35,
+    "successRate": 99.8,
+    "lastChecked": 1786656857317
+  },
+  "vidsrc": {
+    "status": "online",
+    "latency": 0,
+    "lastSuccess": 1786698110031,
+    "lastChecked": 1786698110031
+  },
+  "multiembed": {
+    "status": "online",
+    "latency": 0,
+    "lastSuccess": 1786698110033,
+    "lastChecked": 1786698110033
+  },
+  "autoembed": {
+    "status": "online",
+    "latency": 1,
+    "lastSuccess": 1786698110024,
+    "lastChecked": 1786698110024
+  }
+}

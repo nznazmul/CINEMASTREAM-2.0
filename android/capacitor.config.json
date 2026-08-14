@@ -1,0 +1,15 @@
+{
+  "appId": "com.cinemastream.app",
+  "appName": "CinemaStream",
+  "webDir": "../web",
+  "bundledWebRuntime": false,
+  "server": {
+    "cleartext": true,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  }
+}

@@ -1,0 +1,137 @@
+[
+  {
+    "id": "usr_hrfxfxeimss1w0p0",
+    "username": "CinemaTester",
+    "email": "tester_1786657741546@example.com",
+    "passwordHash": "$2a$10$z6a.5uAnxtha6CXweTVi4.HzhLT77i3HUDYZDAPvUjmuRH9YEC/tS",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T21:49:01.956Z"
+  },
+  {
+    "id": "usr_90s397fqmss23u4q",
+    "username": "CinemaTester",
+    "email": "tester_1786658106480@example.com",
+    "passwordHash": "$2a$10$IDb3/eAnyCUVfCkNmKvzSu4tDUkoeQL2qk0YIMmaJTSVUhO5xyERO",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T21:55:06.698Z"
+  },
+  {
+    "id": "usr_7uskqbhhmss246vw",
+    "username": "CinemaTester",
+    "email": "tester_1786658123098@example.com",
+    "passwordHash": "$2a$10$c8RJMIGQ4yjikjTMrG6gTuG/eKFb0HEG//Ek94FwZOFuUbXx8J8sK",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T21:55:23.228Z"
+  },
+  {
+    "id": "usr_lhagbfrlmss2aa9w",
+    "username": "CinemaTester",
+    "email": "tester_1786658407401@example.com",
+    "passwordHash": "$2a$10$5JaO0hldEBaeWSiaMLEmZOOLqnDuGB2kA1x9uol5htZPyS42yCmoi",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:00:07.556Z"
+  },
+  {
+    "id": "usr_6radupcsmss2jzkf",
+    "username": "CinemaTester",
+    "email": "tester_1786658860094@example.com",
+    "passwordHash": "$2a$10$gtMx/aLKQi6QdbeSelABAOkoLqHZVkylAeS74gMJ9nW5NeCToF.im",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:07:40.239Z"
+  },
+  {
+    "id": "usr_43kble98mss2owgu",
+    "username": "CinemaTester",
+    "email": "tester_1786659089223@example.com",
+    "passwordHash": "$2a$10$OyM4Okgfi37CZ2XUB41PauXg2Ed8m/7pZ03dASabGPMGOlUpDAG9a",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:11:29.502Z"
+  },
+  {
+    "id": "usr_drtz8e5dmss2s0z6",
+    "username": "CinemaTester",
+    "email": "tester_1786659235119@example.com",
+    "passwordHash": "$2a$10$xJVNB.5nH.aR3gDR77Cs8OXNq.nxbuJMeX4w3g5fnbzns/IKO/ILS",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:13:55.314Z"
+  },
+  {
+    "id": "usr_3gecwq7vmss2s9s2",
+    "username": "CinemaTester",
+    "email": "tester_1786659246564@example.com",
+    "passwordHash": "$2a$10$sDcsoE0IokJSScsj6KKmg.WySNcsgipMhD/ugwHfTf5WEMvkm7WT6",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:14:06.722Z"
+  },
+  {
+    "id": "usr_qran15ipmss2wca3",
+    "username": "CinemaTester",
+    "email": "tester_1786659436415@example.com",
+    "passwordHash": "$2a$10$WBcJyPl7hc1iVibEevTJ3ecjLOLLbSz5nLD3hIkKwIdJnvfawhNau",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:17:16.587Z"
+  },
+  {
+    "id": "usr_zvrs5dp5mss30rd8",
+    "username": "CinemaTester",
+    "email": "tester_1786659642601@example.com",
+    "passwordHash": "$2a$10$EABv0o8WCFO732k51AfaHOhrsGQYS60Nl6/lqRZDBz/nxdpejRLyW",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:20:42.764Z"
+  },
+  {
+    "id": "usr_4qahe4qqmss36eyd",
+    "username": "CinemaTester",
+    "email": "tester_1786659906277@example.com",
+    "passwordHash": "$2a$10$B8JzeKb77EYG2cykPm9onO20e5bIJTLB0DBZ9l3rw.ikNM6.0tY4i",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:25:06.613Z"
+  },
+  {
+    "id": "usr_pwjymy1xmss37dlx",
+    "username": "CinemaTester",
+    "email": "tester_1786659951405@example.com",
+    "passwordHash": "$2a$10$B2lVMQJu9noTbSl2tvfpCOnEuqIjaQAtV5GoeOELYapbX0MZWOHPq",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-13T22:25:51.525Z"
+  },
+  {
+    "id": "usr_nk10fo48msslanp4",
+    "username": "CinemaTester",
+    "email": "tester_1786690337454@example.com",
+    "passwordHash": "$2a$10$rQp3i4wAjAmYg9Fum7eddOhgMDjCTZsdJxq0gx08TYq0A14q2ojw.",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-14T06:52:17.656Z"
+  },
+  {
+    "id": "usr_hveictdrmssldw0t",
+    "username": "CinemaTester",
+    "email": "tester_1786690488234@example.com",
+    "passwordHash": "$2a$10$zwQfN2xLVYIrHkBUjgdzAuwLfF76MF1KZNcCy.l4rS32Is5.hEVq2",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-14T06:54:48.413Z"
+  },
+  {
+    "id": "usr_gpbiqqx6msslzrnq",
+    "username": "CinemaTester",
+    "email": "tester_1786691508971@example.com",
+    "passwordHash": "$2a$10$otb1VRtpX2bQH.eP0ikpqeu53b4Bw5lHUKOKbsJTQiANJxVveGq.a",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
+    "role": "user",
+    "createdAt": "2026-08-14T07:11:49.190Z"
+  }
+]

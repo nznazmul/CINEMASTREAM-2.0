@@ -1,0 +1,32 @@
+{
+  "name": "cinemastream-platform",
+  "version": "2.0.0",
+  "description": "Full-Stack Secure Movie & TV Streaming Platform with Android & Android TV App",
+  "main": "backend/src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "dev": "node backend/src/server.js",
+    "test": "node backend/tests/test.js"
+  },
+  "keywords": [
+    "movie-streaming",
+    "tv-shows",
+    "android-tv",
+    "exoplayer",
+    "hls-player",
+    "ad-shield",
+    "stream-proxy"
+  ],
+  "author": "CinemaStream Core Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

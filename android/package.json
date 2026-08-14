@@ -1,0 +1,16 @@
+{
+  "name": "cinemastream-android",
+  "version": "2.0.0",
+  "description": "CinemaStream Android & Android TV App Bridge",
+  "scripts": {
+    "build": "npx cap sync",
+    "open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

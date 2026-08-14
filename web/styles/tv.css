@@ -1,0 +1,43 @@
+/* ==========================================================================
+   ANDROID TV & LEANBACK NAVIGATION STYLES
+   ========================================================================== */
+
+body.tv-mode {
+  cursor: none; /* Hide mouse cursor on TV boxes */
+  user-select: none;
+}
+
+/* TV Focus Outline System */
+body.tv-mode :focus,
+body.tv-mode .tv-focused {
+  outline: 4px solid var(--accent-cyan) !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 30px var(--accent-cyan), 0 0 60px var(--accent-cyan-glow) !important;
+  transform: scale(1.08) !important;
+  z-index: 50 !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+}
+
+body.tv-mode .media-card:focus,
+body.tv-mode .media-card.tv-focused {
+  transform: translateY(-10px) scale(1.1) !important;
+}
+
+/* TV Indicator Toast */
+.tv-mode-badge {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 15px var(--accent-cyan-glow);
+}

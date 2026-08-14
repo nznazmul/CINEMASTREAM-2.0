@@ -1,0 +1,504 @@
+/* ==========================================================================
+   CINEMASTREAM — YOUTUBE-STYLE CINEMA PLAYER
+   ========================================================================== */
+
+.yt-watch-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #141414;
+  z-index: 5000;
+  overflow-y: auto;
+  animation: ytFadeIn 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide main website navbar and mobile bottom bar when video player is active */
+body.player-active #navbar-container,
+body.player-active .nf-mobile-nav {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+@keyframes ytFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Top bar (Player's Dedicated Header) */
+.yt-watch-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: rgba(20,20,20,0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  z-index: 5010;
+  flex-shrink: 0;
+}
+
+.btn-back-browse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-back-browse:hover { background: rgba(255,255,255,0.1); color: white; }
+
+.yt-header-meta {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.yt-now-playing-badge {
+  background: #E50914;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.yt-header-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yt-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.server-picker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.server-label {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.6);
+}
+
+.yt-select-server {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.ad-shield-badge {
+  background: rgba(70,211,105,0.15);
+  border: 1px solid rgba(70,211,105,0.3);
+  color: #46d369;
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.btn-close-yt {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.btn-close-yt:hover { background: rgba(229,9,20,0.8); }
+
+/* Two-column layout */
+.yt-watch-container {
+  display: flex;
+  gap: 24px;
+  padding: 20px 28px 40px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+}
+
+.yt-main-column {
+  flex: 1;
+  min-width: 0;
+}
+
+.yt-sidebar-column {
+  width: 340px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+}
+
+/* ── 16:9 CINEMA VIEWPORT ── */
+.yt-player-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#cinema-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#iframe-slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.video-iframe-embed {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+}
+
+.btn-skip-intro {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.7);
+  border: 2px solid rgba(255,255,255,0.7);
+  color: white;
+  padding: 8px 18px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  z-index: 10;
+  transition: background 0.2s;
+}
+.btn-skip-intro:hover { background: white; color: black; }
+
+/* Server pills */
+.yt-server-pills-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0 4px;
+  flex-wrap: wrap;
+}
+
+.server-pills-label {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.8rem;
+}
+
+.btn-server-pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.75);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.btn-server-pill:hover { background: rgba(255,255,255,0.15); color: white; }
+.btn-server-pill.active { background: #E50914; border-color: #E50914; color: white; font-weight: 700; }
+
+/* Video info */
+.yt-video-info-bar {
+  padding: 16px 0 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.yt-title-group { margin-bottom: 10px; }
+
+.yt-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.yt-meta-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-tag {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.badge-tag.quality { background: rgba(229,9,20,0.15); border-color: rgba(229,9,20,0.3); color: #ff6b6b; }
+.badge-tag.rating  { background: rgba(255,193,7,0.1); border-color: rgba(255,193,7,0.2); color: #ffc107; }
+
+.yt-action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-yt-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.8);
+  padding: 7px 16px;
+  border-radius: 4px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.btn-yt-action:hover { background: rgba(255,255,255,0.14); color: white; }
+.btn-yt-action.active { background: rgba(229,9,20,0.2); border-color: rgba(229,9,20,0.4); color: #ff6b6b; }
+
+/* Description box */
+.yt-description-box {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.yt-desc-header {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.6);
+}
+
+.yt-desc-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.75);
+}
+
+/* Sidebar */
+.yt-sidebar-section {
+  margin-bottom: 20px;
+}
+
+.yt-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.yt-sidebar-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.ep-count-badge {
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.6);
+}
+
+/* Up Next card */
+.yt-up-next-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: background 0.2s;
+}
+.yt-up-next-card:hover { background: rgba(255,255,255,0.1); }
+
+.up-next-badge {
+  color: #E50914;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.up-next-content {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.up-next-content img {
+  width: 90px;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #2d2d2d;
+}
+
+.up-next-info h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+.up-next-info span { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+
+/* Episode list */
+.yt-episodes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.yt-ep-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.yt-ep-item:hover, .yt-ep-item.playing { background: rgba(255,255,255,0.06); }
+
+.yt-ep-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 80px;
+}
+
+.yt-ep-thumb-wrap img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 3px;
+  background: #2d2d2d;
+}
+
+.ep-playing-pill {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: #E50914;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+
+.ep-num-tag {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+.yt-ep-details h5 { font-size: 0.8rem; font-weight: 600; margin-bottom: 3px; }
+.yt-ep-sub { font-size: 0.72rem; color: rgba(255,255,255,0.5); }
+
+/* Suggestions */
+.yt-suggestions-list { display: flex; flex-direction: column; gap: 10px; }
+
+.yt-suggestion-card {
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 6px;
+  transition: background 0.2s;
+}
+.yt-suggestion-card:hover { background: rgba(255,255,255,0.06); }
+
+.yt-sug-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 90px;
+}
+
+.yt-sug-thumb-wrap img {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 3px;
+  background: #2d2d2d;
+}
+
+.sug-quality-tag {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(229,9,20,0.85);
+  color: white;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+
+.yt-sug-info { flex: 1; padding-top: 2px; }
+.yt-sug-info h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+.yt-sug-meta { display: block; font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
+.yt-sug-genre { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+
+@media (max-width: 900px) {
+  .yt-watch-container { flex-direction: column; padding: 12px 16px 40px; }
+  .yt-sidebar-column { width: 100%; max-height: none; }
+}

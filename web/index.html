@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CinemaStream — Watch Movies & TV Shows Online</title>
+  <meta name="description" content="Stream thousands of movies and TV shows in 4K Ultra HD. Your personal streaming platform.">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23E50914'><path d='M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z'/></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+  <link rel="stylesheet" href="/styles/index.css">
+  <link rel="stylesheet" href="/styles/player.css">
+</head>
+<body class="theme-dark">
+  <div id="app-root">
+    <!-- Fixed Navbar -->
+    <header id="navbar-container"></header>
+
+    <!-- Category tabs (hidden in Netflix mode) -->
+    <nav id="category-tabs" style="display:none;"></nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <div id="hero-container"></div>
+      <section id="continue-watching-section" style="display:none;"></section>
+      <div id="media-sections-container"></div>
+    </main>
+
+    <!-- Overlay Containers -->
+    <div id="player-modal-container"></div>
+    <div id="details-modal-container"></div>
+    <div id="auth-modal-container"></div>
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer id="app-footer">
+      <div class="nf-footer-links">
+        <div>
+          <a onclick="window.Router.navigate('home')">Home</a><br>
+          <a onclick="window.Router.navigate('movies')">Movies</a><br>
+          <a onclick="window.Router.navigate('tv')">TV Shows</a><br>
+          <a onclick="window.Router.navigate('bookmarks')">My List</a>
+        </div>
+        <div>
+          <a href="#">FAQ</a><br>
+          <a href="#">Help Center</a><br>
+          <a href="#">Account</a><br>
+          <a href="#">Media Center</a>
+        </div>
+        <div>
+          <a href="#">Privacy</a><br>
+          <a href="#">Cookie Preferences</a><br>
+          <a href="#">Corporate Information</a>
+        </div>
+        <div>
+          <a href="#">Contact Us</a><br>
+          <a href="#">Terms of Use</a><br>
+          <a href="#">Speed Test</a>
+        </div>
+      </div>
+      <div class="nf-footer-bottom">
+        <p style="color:#808080;font-size:0.8rem;">&copy; 2026 CinemaStream. All Rights Reserved.</p>
+        <p style="color:#808080;font-size:0.8rem;">CinemaStream Global Cloud Network</p>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

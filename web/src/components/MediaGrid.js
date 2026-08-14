@@ -1,0 +1,89 @@
+﻿export class MediaGrid {
+  static renderRow(title, items, rowId) {
+    if (!items || items.length === 0) return '';
+    const cards = items.map((item, idx) => this.renderCard(item, idx, items.length)).join('');
+    return `
+      <div class="nf-row">
+        <div class="nf-row-title" onclick="window.Router.navigate('${title.toLowerCase().includes('movie') ? 'movies' : title.toLowerCase().includes('tv') || title.toLowerCase().includes('show') || title.toLowerCase().includes('series') ? 'tv' : 'home'}')">
+          ${title}
+          <span class="row-arrow">Explore All ›</span>
+        </div>
+        <div class="nf-slider-wrap">
+          <button class="nf-scroll-btn left" onclick="MediaGrid.scroll('${rowId}', -1)" aria-label="Scroll Left">&#8249;</button>
+          <div class="nf-slider" id="${rowId}">
+            ${cards}
+          </div>
+          <button class="nf-scroll-btn right" onclick="MediaGrid.scroll('${rowId}', 1)" aria-label="Scroll Right">&#8250;</button>
+        </div>
+      </div>
+    `;
+  }
+
+  static renderCard(item, idx, total) {
+    if (!item) return '';
+    const title = (item.title || item.name || 'Untitled').replace(/"/g, '&quot;');
+    const cleanTitle = (item.title || item.name || 'Untitled').replace(/'/g, "\\'");
+    const poster = item.poster_path || 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
+    const score = Math.round((item.vote_average || 7.5) * 10);
+    const year = (item.release_date || item.first_air_date || '2024').substring(0, 4);
+    const type = item.media_type || (item.title ? 'movie' : 'tv');
+    const genreStr = (item.genres || []).slice(0, 2).join(' • ') || (type === 'tv' ? 'TV Show' : 'Movie');
+    const dur = item.duration || (type === 'tv' ? 'Series' : '');
+    const isFirst = idx === 0;
+    const isLast = idx === total - 1;
+    const transformOrigin = isFirst ? 'left center' : isLast ? 'right center' : 'center';
+
+    return `
+      <div class="nf-card" style="transform-origin: ${transformOrigin};"
+           onclick="window.App.showDetails(${item.id}, '${type}')">
+        <img class="nf-card-img" 
+             src="${poster}" 
+             alt="${title}" 
+             loading="lazy"
+             onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
+        <div class="nf-card-hover">
+          <div class="nf-card-hover-title">${title}</div>
+          <div class="nf-card-hover-actions">
+            <button class="nf-hov-btn play-btn" onclick="event.stopPropagation(); window.App.playMedia(${item.id}, '${type}')" title="Play">▶</button>
+            <button class="nf-hov-btn" onclick="event.stopPropagation(); window.App.toggleBookmark(${item.id}, '${cleanTitle}', '${poster}', ${item.vote_average || 7.5}, '${year}', '${type}')" title="Add to My List">+</button>
+            <button class="nf-hov-btn" onclick="event.stopPropagation(); window.App.showDetails(${item.id}, '${type}')" title="More Info" style="margin-left:auto;">⌄</button>
+          </div>
+          <div class="nf-card-hover-meta">
+            <span class="nf-card-match">${score}% Match</span>
+            <span class="nf-card-age">${type === 'tv' ? 'TV-MA' : 'PG-13'}</span>
+            ${dur ? '<span class="nf-card-dur">' + dur + '</span>' : ''}
+            <span class="nf-card-hd">HD</span>
+          </div>
+          <div class="nf-card-genres">${genreStr}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  static scroll(rowId, direction) {
+    const el = document.getElementById(rowId);
+    if (el) {
+      const scrollAmount = Math.max(300, el.clientWidth * 0.75);
+      el.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+  }
+
+  static renderSearchGrid(items) {
+    if (!items || items.length === 0) {
+      return '<div style="color:#888; padding:60px 0; text-align:center; font-size:1.1rem;">No titles found matching your search. Try another query.</div>';
+    }
+    return `
+      <div class="nf-search-grid">
+        ${items.map((item, i) => this.renderCard(item, i, items.length)).join('')}
+      </div>
+    `;
+  }
+
+  static renderCategoryTabs() { return ''; }
+  static renderSection(title, icon, items) {
+    return this.renderRow((icon || '') + ' ' + title, items, 'row-' + Math.random().toString(36).substr(2, 6));
+  }
+  static renderLiveTVSection() { return ''; }
+}
+
+window.MediaGrid = MediaGrid;

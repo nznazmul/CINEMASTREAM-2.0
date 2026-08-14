@@ -9,8 +9,8 @@
     { "src": "src/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "api/index.js" },
-    { "src": "/v1/(.*)", "dest": "api/index.js" },
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/v1/(.*)", "dest": "/api/index.js" },
     { "src": "/sitemap.xml", "dest": "/sitemap.xml" },
     { "src": "/robots.txt", "dest": "/robots.txt" },
     { "src": "/styles/(.*)", "dest": "/styles/$1" },

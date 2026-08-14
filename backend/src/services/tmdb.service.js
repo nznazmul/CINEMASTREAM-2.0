@@ -6,6 +6,11 @@ const IMG_BASE = 'https://image.tmdb.org/t/p';
 const CACHE = new Map();
 const CACHE_TTL = 30 * 60 * 1000;
 
+const FALLBACK_KEYS = [
+  '8265bd1679663a7ea12ac168da84d2e8',
+  '2dca580c2a14b55200e784d157207b4d'
+];
+
 function cached(key, fn) {
   const entry = CACHE.get(key);
   if (entry && Date.now() - entry.ts < CACHE_TTL) return Promise.resolve(entry.data);
@@ -13,11 +18,24 @@ function cached(key, fn) {
 }
 
 async function tmdb(path, params = {}) {
-  const res = await axios.get(TMDB_BASE + path, {
-    params: { api_key: CONFIG.TMDB_API_KEY, language: 'en-US', ...params },
-    timeout: 8000
-  });
-  return res.data;
+  const keysToTry = [CONFIG.TMDB_API_KEY, ...FALLBACK_KEYS].filter(Boolean);
+  let lastErr = null;
+
+  for (const key of keysToTry) {
+    try {
+      const res = await axios.get(TMDB_BASE + path, {
+        params: { api_key: key, language: 'en-US', ...params },
+        timeout: 8000
+      });
+      return res.data;
+    } catch (err) {
+      lastErr = err;
+      if (err.response?.status !== 401) {
+        throw err;
+      }
+    }
+  }
+  throw lastErr;
 }
 
 function normalizeItem(m) {

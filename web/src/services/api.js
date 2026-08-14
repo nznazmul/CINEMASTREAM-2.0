@@ -216,37 +216,33 @@ export class ApiService {
   }
 
   static async resolveStream(id, type, server, season, episode) {
-    type = type || 'movie'; server = server || 'autoembed';
+    type = type || 'movie'; server = server || 'vidsrc';
     const isTv = type === 'tv';
     const s = season || 1;
     const ep = episode || 1;
     const embedMap = {
-      autoembed:   isTv ? 'https://autoembed.co/tv/tmdb/' + id + '-' + s + '-' + ep : 'https://autoembed.co/movie/tmdb/' + id,
-      vidplay:     isTv ? 'https://vidsrc.me/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://vidsrc.me/embed/movie?tmdb=' + id,
+      vidsrc:      isTv ? 'https://vidsrc.to/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.to/embed/movie/' + id,
       superstream: isTv ? 'https://multiembed.mov/?video_id=' + id + '&tmdb=1&s=' + s + '&e=' + ep : 'https://multiembed.mov/?video_id=' + id + '&tmdb=1',
+      twoembed:    isTv ? 'https://www.2embed.cc/embedtv/' + id + '&s=' + s + '&e=' + ep : 'https://www.2embed.cc/embed/' + id,
       smashy:      isTv ? 'https://embed.smashystream.com/playere.php?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://embed.smashystream.com/playere.php?tmdb=' + id,
-      kisskh:      isTv ? 'https://www.2embed.cc/embedtv/' + id + '&s=' + s + '&e=' + ep : 'https://www.2embed.cc/embed/' + id,
-      toonstream:  isTv ? 'https://vidsrc.to/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.to/embed/movie/' + id,
-      uhdmovies:   isTv ? 'https://vidsrc.cc/v2/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.cc/v2/embed/movie/' + id,
-      desicinemas: isTv ? 'https://vidsrc.vip/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.vip/embed/movie/' + id
+      vidplay:     isTv ? 'https://vidsrc.me/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://vidsrc.me/embed/movie?tmdb=' + id,
+      autoembed:   isTv ? 'https://player.autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep : 'https://player.autoembed.cc/embed/movie/' + id
     };
     const allServers = [
-      { id: 'autoembed',   name: 'Server 1 (AutoEmbed 4K)',     status: 'online', embedUrl: embedMap.autoembed },
-      { id: 'vidplay',     name: 'Server 2 (VidSrc VIP)',        status: 'online', embedUrl: embedMap.vidplay },
-      { id: 'superstream', name: 'Server 3 (SuperStream Cloud)', status: 'online', embedUrl: embedMap.superstream },
-      { id: 'smashy',      name: 'Server 4 (SmashyStream HD)',   status: 'online', embedUrl: embedMap.smashy },
-      { id: 'kisskh',      name: 'Server 5 (KissKH / 2Embed)',   status: 'online', embedUrl: embedMap.kisskh },
-      { id: 'toonstream',  name: 'Server 6 (ToonStream Anime)',  status: 'online', embedUrl: embedMap.toonstream },
-      { id: 'uhdmovies',   name: 'Server 7 (UHDMovies 4K)',     status: 'online', embedUrl: embedMap.uhdmovies },
-      { id: 'desicinemas', name: 'Server 8 (VidSrc VIP Pro)',    status: 'online', embedUrl: embedMap.desicinemas }
+      { id: 'vidsrc',      name: 'Server 1 (VidSrc 4K Ultra)',    status: 'online', embedUrl: embedMap.vidsrc },
+      { id: 'superstream', name: 'Server 2 (SuperStream Multi)',   status: 'online', embedUrl: embedMap.superstream },
+      { id: 'twoembed',    name: 'Server 3 (2Embed VIP)',          status: 'online', embedUrl: embedMap.twoembed },
+      { id: 'smashy',      name: 'Server 4 (SmashyStream HD)',     status: 'online', embedUrl: embedMap.smashy },
+      { id: 'vidplay',     name: 'Server 5 (VidSrc Mirror 2)',     status: 'online', embedUrl: embedMap.vidplay },
+      { id: 'autoembed',   name: 'Server 6 (AutoEmbed CC)',        status: 'online', embedUrl: embedMap.autoembed }
     ];
-    const activeUrl = embedMap[server] || embedMap['autoembed'];
+    const activeUrl = embedMap[server] || embedMap['vidsrc'];
     return {
       success: true,
       data: {
         activeServer: {
-          id: server,
-          name: (allServers.find(x => x.id === server) || {}).name || 'AutoEmbed 4K',
+          id: server || 'vidsrc',
+          name: (allServers.find(x => x.id === server) || {}).name || 'VidSrc 4K Ultra',
           embedUrl: activeUrl,
           sources: [{ url: activeUrl, type: 'hls', quality: '1080p', isIframe: true }],
           subtitles: [

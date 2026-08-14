@@ -1484,11 +1484,11 @@ class App {
             <!-- Multi-Mirror Server Switcher -->
             <div class="nf-server-picker-strip">
               <span>⚡ Fast Stream Servers:</span>
-              <button class="nf-server-btn active" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'autoembed')">🚀 Server 1 (AutoEmbed)</button>
-              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'vidsrc')">⚡ Server 2 (VidSrc)</button>
-              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, '2embed')">🎬 Server 3 (2Embed Multi-Audio)</button>
-              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'smashystream')">🍿 Server 4 (SmashyStream)</button>
-              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'superembed')">💎 Server 5 (SuperEmbed VIP)</button>
+              <button class="nf-server-btn active" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'vidsrc')">🚀 Server 1 (VidSrc 4K Ultra)</button>
+              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'superstream')">⚡ Server 2 (SuperStream Multi)</button>
+              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'twoembed')">🎬 Server 3 (2Embed VIP)</button>
+              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'smashy')">🍿 Server 4 (SmashyStream HD)</button>
+              <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'vidplay')">💎 Server 5 (VidSrc Mirror 2)</button>
             </div>
 
             <!-- TV Seasons & Episodes Accordion (If TV Series/Anime) -->

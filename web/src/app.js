@@ -13,6 +13,8 @@ class App {
     this.currentDetailItem = null;
     this.currentAudioLang = 'en';
     this.currentSubLang = 'en';
+    this.modalTrailerTimeout = null;
+    this.modalIsMuted = true;
   }
 
   async init() {
@@ -296,6 +298,7 @@ class App {
   }
 
   renderDetailModal(item, type) {
+    clearTimeout(this.modalTrailerTimeout);
     const modalContainer = document.getElementById('details-modal-container');
     const title = item.title || item.name || 'Untitled';
     const year = (item.release_date || item.first_air_date || '2024').substring(0, 4);
@@ -305,6 +308,7 @@ class App {
     const genreNames = (item.genres || []).slice(0, 4).join(', ');
     const isTv = type === 'tv';
     const seasons = item.seasons || [];
+    const trailerKey = item.trailer_key;
 
     modalContainer.innerHTML = `
       <div class="nf-modal-overlay" onclick="if(event.target===this) window.App.closeDetails()">
@@ -313,6 +317,8 @@ class App {
           
           <div class="nf-modal-backdrop">
             <img src="${backdrop}" alt="${title}" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+            <div class="nf-modal-video-wrap" id="modal-video-wrap"></div>
+            
             <div class="nf-modal-title-wrap">
               <h1 class="nf-modal-title">${title}</h1>
               <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
@@ -325,9 +331,15 @@ class App {
                 <button class="nf-modal-btn-sec" onclick="window.App.toggleBookmark(${item.id}, '${title.replace(/'/g, "\\'")}', '${item.poster_path || ''}', ${item.vote_average || 7.5}, '${year}', '${type}')">
                   + My List
                 </button>
-                ${item.trailer_key ? `<button class="nf-modal-btn-sec" onclick="window.App.playTrailer('${item.trailer_key}')">🎬 Trailer</button>` : ''}
+                ${trailerKey ? `<button class="nf-modal-btn-sec" onclick="window.App.playTrailer('${trailerKey}')">🎬 Full Trailer</button>` : ''}
               </div>
             </div>
+
+            ${trailerKey ? `
+              <button class="nf-modal-audio-btn" id="modal-audio-btn" onclick="window.App.toggleModalMute()" title="${this.modalIsMuted ? 'Unmute Trailer' : 'Mute Trailer'}">
+                ${this.modalIsMuted ? '🔇' : '🔊'}
+              </button>
+            ` : ''}
           </div>
 
           <div class="nf-modal-body">
@@ -387,46 +399,59 @@ class App {
       </div>
     `;
 
+    // Ambient Trailer Video Autoplay in Modal
+    if (trailerKey) {
+      this.modalTrailerTimeout = setTimeout(() => {
+        this.mountModalTrailer(trailerKey);
+      }, 650);
+    }
+
     // Auto-load first season episodes for TV shows
     if (isTv && seasons.length > 0) {
       this.loadSeasonEpisodes(item.id, seasons[0].season_number);
     }
   }
 
-  async loadSeasonEpisodes(tvId, seasonNum) {
-    const episodesList = document.getElementById('episodes-list');
-    if (!episodesList) return;
-    episodesList.innerHTML = '<div style="color:#888; padding:12px 0;">Loading episodes...</div>';
-    try {
-      const res = await ApiService.getEpisodes(tvId, seasonNum);
-      const episodes = res.results || res || [];
-      if (episodes.length === 0) {
-        episodesList.innerHTML = '<div style="color:#888;">No episodes found for this season.</div>';
-        return;
+  mountModalTrailer(key) {
+    const wrap = document.getElementById('modal-video-wrap');
+    if (!wrap) return;
+
+    wrap.innerHTML = `
+      <iframe id="modal-trailer-iframe"
+        class="nf-modal-iframe"
+        src="https://www.youtube-nocookie.com/embed/${key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${key}&enablejsapi=1&playsinline=1&rel=0&iv_load_policy=3&modestbranding=1"
+        allow="autoplay; encrypted-media"
+        allowfullscreen>
+      </iframe>
+    `;
+
+    const iframe = document.getElementById('modal-trailer-iframe');
+    if (iframe) {
+      iframe.onload = () => {
+        wrap.classList.add('playing');
+      };
+    }
+  }
+
+  toggleModalMute() {
+    this.modalIsMuted = !this.modalIsMuted;
+    const btn = document.getElementById('modal-audio-btn');
+    const iframe = document.getElementById('modal-trailer-iframe');
+    if (iframe && iframe.contentWindow) {
+      const func = this.modalIsMuted ? 'mute' : 'unMute';
+      iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: [] }), '*');
+      if (!this.modalIsMuted) {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [60] }), '*');
       }
-      episodesList.innerHTML = episodes.map(ep => `
-        <div style="display:flex; gap:14px; padding:14px 10px; border-bottom:1px solid #282828; cursor:pointer; border-radius:4px; transition:background 0.2s;"
-             onclick="window.App.closeDetails(); window.App.playMedia(${tvId}, 'tv', ${ep.season_number}, ${ep.episode_number})"
-             onmouseenter="this.style.background='#282828'" onmouseleave="this.style.background='transparent'">
-          <img src="${ep.still_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}" 
-               alt="Ep ${ep.episode_number}" loading="lazy"
-               style="width:130px; flex-shrink:0; aspect-ratio:16/9; object-fit:cover; border-radius:4px; background:#333;"
-               onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
-          <div style="flex:1;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <strong style="color:#fff; font-size:0.92rem;">${ep.episode_number}. ${ep.name || 'Episode ' + ep.episode_number}</strong>
-              <span style="color:#888; font-size:0.8rem;">${ep.runtime || '45m'}</span>
-            </div>
-            <p style="font-size:0.83rem; color:#aaa; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${ep.overview || 'Stream this episode in full HD.'}</p>
-          </div>
-        </div>
-      `).join('');
-    } catch(e) {
-      episodesList.innerHTML = '<div style="color:#888;">Failed to load episodes.</div>';
+    }
+    if (btn) {
+      btn.innerHTML = this.modalIsMuted ? '🔇' : '🔊';
+      btn.title = this.modalIsMuted ? 'Unmute Trailer' : 'Mute Trailer';
     }
   }
 
   closeDetails() {
+    clearTimeout(this.modalTrailerTimeout);
     const modalContainer = document.getElementById('details-modal-container');
     if (modalContainer) modalContainer.innerHTML = '';
     document.body.style.overflow = '';

@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import { CONFIG } from '../config/constants.js';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
@@ -47,7 +47,12 @@ function normalizeItem(m) {
 async function fetchTrailer(id, type) {
   try {
     const data = await tmdb((type === 'tv' ? '/tv/' : '/movie/') + id + '/videos');
-    const t = (data.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube') || (data.results || [])[0];
+    const vids = (data.results || []).filter(v => v.site === 'YouTube');
+    const t = vids.find(v => v.type === 'Trailer') ||
+              vids.find(v => v.type === 'Teaser') ||
+              vids.find(v => v.type === 'Clip') ||
+              vids.find(v => v.type === 'Opening Credits') ||
+              vids[0];
     return t ? t.key : null;
   } catch(e) { return null; }
 }
@@ -161,8 +166,12 @@ export class TMDBService {
       const data = await tmdb(path, { append_to_response: 'credits,videos,similar,external_ids' });
       const n = normalizeItem(Object.assign({}, data, { media_type: type }));
       n.imdb_id = data.imdb_id || (data.external_ids && data.external_ids.imdb_id) || null;
-      const vids = (data.videos && data.videos.results) || [];
-      const t = vids.find(v => v.type === 'Trailer' && v.site === 'YouTube') || vids[0];
+      const vids = ((data.videos && data.videos.results) || []).filter(v => v.site === 'YouTube');
+      const t = vids.find(v => v.type === 'Trailer') ||
+                vids.find(v => v.type === 'Teaser') ||
+                vids.find(v => v.type === 'Clip') ||
+                vids.find(v => v.type === 'Opening Credits') ||
+                vids[0];
       n.trailer_key = t ? t.key : null;
       n.cast = ((data.credits && data.credits.cast) || []).slice(0, 10).map(c => ({ name: c.name, character: c.character, profile: c.profile_path ? (IMG_BASE + '/w185' + c.profile_path) : null }));
       n.similar = ((data.similar && data.similar.results) || []).slice(0, 10).map(normalizeItem);

@@ -43,7 +43,29 @@ export class VideoPlayer {
       }
 
       this.streamData = streamRes.data;
-      this.activeServerId = serverId || this.streamData.activeServer.id;
+
+      // If trailer is available, add Official 4K Trailer mirror to allServers list
+      if (this.currentMedia.trailer_key) {
+        const trailerServer = {
+          id: 'trailer',
+          name: '🎬 Official 4K Trailer',
+          status: 'online',
+          embedUrl: `https://www.youtube-nocookie.com/embed/${this.currentMedia.trailer_key}?autoplay=1&playsinline=1&rel=0`
+        };
+        if (!this.streamData.allServers.some(s => s.id === 'trailer')) {
+          this.streamData.allServers.unshift(trailerServer);
+        }
+      }
+
+      // If upcoming/unreleased movie (release year >= 2026), default to trailer mirror
+      const relYear = parseInt((this.currentMedia.release_date || this.currentMedia.first_air_date || '2024').substring(0, 4));
+      const isUpcoming = relYear >= 2026 && Boolean(this.currentMedia.trailer_key);
+
+      if (!serverId && isUpcoming) {
+        this.activeServerId = 'trailer';
+      } else {
+        this.activeServerId = serverId || this.streamData.activeServer.id;
+      }
       this.activeSource = this.streamData.activeServer.sources?.[0] || null;
 
       // 3. Fetch Related Suggestions / Episodes in parallel
@@ -99,6 +121,8 @@ export class VideoPlayer {
     // Calculate Next Episode
     const nextEpisodeNum = currentEpisode + 1;
     const nextEpisodeObj = this.episodes.find(e => e.episode_number === nextEpisodeNum);
+    const relYear = parseInt((this.currentMedia.release_date || this.currentMedia.first_air_date || '2024').substring(0, 4));
+    const isUpcoming = relYear >= 2026 && Boolean(this.currentMedia.trailer_key);
 
     container.innerHTML = `
       <div class="yt-watch-view" id="player-backdrop">
@@ -141,6 +165,15 @@ export class VideoPlayer {
           <!-- LEFT COLUMN: Cinema Player & Video Details (72%) -->
           <div class="yt-main-column">
             
+            ${isUpcoming ? `
+              <div style="background:linear-gradient(90deg, rgba(229,9,20,0.25), rgba(0,240,255,0.15)); border:1px solid rgba(229,9,20,0.5); border-radius:8px; padding:12px 18px; margin-bottom:14px; display:flex; align-items:center; gap:12px; font-size:0.9rem; color:#fff;">
+                <span style="font-size:1.4rem;">🗓️</span>
+                <div>
+                  <strong>Upcoming 2026 Theatrical Premiere</strong> (${this.currentMedia.release_date || '2026'}) — Official 4K Trailer playing below. Full movie stream will automatically unlock upon theatrical premiere!
+                </div>
+              </div>
+            ` : ''}
+
             <!-- 16:9 Cinema Viewport -->
             <div class="yt-player-viewport" id="video-wrapper">
               <video id="cinema-video" playsinline crossorigin="anonymous" style="display:none;"></video>
@@ -287,7 +320,7 @@ export class VideoPlayer {
     const video = document.getElementById('cinema-video');
     const iframeSlot = document.getElementById('iframe-slot');
     const controls = document.getElementById('player-controls');
-    const activeServer = this.streamData.allServers.find(s => s.id === this.activeServerId);
+    const activeServer = (this.streamData?.allServers || []).find(s => s.id === this.activeServerId) || this.streamData?.activeServer;
 
     if (!video || !iframeSlot) return;
 
@@ -296,14 +329,16 @@ export class VideoPlayer {
       this.hls = null;
     }
 
-    // 1. If server provides a direct embed link (VidSrc, 2Embed, SmashyStream, MultiEmbed)
-    if (activeServer && activeServer.embedUrl) {
+    const embedUrl = activeServer?.embedUrl || this.streamData?.activeServer?.embedUrl;
+
+    // 1. If server provides a direct embed link (AutoEmbed, VidSrc, SuperStream, Smashy, etc.)
+    if (embedUrl) {
       video.style.display = 'none';
       if (controls) controls.style.display = 'none';
       
       iframeSlot.style.display = 'block';
       iframeSlot.innerHTML = '';
-      const iframe = AdShield.createSandboxedIframe(activeServer.embedUrl, this.currentMedia.title || this.currentMedia.name);
+      const iframe = AdShield.createSandboxedIframe(embedUrl, this.currentMedia.title || this.currentMedia.name);
       iframeSlot.appendChild(iframe);
     } 
     // 2. Direct HLS / MP4 Stream (Server 5 or Live TV)

@@ -43,7 +43,9 @@ export class AdShield {
     iframe.setAttribute('allowfullscreen', 'true');
     iframe.setAttribute('webkitallowfullscreen', 'true');
     iframe.setAttribute('mozallowfullscreen', 'true');
-    iframe.setAttribute('referrerpolicy', 'no-referrer');
+    if (!src.includes('youtube')) {
+      iframe.setAttribute('referrerpolicy', 'no-referrer');
+    }
     iframe.setAttribute('loading', 'eager');
     iframe.style.width = '100%';
     iframe.style.height = '100%';

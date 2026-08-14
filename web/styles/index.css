@@ -1374,6 +1374,92 @@ body {
   transform: translateY(-2px);
 }
 
+/* Year Archive Filter & Chips (2000 to 2026) */
+.nf-year-archive-header {
+  padding: 85px 30px 10px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.nf-year-filter-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+  margin-bottom: 24px;
+}
+
+.nf-type-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nf-type-btn {
+  background: #222;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #ccc;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.nf-type-btn:hover {
+  background: #333;
+  color: #fff;
+  border-color: rgba(255,255,255,0.3);
+}
+
+.nf-type-btn.active {
+  background: #E50914;
+  color: #fff;
+  border-color: #E50914;
+  box-shadow: 0 0 12px rgba(229,9,20,0.5);
+}
+
+.nf-year-scroll-wrap {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 0 14px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+.nf-year-chip {
+  flex-shrink: 0;
+  background: #181818;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #bbb;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.nf-year-chip:hover {
+  background: #252525;
+  color: #fff;
+  border-color: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+}
+
+.nf-year-chip.active {
+  background: #E50914;
+  color: #fff;
+  border-color: #E50914;
+  box-shadow: 0 4px 14px rgba(229,9,20,0.6);
+  transform: scale(1.05);
+}
+
 /* ==========================================================================
    FOOTER
    ========================================================================== */

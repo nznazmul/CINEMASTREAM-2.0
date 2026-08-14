@@ -107,6 +107,19 @@ export class MediaController {
     }
   }
 
+  static async getByYear(req, res) {
+    try {
+      const year = parseInt(req.params.year || req.query.year) || 2024;
+      const type = req.query.type || 'movie';
+      const genre = req.query.genre ? parseInt(req.query.genre) : null;
+      const page = parseInt(req.query.page) || 1;
+      const items = await TMDBService.getByYear(year, type, genre, page);
+      res.json({ success: true, year, type, results: items });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
   static async getGenres(req, res) {
     const genres = TMDBService.genres || [];
     res.json({ success: true, results: genres });

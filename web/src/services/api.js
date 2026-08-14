@@ -76,6 +76,10 @@ export class ApiService {
     return this.request(`/indian?page=${page}`);
   }
 
+  static async getByYear(year, type = 'movie', genre = null, page = 1) {
+    return this.request(`/year/${year}?type=${type}${genre ? `&genre=${genre}` : ''}&page=${page}`);
+  }
+
   static async getDetails(id, type = 'movie') {
     return this.request(`/details/${id}?type=${type}`);
   }

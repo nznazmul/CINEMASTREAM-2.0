@@ -15,6 +15,9 @@ class App {
     this.currentSubLang = 'en';
     this.modalTrailerTimeout = null;
     this.modalIsMuted = true;
+    this.selectedYear = 2026;
+    this.selectedYearType = 'movie';
+    this.yearArchivePage = 1;
   }
 
   async init() {
@@ -92,6 +95,8 @@ class App {
         await this.renderAnimeView(mediaContainer);
       } else if (this.currentRoute === 'bookmarks') {
         await this.renderBookmarksView(mediaContainer);
+      } else if (this.currentRoute === 'years') {
+        await this.renderYearsArchiveView(mediaContainer, this.selectedYear, this.selectedYearType);
       } else if (this.currentRoute === 'faq' || this.currentRoute === 'help') {
         this.renderFAQView(mediaContainer);
       } else if (this.currentRoute === 'privacy' || this.currentRoute === 'cookie') {
@@ -233,6 +238,117 @@ class App {
     html += MediaGrid.renderRow('⚔️ Action & Shonen Anime Hits', actionAnime.results || [], 'row-ani-action');
     html += MediaGrid.renderRow('🌸 Fantasy & Supernatural Anime', fantasyAnime.results || [], 'row-ani-fantasy');
     container.innerHTML = html;
+  }
+
+  // ── 📅 2000 to 2026 Year-by-Year Complete Universe View ───────
+  async renderYearsArchiveView(container, year = 2026, type = 'movie', page = 1) {
+    this.selectedYear = year;
+    this.selectedYearType = type;
+    this.yearArchivePage = page;
+    document.title = `${year} ${type === 'movie' ? 'Movies' : 'TV Shows'} — Watch Online Free in 4K | CinemaStream`;
+
+    const yearsList = [];
+    for (let y = 2026; y >= 2000; y--) {
+      yearsList.push(y);
+    }
+
+    container.innerHTML = `
+      <div class="nf-year-archive-header">
+        <div class="nf-static-badge">Archive Catalog • 2000 to 2026</div>
+        <h1 style="font-size:clamp(1.8rem, 4vw, 2.5rem); font-weight:900; color:#fff; margin-bottom:8px;">
+          ${year} ${type === 'movie' ? 'Blockbuster Movies' : type === 'tv' ? 'Binge TV Series' : 'Anime Universes'}
+        </h1>
+        <p style="color:#888; font-size:0.95rem;">Stream top-rated releases and nostalgic classics from the year ${year}.</p>
+
+        <div class="nf-year-filter-wrap">
+          <!-- Type Toggle (Movies / TV Shows) -->
+          <div class="nf-type-pills">
+            <button class="nf-type-btn ${type === 'movie' ? 'active' : ''}" onclick="window.App.switchYearType('movie')">
+              🎬 Movies (${year})
+            </button>
+            <button class="nf-type-btn ${type === 'tv' ? 'active' : ''}" onclick="window.App.switchYearType('tv')">
+              📺 TV Shows (${year})
+            </button>
+          </div>
+
+          <!-- Horizontal Scrollable Year Chips (2026 down to 2000) -->
+          <div class="nf-year-scroll-wrap" id="year-chips-bar">
+            ${yearsList.map(y => `
+              <button class="nf-year-chip ${y === Number(year) ? 'active' : ''}" onclick="window.App.switchYear(${y})">
+                ${y}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div id="year-results-grid" style="min-height:350px;">
+          <div style="color:#888; padding:40px 0; text-align:center;">Loading titles from ${year}...</div>
+        </div>
+      </div>
+    `;
+
+    // Fetch and render titles for the selected year
+    try {
+      const res = await ApiService.getByYear(year, type, null, page);
+      const items = res.results || [];
+      const grid = document.getElementById('year-results-grid');
+      if (!grid) return;
+
+      if (items.length === 0) {
+        grid.innerHTML = `<div style="color:#888; padding:60px 0; text-align:center;">No titles indexed for ${year}. Try another year.</div>`;
+        return;
+      }
+
+      grid.innerHTML = `
+        <div class="nf-search-grid" id="year-cards-container" style="margin-top:14px;">
+          ${items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join('')}
+        </div>
+        <div style="text-align:center; padding:40px 0 20px;">
+          <button id="load-more-year-btn" onclick="window.App.loadMoreYearArchive()" 
+            style="background:#222; color:#fff; border:1px solid rgba(255,255,255,0.2); padding:12px 32px; border-radius:4px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.2s;">
+            Load More ${year} Titles ↓
+          </button>
+        </div>
+      `;
+    } catch(e) {
+      const grid = document.getElementById('year-results-grid');
+      if (grid) grid.innerHTML = `<div style="color:#888; padding:40px 0;">Unable to load titles from ${year}.</div>`;
+    }
+  }
+
+  switchYear(year) {
+    const container = document.getElementById('media-sections-container');
+    if (container) {
+      this.renderYearsArchiveView(container, year, this.selectedYearType, 1);
+    }
+  }
+
+  switchYearType(type) {
+    const container = document.getElementById('media-sections-container');
+    if (container) {
+      this.renderYearsArchiveView(container, this.selectedYear, type, 1);
+    }
+  }
+
+  async loadMoreYearArchive() {
+    this.yearArchivePage = (this.yearArchivePage || 1) + 1;
+    const btn = document.getElementById('load-more-year-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+
+    try {
+      const res = await ApiService.getByYear(this.selectedYear, this.selectedYearType, null, this.yearArchivePage);
+      const items = res.results || [];
+      const container = document.getElementById('year-cards-container');
+      if (container && items.length > 0) {
+        container.insertAdjacentHTML('beforeend', items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join(''));
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = `Load More ${this.selectedYear} Titles ↓`;
+      }
+    } catch(e) {
+      if (btn) { btn.textContent = 'No more titles'; btn.disabled = true; }
+    }
   }
 
   async renderBookmarksView(container) {

@@ -11,6 +11,7 @@ export class Navbar {
           <li><a href="#" class="${route === 'movies' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('movies')">Movies</a></li>
           <li><a href="#" class="${route === 'tv' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('tv')">TV Shows</a></li>
           <li><a href="#" class="${route === 'anime' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('anime')">⛩️ Anime</a></li>
+          <li><a href="#" class="${route === 'years' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('years')">📅 2000–2026</a></li>
           <li><a href="#" class="${route === 'bookmarks' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('bookmarks')">My List</a></li>
         </ul>
         <div class="nf-nav-right">

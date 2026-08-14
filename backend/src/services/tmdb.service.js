@@ -150,6 +150,26 @@ export class TMDBService {
     });
   }
 
+  // --- 📅 2000 to 2026 Complete Catalog Discovery ---
+  static async getByYear(year, type = 'movie', genreId = null, page = 1) {
+    const yr = Math.min(2026, Math.max(2000, parseInt(year) || 2024));
+    type = type === 'tv' ? 'tv' : 'movie';
+    return cached('by_year_' + yr + '_' + type + '_' + genreId + '_' + page, async () => {
+      const params = {
+        page: parseInt(page) || 1,
+        sort_by: 'popularity.desc'
+      };
+      if (type === 'movie') {
+        params.primary_release_year = yr;
+      } else {
+        params.first_air_date_year = yr;
+      }
+      if (genreId) params.with_genres = genreId;
+      const data = await tmdb('/discover/' + type, params);
+      return (data.results || []).map(m => Object.assign(normalizeItem(m), { media_type: type }));
+    });
+  }
+
   static async search(query, page) {
     page = page || 1;
     if (!query) return [];

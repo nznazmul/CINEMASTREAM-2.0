@@ -14,6 +14,7 @@ router.get('/tv', MediaController.getTVSeries);
 router.get('/anime', MediaController.getAnime);
 router.get('/kdramas', MediaController.getKDramas);
 router.get('/indian', MediaController.getIndianHits);
+router.get('/year/:year', MediaController.getByYear);
 router.get('/details/:id', MediaController.getDetails);
 router.get('/tv/:id/season/:season', MediaController.getSeasonEpisodes);
 router.get('/search', MediaController.search);

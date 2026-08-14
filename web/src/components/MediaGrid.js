@@ -45,12 +45,13 @@ export class MediaGrid {
     `;
   }
 
-  static renderRow(title, items, rowId) {
+  static renderRow(title, items, rowId, categoryType, categoryEndpoint) {
     if (!items || items.length === 0) return '';
     const cards = items.map((item, idx) => this.renderCard(item, idx, items.length)).join('');
+    const safeTitle = title.replace(/'/g, "\\'");
     return `
       <div class="nf-row">
-        <div class="nf-row-title" onclick="window.Router.navigate('${title.toLowerCase().includes('movie') ? 'movies' : title.toLowerCase().includes('tv') || title.toLowerCase().includes('show') || title.toLowerCase().includes('series') ? 'tv' : 'home'}')">
+        <div class="nf-row-title" onclick="window.App.exploreCategory('${safeTitle}', '${categoryType || (title.toLowerCase().includes('tv') || title.toLowerCase().includes('show') ? 'tv' : 'movie')}', '${categoryEndpoint || 'popular'}')">
           ${title}
           <span class="row-arrow">Explore All ›</span>
         </div>

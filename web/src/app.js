@@ -169,25 +169,25 @@ class App {
     // Assemble Curated Netflix Content Rows
     let html = '';
     if ((trending.results || []).length > 0)
-      html += MediaGrid.renderRow('🔥 Trending This Week', trending.results, 'row-trend');
+      html += MediaGrid.renderRow('🔥 Trending This Week', trending.results, 'row-trend', 'trending', 'trending');
     if ((nowPlaying.results || []).length > 0)
-      html += MediaGrid.renderRow('🎬 Now Playing in Cinemas', nowPlaying.results, 'row-nowplaying');
+      html += MediaGrid.renderRow('🎬 Now Playing in Cinemas', nowPlaying.results, 'row-nowplaying', 'movie', 'now_playing');
     if ((movies.results || []).length > 0)
-      html += MediaGrid.renderRow('🍿 Blockbuster Movies', movies.results, 'row-movies');
+      html += MediaGrid.renderRow('🍿 Blockbuster Movies', movies.results, 'row-movies', 'movie', 'popular');
     if ((anime.results || []).length > 0)
-      html += MediaGrid.renderRow('⛩️ Top Trending Anime Series', anime.results, 'row-anime-trend');
+      html += MediaGrid.renderRow('⛩️ Top Trending Anime Series', anime.results, 'row-anime-trend', 'anime', 'popular');
     if ((tv.results || []).length > 0)
-      html += MediaGrid.renderRow('📺 Binge-Worthy TV Shows', tv.results, 'row-tv');
+      html += MediaGrid.renderRow('📺 Binge-Worthy TV Shows', tv.results, 'row-tv', 'tv', 'popular');
     if ((kdramas.results || []).length > 0)
-      html += MediaGrid.renderRow('🇰🇷 Popular K-Dramas & Asian Series', kdramas.results, 'row-kdramas');
+      html += MediaGrid.renderRow('🇰🇷 Popular K-Dramas & Asian Series', kdramas.results, 'row-kdramas', 'kdramas', 'kdramas');
     if ((indian.results || []).length > 0)
-      html += MediaGrid.renderRow('🇮🇳 Bollywood & Regional Blockbusters', indian.results, 'row-indian');
+      html += MediaGrid.renderRow('🇮🇳 Bollywood & Regional Blockbusters', indian.results, 'row-indian', 'indian', 'indian');
     if ((topRatedMovies.results || []).length > 0)
-      html += MediaGrid.renderRow('⭐ All-Time Classic Movies', topRatedMovies.results, 'row-top-movies');
+      html += MediaGrid.renderRow('⭐ All-Time Classic Movies', topRatedMovies.results, 'row-top-movies', 'movie', 'top_rated');
     if ((topRatedTV.results || []).length > 0)
-      html += MediaGrid.renderRow('🏆 Critically Acclaimed Series', topRatedTV.results, 'row-top-tv');
+      html += MediaGrid.renderRow('🏆 Critically Acclaimed Series', topRatedTV.results, 'row-top-tv', 'tv', 'top_rated');
     if ((onAir.results || []).length > 0)
-      html += MediaGrid.renderRow('📡 Broadcast TV & On Air', onAir.results, 'row-onair');
+      html += MediaGrid.renderRow('📡 Broadcast TV & On Air', onAir.results, 'row-onair', 'tv', 'on_the_air');
 
     mediaContainer.innerHTML = html;
   }
@@ -201,10 +201,10 @@ class App {
       ApiService.getMovies('upcoming', null, 1).catch(() => ({ results: [] }))
     ]);
     let html = '';
-    html += MediaGrid.renderRow('🔥 Popular Movies', popular.results || [], 'row-mov-popular');
-    html += MediaGrid.renderRow('🎬 Now Playing', nowPlaying.results || [], 'row-mov-now');
-    html += MediaGrid.renderRow('⭐ Critically Acclaimed', topRated.results || [], 'row-mov-top');
-    html += MediaGrid.renderRow('🗓️ Upcoming Releases', upcoming.results || [], 'row-mov-upcoming');
+    html += MediaGrid.renderRow('🔥 Popular Movies', popular.results || [], 'row-mov-popular', 'movie', 'popular');
+    html += MediaGrid.renderRow('🎬 Now Playing', nowPlaying.results || [], 'row-mov-now', 'movie', 'now_playing');
+    html += MediaGrid.renderRow('⭐ Critically Acclaimed', topRated.results || [], 'row-mov-top', 'movie', 'top_rated');
+    html += MediaGrid.renderRow('🗓️ Upcoming Releases', upcoming.results || [], 'row-mov-upcoming', 'movie', 'upcoming');
     container.innerHTML = html;
   }
 
@@ -217,10 +217,10 @@ class App {
       ApiService.getTVSeries('airing_today', null, 1).catch(() => ({ results: [] }))
     ]);
     let html = '';
-    html += MediaGrid.renderRow('🔥 Popular Shows', popular.results || [], 'row-tv-popular');
-    html += MediaGrid.renderRow('📡 Broadcast TV & On Air', onAir.results || [], 'row-tv-onair');
-    html += MediaGrid.renderRow('📺 Airing Today', airingToday.results || [], 'row-tv-today');
-    html += MediaGrid.renderRow('⭐ Top Rated Series', topRated.results || [], 'row-tv-top');
+    html += MediaGrid.renderRow('🔥 Popular Shows', popular.results || [], 'row-tv-popular', 'tv', 'popular');
+    html += MediaGrid.renderRow('📡 Broadcast TV & On Air', onAir.results || [], 'row-tv-onair', 'tv', 'on_the_air');
+    html += MediaGrid.renderRow('📺 Airing Today', airingToday.results || [], 'row-tv-today', 'tv', 'airing_today');
+    html += MediaGrid.renderRow('⭐ Top Rated Series', topRated.results || [], 'row-tv-top', 'tv', 'top_rated');
     container.innerHTML = html;
   }
 
@@ -233,10 +233,10 @@ class App {
       ApiService.getAnime('popular', 3).catch(() => ({ results: [] }))
     ]);
     let html = '';
-    html += MediaGrid.renderRow('🔥 Top Trending Anime', popularAnime.results || [], 'row-ani-popular');
-    html += MediaGrid.renderRow('⭐ Masterpiece Anime (All-Time Top Rated)', topAnime.results || [], 'row-ani-top');
-    html += MediaGrid.renderRow('⚔️ Action & Shonen Anime Hits', actionAnime.results || [], 'row-ani-action');
-    html += MediaGrid.renderRow('🌸 Fantasy & Supernatural Anime', fantasyAnime.results || [], 'row-ani-fantasy');
+    html += MediaGrid.renderRow('🔥 Top Trending Anime', popularAnime.results || [], 'row-ani-popular', 'anime', 'popular');
+    html += MediaGrid.renderRow('⭐ Masterpiece Anime (All-Time Top Rated)', topAnime.results || [], 'row-ani-top', 'anime', 'top_rated');
+    html += MediaGrid.renderRow('⚔️ Action & Shonen Anime Hits', actionAnime.results || [], 'row-ani-action', 'anime', 'popular');
+    html += MediaGrid.renderRow('🌸 Fantasy & Supernatural Anime', fantasyAnime.results || [], 'row-ani-fantasy', 'anime', 'top_rated');
     container.innerHTML = html;
   }
 
@@ -345,6 +345,124 @@ class App {
       if (btn) {
         btn.disabled = false;
         btn.textContent = `Load More ${this.selectedYear} Titles ↓`;
+      }
+    } catch(e) {
+      if (btn) { btn.textContent = 'No more titles'; btn.disabled = true; }
+    }
+  }
+
+  // ── 🌟 Explore All Collection Category View ───────────────────
+  async exploreCategory(title, type = 'movie', endpoint = 'popular', page = 1) {
+    this.currentRoute = 'explore';
+    this.currentExplore = { title, type, endpoint, page };
+    const cleanTitle = title.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
+    document.title = `${cleanTitle || title} — Explore Full Collection | CinemaStream`;
+
+    const heroContainer = document.getElementById('hero-container');
+    const mediaContainer = document.getElementById('media-sections-container');
+    const root = document.getElementById('main-content');
+
+    if (root) {
+      root.classList.remove('home-active');
+      root.classList.add('non-hero-active');
+    }
+    if (heroContainer) heroContainer.style.display = 'none';
+    const cw = document.getElementById('continue-watching-section');
+    if (cw) { cw.style.display = 'none'; cw.innerHTML = ''; }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    mediaContainer.innerHTML = `
+      <div class="nf-year-archive-header">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+          <button onclick="window.Router.navigate('home')" 
+            style="background:#222; color:#fff; border:1px solid rgba(255,255,255,0.2); padding:6px 14px; border-radius:4px; font-size:0.85rem; font-weight:700; cursor:pointer; font-family:inherit;">
+            ← Back to Home
+          </button>
+          <span class="nf-static-badge" style="margin:0;">Curated Collection</span>
+        </div>
+        <h1 style="font-size:clamp(1.8rem, 4vw, 2.6rem); font-weight:900; color:#fff; margin-bottom:8px;">${title}</h1>
+        <p style="color:#888; font-size:0.95rem;">Browse and stream all available titles in this collection.</p>
+        
+        <div id="explore-grid-container" style="min-height:400px; margin-top:24px;">
+          <div style="color:#888; padding:40px 0; text-align:center;">Loading titles...</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      let res;
+      if (type === 'trending') {
+        res = await ApiService.getTrending(page);
+      } else if (type === 'anime') {
+        res = await ApiService.getAnime(endpoint || 'popular', page);
+      } else if (type === 'kdramas') {
+        res = await ApiService.getKDramas(page);
+      } else if (type === 'indian') {
+        res = await ApiService.getIndianHits(page);
+      } else if (type === 'tv') {
+        res = await ApiService.getTVSeries(endpoint || 'popular', null, page);
+      } else {
+        res = await ApiService.getMovies(endpoint || 'popular', null, page);
+      }
+
+      const items = res.results || res || [];
+      const grid = document.getElementById('explore-grid-container');
+      if (!grid) return;
+
+      if (items.length === 0) {
+        grid.innerHTML = '<div style="color:#888; padding:60px 0; text-align:center;">No titles found in this category.</div>';
+        return;
+      }
+
+      grid.innerHTML = `
+        <div class="nf-search-grid" id="explore-cards-wrap">
+          ${items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join('')}
+        </div>
+        <div style="text-align:center; padding:40px 0 20px;">
+          <button id="load-more-explore-btn" onclick="window.App.loadMoreExplore()" 
+            style="background:#222; color:#fff; border:1px solid rgba(255,255,255,0.2); padding:12px 32px; border-radius:4px; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.2s;">
+            Load More Titles ↓
+          </button>
+        </div>
+      `;
+    } catch(err) {
+      const grid = document.getElementById('explore-grid-container');
+      if (grid) grid.innerHTML = '<div style="color:#888; padding:40px 0;">Unable to load collection titles.</div>';
+    }
+  }
+
+  async loadMoreExplore() {
+    if (!this.currentExplore) return;
+    this.currentExplore.page = (this.currentExplore.page || 1) + 1;
+    const btn = document.getElementById('load-more-explore-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+
+    try {
+      const { type, endpoint, page } = this.currentExplore;
+      let res;
+      if (type === 'trending') {
+        res = await ApiService.getTrending(page);
+      } else if (type === 'anime') {
+        res = await ApiService.getAnime(endpoint || 'popular', page);
+      } else if (type === 'kdramas') {
+        res = await ApiService.getKDramas(page);
+      } else if (type === 'indian') {
+        res = await ApiService.getIndianHits(page);
+      } else if (type === 'tv') {
+        res = await ApiService.getTVSeries(endpoint || 'popular', null, page);
+      } else {
+        res = await ApiService.getMovies(endpoint || 'popular', null, page);
+      }
+
+      const items = res.results || res || [];
+      const wrap = document.getElementById('explore-cards-wrap');
+      if (wrap && items.length > 0) {
+        wrap.insertAdjacentHTML('beforeend', items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join(''));
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Load More Titles ↓';
       }
     } catch(e) {
       if (btn) { btn.textContent = 'No more titles'; btn.disabled = true; }

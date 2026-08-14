@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/v1/stream/
+Disallow: /api/v1/user/
+
+# Sitemaps
+Sitemap: https://cinemastream2.vercel.app/sitemap.xml

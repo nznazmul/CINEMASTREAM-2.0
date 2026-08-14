@@ -836,6 +836,39 @@ class App {
     }
   }
 
+  async loadSeasonEpisodes(tvId, seasonNum) {
+    const episodesList = document.getElementById('episodes-list');
+    if (!episodesList) return;
+    episodesList.innerHTML = '<div style="color:#888; padding:12px 0;">Loading episodes...</div>';
+    try {
+      const res = await ApiService.getEpisodes(tvId, seasonNum);
+      const episodes = res.results || res || [];
+      if (episodes.length === 0) {
+        episodesList.innerHTML = '<div style="color:#888; padding:10px 0;">No episodes indexed for this season.</div>';
+        return;
+      }
+      episodesList.innerHTML = episodes.map(ep => `
+        <div style="display:flex; gap:14px; padding:14px 10px; border-bottom:1px solid #282828; cursor:pointer; border-radius:4px; transition:background 0.2s;"
+             onclick="window.App.closeDetails(); window.App.playMedia(${tvId}, 'tv', ${ep.season_number || seasonNum}, ${ep.episode_number || 1})"
+             onmouseenter="this.style.background='#282828'" onmouseleave="this.style.background='transparent'">
+          <img src="${ep.still_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}" 
+               alt="Ep ${ep.episode_number || 1}" loading="lazy"
+               style="width:130px; flex-shrink:0; aspect-ratio:16/9; object-fit:cover; border-radius:4px; background:#333;"
+               onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:#fff; font-size:0.92rem;">${ep.episode_number || 1}. ${ep.name || 'Episode ' + (ep.episode_number || 1)}</strong>
+              <span style="color:#888; font-size:0.8rem;">${ep.runtime || '45m'}</span>
+            </div>
+            <p style="font-size:0.83rem; color:#aaa; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${ep.overview || 'Stream this episode in full Ultra HD.'}</p>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) {
+      episodesList.innerHTML = '<div style="color:#888; padding:10px 0;">Season details ready for playback.</div>';
+    }
+  }
+
   mountModalTrailer(key) {
     const wrap = document.getElementById('modal-video-wrap');
     if (!wrap) return;

@@ -1177,6 +1177,204 @@ body {
 }
 
 /* ==========================================================================
+   STATIC SEO PAGES (FAQ, PRIVACY, CONTACT US, TERMS, SPEED TEST)
+   ========================================================================== */
+.nf-static-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 100px 30px 60px;
+  color: #e5e5e5;
+}
+
+.nf-static-header {
+  text-align: center;
+  margin-bottom: 48px;
+  border-bottom: 1px solid #282828;
+  padding-bottom: 30px;
+}
+
+.nf-static-badge {
+  display: inline-block;
+  background: rgba(229,9,20,0.15);
+  border: 1px solid rgba(229,9,20,0.4);
+  color: #E50914;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nf-static-title {
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.nf-static-subtitle {
+  font-size: 1.05rem;
+  color: #999;
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* FAQ Accordion */
+.nf-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.nf-faq-item {
+  background: #1f1f1f;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.nf-faq-item:hover {
+  border-color: rgba(255,255,255,0.2);
+  background: #252525;
+}
+
+.nf-faq-question {
+  padding: 20px 24px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.nf-faq-question .nf-faq-icon {
+  font-size: 1.4rem;
+  color: #E50914;
+  transition: transform 0.3s ease;
+}
+
+.nf-faq-item.open .nf-faq-icon {
+  transform: rotate(45deg);
+}
+
+.nf-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.35s ease;
+  background: #181818;
+  color: #bbb;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.nf-faq-item.open .nf-faq-answer {
+  max-height: 500px;
+  padding: 16px 24px 22px;
+  border-top: 1px solid #282828;
+}
+
+/* Legal / Privacy Content */
+.nf-legal-section {
+  background: #1a1a1a;
+  border: 1px solid #282828;
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+.nf-legal-section h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nf-legal-section p, .nf-legal-section li {
+  color: #aaa;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+
+.nf-legal-section ul {
+  padding-left: 24px;
+  margin-bottom: 14px;
+}
+
+/* Contact Us Grid & Form */
+.nf-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+@media (max-width: 768px) {
+  .nf-contact-grid { grid-template-columns: 1fr; }
+}
+
+.nf-contact-card {
+  background: #1a1a1a;
+  border: 1px solid #282828;
+  border-radius: 8px;
+  padding: 28px;
+}
+
+.nf-contact-form label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ccc;
+  margin-bottom: 6px;
+}
+
+.nf-contact-form input, .nf-contact-form textarea, .nf-contact-form select {
+  width: 100%;
+  background: #242424;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  padding: 12px 14px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+
+.nf-contact-form input:focus, .nf-contact-form textarea:focus, .nf-contact-form select:focus {
+  outline: none;
+  border-color: #E50914;
+}
+
+.nf-contact-submit-btn {
+  background: #E50914;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.nf-contact-submit-btn:hover {
+  background: #f40612;
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
    FOOTER
    ========================================================================== */
 #app-footer {

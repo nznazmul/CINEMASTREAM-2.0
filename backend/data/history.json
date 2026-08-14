@@ -1,5 +1,21 @@
 [
   {
+    "id": "his_u6n3nvc",
+    "userId": "guest_d45l827x",
+    "mediaId": 80278,
+    "mediaType": "movie",
+    "title": "The Impossible",
+    "poster": "https://image.tmdb.org/t/p/w500/k0DLCiDbnYywOHiISALbl2EH2NE.jpg",
+    "backdrop": "https://image.tmdb.org/t/p/original/3NfM0sRwVLnsQkCd5YBPGvM9a5v.jpg",
+    "season": 1,
+    "episode": 1,
+    "episodeId": null,
+    "currentTime": 1800,
+    "duration": 3600,
+    "progressPercent": 50,
+    "updatedAt": "2026-08-14T11:12:56.583Z"
+  },
+  {
     "id": "his_92s5o7k",
     "userId": "guest_d45l827x",
     "mediaId": 1339713,

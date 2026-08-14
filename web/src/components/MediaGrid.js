@@ -72,7 +72,8 @@ export class MediaGrid {
     const poster = item.poster_path || 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
     const score = Math.round((item.vote_average || 7.5) * 10);
     const year = (item.release_date || item.first_air_date || '2024').substring(0, 4);
-    const type = item.media_type || (item.title ? 'movie' : 'tv');
+    const isTv = item.media_type === 'tv' || Boolean(item.first_air_date) || Boolean(item.seasons_count);
+    const type = item.media_type || (isTv ? 'tv' : 'movie');
     const genreStr = (item.genres || []).slice(0, 2).join(' • ') || (type === 'tv' ? 'TV Show' : 'Movie');
     const dur = item.duration || (type === 'tv' ? 'Series' : '');
     const isFirst = idx === 0;

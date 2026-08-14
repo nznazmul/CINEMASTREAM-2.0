@@ -21,7 +21,8 @@ async function tmdb(path, params = {}) {
 }
 
 function normalizeItem(m) {
-  const isTV = m.media_type === 'tv' || (!m.title && m.name);
+  const isTV = m.media_type === 'tv' || Boolean(m.first_air_date) || Boolean(m.number_of_seasons) || Boolean(m.name && !m.title);
+  const mediaType = m.media_type || (isTV ? 'tv' : 'movie');
   return {
     id: m.id,
     imdb_id: m.imdb_id || null,
@@ -34,7 +35,7 @@ function normalizeItem(m) {
     first_air_date: m.first_air_date || m.release_date || '2024-01-01',
     vote_average: parseFloat((m.vote_average || 7.5).toFixed(1)),
     vote_count: m.vote_count || 0,
-    media_type: m.media_type || (m.title ? 'movie' : 'tv'),
+    media_type: mediaType,
     genre_ids: m.genre_ids || [],
     genres: m.genres ? m.genres.map(g => (typeof g === 'string' ? g : g.name)) : [],
     duration: m.runtime ? (Math.floor(m.runtime / 60) + 'h ' + (m.runtime % 60) + 'm') : (m.episode_run_time && m.episode_run_time[0] ? m.episode_run_time[0] + 'm' : ''),
@@ -180,11 +181,27 @@ export class TMDBService {
   }
 
   static async getDetails(id, type) {
-    type = type || 'movie';
     return cached('details_' + id + '_' + type, async () => {
-      const path = (type === 'tv' ? '/tv/' : '/movie/') + id;
-      const data = await tmdb(path, { append_to_response: 'credits,videos,similar,external_ids' });
-      const n = normalizeItem(Object.assign({}, data, { media_type: type }));
+      let data = null;
+      let actualType = type === 'tv' ? 'tv' : 'movie';
+
+      // 1. Primary query attempt
+      try {
+        const path = (actualType === 'tv' ? '/tv/' : '/movie/') + id;
+        data = await tmdb(path, { append_to_response: 'credits,videos,similar,external_ids' });
+      } catch (err) {
+        // 2. Automatic crossover fallback (try other type)
+        try {
+          actualType = actualType === 'tv' ? 'movie' : 'tv';
+          const altPath = (actualType === 'tv' ? '/tv/' : '/movie/') + id;
+          data = await tmdb(altPath, { append_to_response: 'credits,videos,similar,external_ids' });
+        } catch (err2) {
+          throw new Error('Title details not found in TMDB catalog.');
+        }
+      }
+
+      const n = normalizeItem(Object.assign({}, data, { media_type: actualType }));
+      n.media_type = actualType;
       n.imdb_id = data.imdb_id || (data.external_ids && data.external_ids.imdb_id) || null;
       const vids = ((data.videos && data.videos.results) || []).filter(v => v.site === 'YouTube');
       const t = vids.find(v => v.type === 'Trailer') ||
@@ -195,7 +212,7 @@ export class TMDBService {
       n.trailer_key = t ? t.key : null;
       n.cast = ((data.credits && data.credits.cast) || []).slice(0, 10).map(c => ({ name: c.name, character: c.character, profile: c.profile_path ? (IMG_BASE + '/w185' + c.profile_path) : null }));
       n.similar = ((data.similar && data.similar.results) || []).slice(0, 10).map(normalizeItem);
-      if (type === 'tv') {
+      if (actualType === 'tv') {
         n.seasons_count = data.number_of_seasons || 1;
         n.seasons = (data.seasons || []).filter(s => s.season_number > 0).map(s => ({ id: s.id, season_number: s.season_number, name: s.name, episode_count: s.episode_count, poster_path: s.poster_path ? (IMG_BASE + '/w300' + s.poster_path) : n.poster_path, air_date: s.air_date }));
       }

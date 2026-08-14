@@ -70,7 +70,11 @@ export class MediaGrid {
     if (!item) return '';
     const title = (item.title || item.name || 'Untitled').replace(/"/g, '&quot;');
     const cleanTitle = (item.title || item.name || 'Untitled').replace(/'/g, "\\'");
-    const poster = item.poster_path || 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
+    const poster = item.poster_path 
+      ? (item.poster_path.startsWith('http') ? item.poster_path : `https://image.tmdb.org/t/p/w500${item.poster_path}`)
+      : (item.backdrop_path 
+          ? (item.backdrop_path.startsWith('http') ? item.backdrop_path : `https://image.tmdb.org/t/p/w500${item.backdrop_path}`)
+          : 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg');
     const rating = item.vote_average ? Number(item.vote_average).toFixed(1) : '7.5';
     const score = Math.round((item.vote_average || 7.5) * 10);
     const year = (item.release_date || item.first_air_date || '2024').substring(0, 4);

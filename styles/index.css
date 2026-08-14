@@ -1034,12 +1034,22 @@ body {
 /* ==========================================================================
    CONTINUE WATCHING (NETFLIX STYLE AUTO-HISTORY)
    ========================================================================== */
+#continue-watching-section {
+  position: relative;
+  z-index: 5;
+  margin-bottom: 24px;
+  clear: both;
+}
+
 .nf-cw-row {
-  margin-bottom: 42px;
+  margin-bottom: 36px;
+  position: relative;
 }
 
 .nf-cw-card {
   flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
   position: relative;
   border-radius: var(--card-radius);
   background: #1c1c1c;

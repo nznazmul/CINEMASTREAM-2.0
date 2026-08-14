@@ -177,6 +177,59 @@ export class ApiService {
         const res = await fetch(`${TMDB_BASE}/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
         const data = await res.json();
         return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m))) };
+      if (endpoint.startsWith('/stream/resolve/')) {
+        const match = endpoint.match(/\/stream\/resolve\/(\d+)/);
+        const id = match ? match[1] : '';
+        const params = new URLSearchParams(endpoint.split('?')[1] || '');
+        const type = params.get('type') || 'movie';
+        const server = params.get('server') || 'autoembed';
+        const s = params.get('season') || 1;
+        const e = params.get('episode') || 1;
+
+        const isTv = type === 'tv';
+        const embedMap = {
+          autoembed: isTv ? `https://autoembed.co/tv/tmdb/${id}-${s}-${e}` : `https://autoembed.co/movie/tmdb/${id}`,
+          vidplay: isTv ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}` : `https://vidsrc.me/embed/movie?tmdb=${id}`,
+          superstream: isTv ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` : `https://multiembed.mov/?video_id=${id}&tmdb=1`,
+          smashy: isTv ? `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${s}&episode=${e}` : `https://embed.smashystream.com/playere.php?tmdb=${id}`,
+          kisskh: isTv ? `https://2embed.cc/embedtv/${id}&s=${s}&e=${e}` : `https://2embed.cc/embed/${id}`,
+          toonstream: isTv ? `https://vidsrc.to/embed/tv/${id}/${s}/${e}` : `https://vidsrc.to/embed/movie/${id}`,
+          uhdmovies: isTv ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}` : `https://vidsrc.cc/v2/embed/movie/${id}`,
+          desicinemas: isTv ? `https://autoembed.cc/embed/tv/${id}/${s}/${e}` : `https://autoembed.cc/embed/movie/${id}`
+        };
+
+        const activeUrl = embedMap[server] || embedMap['autoembed'];
+
+        const allServers = [
+          { id: 'autoembed', name: 'Server 1 (AutoEmbed 4K)', status: 'online' },
+          { id: 'vidplay', name: 'Server 2 (VidSrc VIP)', status: 'online' },
+          { id: 'superstream', name: 'Server 3 (SuperStream Cloud)', status: 'online' },
+          { id: 'smashy', name: 'Server 4 (SmashyStream HD)', status: 'online' },
+          { id: 'kisskh', name: 'Server 5 (KissKH AsianDrama)', status: 'online' },
+          { id: 'toonstream', name: 'Server 6 (ToonStream Anime)', status: 'online' },
+          { id: 'uhdmovies', name: 'Server 7 (UHDMovies 4K)', status: 'online' },
+          { id: 'desicinemas', name: 'Server 8 (DesiCinemas Multi-Audio)', status: 'online' }
+        ];
+
+        return {
+          success: true,
+          data: {
+            activeServer: {
+              id: server,
+              name: allServers.find(srv => srv.id === server)?.name || 'AutoEmbed 4K',
+              embedUrl: activeUrl,
+              sources: [{ url: activeUrl, type: 'hls', quality: '1080p', isIframe: true }],
+              subtitles: [
+                { lang: 'English', url: '', label: 'English [CC]' },
+                { lang: 'Hindi', url: '', label: 'Hindi (हिन्दी Dubbed)' },
+                { lang: 'Tamil', url: '', label: 'Tamil (தமிழ்)' },
+                { lang: 'Telugu', url: '', label: 'Telugu (తెలుగు)' },
+                { lang: 'Spanish', url: '', label: 'Español' }
+              ]
+            },
+            allServers
+          }
+        };
       }
     } catch (e) {
       console.error('Direct TMDB fallback error:', e);

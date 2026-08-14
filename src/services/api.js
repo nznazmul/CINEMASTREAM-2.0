@@ -226,15 +226,27 @@ export class ApiService {
       twoembed:    isTv ? 'https://www.2embed.cc/embedtv/' + id + '&s=' + s + '&e=' + ep : 'https://www.2embed.cc/embed/' + id,
       smashy:      isTv ? 'https://embed.smashystream.com/playere.php?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://embed.smashystream.com/playere.php?tmdb=' + id,
       vidplay:     isTv ? 'https://vidsrc.me/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://vidsrc.me/embed/movie?tmdb=' + id,
-      autoembed:   isTv ? 'https://player.autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep : 'https://player.autoembed.cc/embed/movie/' + id
+      autoembed:   isTv ? 'https://player.autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep : 'https://player.autoembed.cc/embed/movie/' + id,
+      vidsrcxyz:   isTv ? 'https://vidsrc.xyz/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://vidsrc.xyz/embed/movie?tmdb=' + id,
+      vidlink:     isTv ? 'https://vidlink.pro/tv/' + id + '/' + s + '/' + ep : 'https://vidlink.pro/movie/' + id,
+      nontongo:    isTv ? 'https://www.NontonGo.win/embed/tv/' + id + '/' + s + '/' + ep : 'https://www.NontonGo.win/embed/movie/' + id,
+      frembed:     isTv ? 'https://frembed.live/api/serie.php?id=' + id + '&sa=' + s + '&epi=' + ep : 'https://frembed.live/api/film.php?id=' + id,
+      autoembedto: isTv ? 'https://autoembed.to/tv/tmdb/' + id + '-' + s + '-' + ep : 'https://autoembed.to/movie/tmdb/' + id,
+      vidsrcvip:   isTv ? 'https://vidsrc.vip/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.vip/embed/movie/' + id
     };
     const allServers = [
-      { id: 'vidsrc',      name: 'Server 1 (VidSrc 4K Ultra)',    status: 'online', embedUrl: embedMap.vidsrc },
-      { id: 'superstream', name: 'Server 2 (SuperStream Multi)',   status: 'online', embedUrl: embedMap.superstream },
-      { id: 'twoembed',    name: 'Server 3 (2Embed VIP)',          status: 'online', embedUrl: embedMap.twoembed },
-      { id: 'smashy',      name: 'Server 4 (SmashyStream HD)',     status: 'online', embedUrl: embedMap.smashy },
-      { id: 'vidplay',     name: 'Server 5 (VidSrc Mirror 2)',     status: 'online', embedUrl: embedMap.vidplay },
-      { id: 'autoembed',   name: 'Server 6 (AutoEmbed CC)',        status: 'online', embedUrl: embedMap.autoembed }
+      { id: 'vidsrc',      name: 'Server 1 (VidSrc 4K Ultra)',        status: 'online', embedUrl: embedMap.vidsrc },
+      { id: 'superstream', name: 'Server 2 (SuperStream Multi-Dubs)', status: 'online', embedUrl: embedMap.superstream },
+      { id: 'twoembed',    name: 'Server 3 (2Embed VIP Pro)',          status: 'online', embedUrl: embedMap.twoembed },
+      { id: 'smashy',      name: 'Server 4 (SmashyStream HD)',         status: 'online', embedUrl: embedMap.smashy },
+      { id: 'vidplay',     name: 'Server 5 (VidSrc ME Mirror)',        status: 'online', embedUrl: embedMap.vidplay },
+      { id: 'autoembed',   name: 'Server 6 (AutoEmbed CC)',            status: 'online', embedUrl: embedMap.autoembed },
+      { id: 'vidsrcxyz',   name: 'Server 7 (VidSrc XYZ Global)',       status: 'online', embedUrl: embedMap.vidsrcxyz },
+      { id: 'vidlink',     name: 'Server 8 (VidLink 4K Pro)',          status: 'online', embedUrl: embedMap.vidlink },
+      { id: 'nontongo',    name: 'Server 9 (NontonGo FastCDN)',        status: 'online', embedUrl: embedMap.nontongo },
+      { id: 'frembed',     name: 'Server 10 (Frembed Cinema)',         status: 'online', embedUrl: embedMap.frembed },
+      { id: 'autoembedto', name: 'Server 11 (AutoEmbed TO Multi)',     status: 'online', embedUrl: embedMap.autoembedto },
+      { id: 'vidsrcvip',   name: 'Server 12 (VidSrc VIP Server)',      status: 'online', embedUrl: embedMap.vidsrcvip }
     ];
     const activeUrl = embedMap[server] || embedMap['vidsrc'];
     return {

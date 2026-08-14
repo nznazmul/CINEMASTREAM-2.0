@@ -1,380 +1,375 @@
-// API Service for CinemaStream 2.0 Web Client
+﻿// CinemaStream 2.0 - Direct TMDB API Service
+// All data fetched directly from TMDB - no backend proxy needed
 
-const API_BASE = '/api/v1';
+const TMDB_KEY = '8265bd1679663a7ea12ac168da84d2e8';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
+const IMG_BASE = 'https://image.tmdb.org/t/p';
 
 export class ApiService {
-  static getAuthToken() {
-    return localStorage.getItem('cinemastream_token');
-  }
 
-  static setAuthToken(token) {
-    if (token) {
-      localStorage.setItem('cinemastream_token', token);
-    } else {
-      localStorage.removeItem('cinemastream_token');
-    }
+  static getAuthToken() { return localStorage.getItem('cinemastream_token'); }
+  static setAuthToken(t) {
+    if (t) localStorage.setItem('cinemastream_token', t);
+    else localStorage.removeItem('cinemastream_token');
   }
-
   static getGuestId() {
-    let guestId = localStorage.getItem('cinemastream_guest_id');
-    if (!guestId) {
-      guestId = 'guest_' + Math.random().toString(36).substring(2, 10);
-      localStorage.setItem('cinemastream_guest_id', guestId);
+    let id = localStorage.getItem('cinemastream_guest_id');
+    if (!id) {
+      id = 'guest_' + Math.random().toString(36).substring(2, 10);
+      localStorage.setItem('cinemastream_guest_id', id);
     }
-    return guestId;
+    return id;
   }
 
-  static async request(endpoint, options = {}) {
-    const url = `${API_BASE}${endpoint}`;
-    const token = this.getAuthToken();
-    
-    const headers = {
-      'Content-Type': 'application/json',
-      ...options.headers
+  static async tmdb(path, params) {
+    params = params || {};
+    const url = new URL(TMDB_BASE + path);
+    url.searchParams.set('api_key', TMDB_KEY);
+    for (const k of Object.keys(params)) {
+      if (params[k] !== null && params[k] !== undefined) url.searchParams.set(k, String(params[k]));
+    }
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error('TMDB ' + res.status);
+    return res.json();
+  }
+
+  static normalize(m, type) {
+    const t = type || m.media_type || (m.first_air_date ? 'tv' : 'movie');
+    return {
+      id: m.id,
+      title: m.title || m.name || 'Untitled',
+      name: m.name || m.title || 'Untitled',
+      overview: m.overview || '',
+      poster_path: m.poster_path ? IMG_BASE + '/w500' + m.poster_path : null,
+      backdrop_path: m.backdrop_path ? IMG_BASE + '/original' + m.backdrop_path : null,
+      vote_average: m.vote_average || 7.5,
+      release_date: m.release_date || m.first_air_date || '2024',
+      first_air_date: m.first_air_date || m.release_date || '2024',
+      media_type: t,
+      genre_ids: m.genre_ids || []
     };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    try {
-      const response = await fetch(url, { ...options, headers });
-      if (response.ok) {
-        const data = await response.json();
-        if (data && (data.results || data.success || data.data)) {
-          return data;
-        }
-      }
-    } catch (err) {
-      console.warn(`API serverless fallback for ${endpoint}:`, err.message);
-    }
-
-    // Direct TMDB Client-Side Resilience Fallback
-    return this.fallbackTMDB(endpoint);
   }
 
   static deduplicate(items) {
     if (!Array.isArray(items)) return [];
     const seenIds = new Set();
-    const seenTitles = new Set();
     const result = [];
-
     for (const item of items) {
-      if (!item) continue;
-      const id = String(item.id);
-      const title = (item.title || item.name || '').trim().toLowerCase();
-      const year = String(item.release_date || item.first_air_date || '').substring(0, 4);
-      const titleKey = `${title}_${year}`;
-
-      if (id && seenIds.has(id)) continue;
-      if (title && seenTitles.has(titleKey)) continue;
-
-      if (id) seenIds.add(id);
-      if (title) seenTitles.add(titleKey);
+      if (!item || !item.id) continue;
+      const key = String(item.id);
+      if (seenIds.has(key)) continue;
+      seenIds.add(key);
       result.push(item);
     }
     return result;
   }
 
-  static async fallbackTMDB(endpoint) {
-    const TMDB_KEY = '8265bd1679663a7ea12ac168da84d2e8';
-    const TMDB_BASE = 'https://api.themoviedb.org/3';
-    const IMG_BASE = 'https://image.tmdb.org/t/p';
-
-    const normalize = (m, type) => ({
-      id: m.id,
-      title: m.title || m.name || 'Untitled',
-      name: m.name || m.title || 'Untitled',
-      overview: m.overview || '',
-      poster_path: m.poster_path ? `${IMG_BASE}/w500${m.poster_path}` : null,
-      backdrop_path: m.backdrop_path ? `${IMG_BASE}/original${m.backdrop_path}` : null,
-      vote_average: m.vote_average || 7.5,
-      release_date: m.release_date || m.first_air_date || '2024',
-      first_air_date: m.first_air_date || m.release_date || '2024',
-      media_type: type || m.media_type || (m.first_air_date ? 'tv' : 'movie'),
-      genre_ids: m.genre_ids || []
-    });
-
-    try {
-      const pageMatch = endpoint.match(/page=(\d+)/);
-      const page = pageMatch ? pageMatch[1] : '1';
-
-      if (endpoint.startsWith('/hero')) {
-        const res = await fetch(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}&page=${page}`);
-        const data = await res.json();
-        const list = this.deduplicate((data.results || []).map(m => normalize(m)));
-        return { success: true, results: list.slice(0, 8) };
-      }
-      if (endpoint.startsWith('/trending')) {
-        const res = await fetch(`${TMDB_BASE}/trending/all/week?api_key=${TMDB_KEY}&page=${page}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m))) };
-      }
-      if (endpoint.startsWith('/animemovie') || endpoint.startsWith('/anime-movie') || endpoint.startsWith('/anime-movies')) {
-        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=${page}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
-      }
-      if (endpoint.startsWith('/asian-drama') || endpoint.startsWith('/asiandrama')) {
-        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_original_language=ko|zh|ja|th&sort_by=popularity.desc&page=${page}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
-      }
-      if (endpoint.startsWith('/anime')) {
-        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc&page=${page}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
-      }
-      if (endpoint.startsWith('/kdramas') || endpoint.startsWith('/kdrama')) {
-        const res = await fetch(`${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&with_original_language=ko&sort_by=popularity.desc&page=${page}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
-      }
-      if (endpoint.startsWith('/indian') || endpoint.startsWith('/bollywood')) {
-        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&with_original_language=hi|te|ta&sort_by=popularity.desc&page=${page}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
-      }
-      if (endpoint.startsWith('/movies') || endpoint.startsWith('/movie')) {
-        const matchCat = endpoint.match(/category=([^&]+)/);
-        const cat = matchCat ? matchCat[1] : 'popular';
-        const matchGenre = endpoint.match(/genre=(\d+)/);
-        const genreQuery = matchGenre ? `&with_genres=${matchGenre[1]}` : '';
-
-        let url = `${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&sort_by=popularity.desc&page=${page}${genreQuery}`;
-        if (!genreQuery && ['top_rated', 'now_playing', 'upcoming'].includes(cat)) {
-          url = `${TMDB_BASE}/movie/${cat}?api_key=${TMDB_KEY}&page=${page}`;
-        }
-        const res = await fetch(url);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
-      }
-      if (endpoint.startsWith('/tv')) {
-        const matchCat = endpoint.match(/category=([^&]+)/);
-        const cat = matchCat ? matchCat[1] : 'popular';
-        const matchGenre = endpoint.match(/genre=(\d+)/);
-        const genreQuery = matchGenre ? `&with_genres=${matchGenre[1]}` : '';
-
-        let url = `${TMDB_BASE}/discover/tv?api_key=${TMDB_KEY}&sort_by=popularity.desc&page=${page}${genreQuery}`;
-        if (!genreQuery && ['top_rated', 'on_the_air', 'airing_today'].includes(cat)) {
-          url = `${TMDB_BASE}/tv/${cat}?api_key=${TMDB_KEY}&page=${page}`;
-        }
-        const res = await fetch(url);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'tv'))) };
-      }
-      if (endpoint.startsWith('/year/')) {
-        const match = endpoint.match(/\/year\/(\d{4})/);
-        const year = match ? match[1] : '2024';
-        const res = await fetch(`${TMDB_BASE}/discover/movie?api_key=${TMDB_KEY}&primary_release_year=${year}&sort_by=popularity.desc&page=${page}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m, 'movie'))) };
-      }
-      if (endpoint.startsWith('/details/')) {
-        const match = endpoint.match(/\/details\/(\d+)/);
-        const id = match ? match[1] : '';
-        const isTv = endpoint.includes('type=tv');
-        const res = await fetch(`${TMDB_BASE}/${isTv ? 'tv' : 'movie'}/${id}?api_key=${TMDB_KEY}&append_to_response=videos,credits,similar`);
-        const m = await res.json();
-        return {
-          success: true,
-          data: {
-            ...normalize(m, isTv ? 'tv' : 'movie'),
-            genres: (m.genres || []).map(g => g.name),
-            cast: (m.credits?.cast || []).slice(0, 10).map(c => ({ name: c.name, character: c.character })),
-            trailer_key: (m.videos?.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube')?.key || null,
-            seasons: m.seasons || [],
-            similar: this.deduplicate((m.similar?.results || []).map(s => normalize(s, isTv ? 'tv' : 'movie')))
-          }
-        };
-      }
-      if (endpoint.startsWith('/search')) {
-        const qMatch = endpoint.match(/q=([^&]+)/);
-        const q = qMatch ? decodeURIComponent(qMatch[1]) : '';
-        const res = await fetch(`${TMDB_BASE}/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}`);
-        const data = await res.json();
-        return { success: true, results: this.deduplicate((data.results || []).map(m => normalize(m))) };
-      if (endpoint.startsWith('/stream/resolve/')) {
-        const match = endpoint.match(/\/stream\/resolve\/(\d+)/);
-        const id = match ? match[1] : '';
-        const params = new URLSearchParams(endpoint.split('?')[1] || '');
-        const type = params.get('type') || 'movie';
-        const server = params.get('server') || 'autoembed';
-        const s = params.get('season') || 1;
-        const e = params.get('episode') || 1;
-
-        const isTv = type === 'tv';
-        const embedMap = {
-          autoembed: isTv ? `https://autoembed.co/tv/tmdb/${id}-${s}-${e}` : `https://autoembed.co/movie/tmdb/${id}`,
-          vidplay: isTv ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}` : `https://vidsrc.me/embed/movie?tmdb=${id}`,
-          superstream: isTv ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` : `https://multiembed.mov/?video_id=${id}&tmdb=1`,
-          smashy: isTv ? `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${s}&episode=${e}` : `https://embed.smashystream.com/playere.php?tmdb=${id}`,
-          kisskh: isTv ? `https://2embed.cc/embedtv/${id}&s=${s}&e=${e}` : `https://2embed.cc/embed/${id}`,
-          toonstream: isTv ? `https://vidsrc.to/embed/tv/${id}/${s}/${e}` : `https://vidsrc.to/embed/movie/${id}`,
-          uhdmovies: isTv ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}` : `https://vidsrc.cc/v2/embed/movie/${id}`,
-          desicinemas: isTv ? `https://autoembed.cc/embed/tv/${id}/${s}/${e}` : `https://autoembed.cc/embed/movie/${id}`
-        };
-
-        const activeUrl = embedMap[server] || embedMap['autoembed'];
-
-        const allServers = [
-          { id: 'autoembed', name: 'Server 1 (AutoEmbed 4K)', status: 'online' },
-          { id: 'vidplay', name: 'Server 2 (VidSrc VIP)', status: 'online' },
-          { id: 'superstream', name: 'Server 3 (SuperStream Cloud)', status: 'online' },
-          { id: 'smashy', name: 'Server 4 (SmashyStream HD)', status: 'online' },
-          { id: 'kisskh', name: 'Server 5 (KissKH AsianDrama)', status: 'online' },
-          { id: 'toonstream', name: 'Server 6 (ToonStream Anime)', status: 'online' },
-          { id: 'uhdmovies', name: 'Server 7 (UHDMovies 4K)', status: 'online' },
-          { id: 'desicinemas', name: 'Server 8 (DesiCinemas Multi-Audio)', status: 'online' }
-        ];
-
-        return {
-          success: true,
-          data: {
-            activeServer: {
-              id: server,
-              name: allServers.find(srv => srv.id === server)?.name || 'AutoEmbed 4K',
-              embedUrl: activeUrl,
-              sources: [{ url: activeUrl, type: 'hls', quality: '1080p', isIframe: true }],
-              subtitles: [
-                { lang: 'English', url: '', label: 'English [CC]' },
-                { lang: 'Hindi', url: '', label: 'Hindi (हिन्दी Dubbed)' },
-                { lang: 'Tamil', url: '', label: 'Tamil (தமிழ்)' },
-                { lang: 'Telugu', url: '', label: 'Telugu (తెలుగు)' },
-                { lang: 'Spanish', url: '', label: 'Español' }
-              ]
-            },
-            allServers
-          }
-        };
-      }
-    } catch (e) {
-      console.error('Direct TMDB fallback error:', e);
-    }
-    return { success: false, results: [] };
-  }
-
-  // --- Media & Discovery ---
   static async getHero() {
-    return this.request('/hero');
+    try {
+      const data = await this.tmdb('/trending/all/week', { page: 1 });
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m))).slice(0, 10) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getTrending(page = 1) {
-    return this.request(`/trending?page=${page}`);
+  static async getTrending(page) {
+    page = page || 1;
+    try {
+      const data = await this.tmdb('/trending/all/week', { page: page });
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m))) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getMovies(category = 'popular', genre = null, page = 1) {
-    return this.request(`/movies?category=${category}${genre ? `&genre=${genre}` : ''}&page=${page}`);
+  static async getMovies(category, genre, page) {
+    category = category || 'popular'; page = page || 1;
+    try {
+      let data;
+      if (genre) {
+        data = await this.tmdb('/discover/movie', { page: page, with_genres: genre, sort_by: 'popularity.desc' });
+      } else if (category === 'top_rated' || category === 'now_playing' || category === 'upcoming') {
+        data = await this.tmdb('/movie/' + category, { page: page });
+      } else {
+        data = await this.tmdb('/movie/popular', { page: page });
+      }
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'movie'))) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getTVSeries(category = 'popular', genre = null, page = 1) {
-    return this.request(`/tv?category=${category}${genre ? `&genre=${genre}` : ''}&page=${page}`);
+  static async getTVSeries(category, genre, page) {
+    category = category || 'popular'; page = page || 1;
+    try {
+      let data;
+      if (genre) {
+        data = await this.tmdb('/discover/tv', { page: page, with_genres: genre, sort_by: 'popularity.desc' });
+      } else if (category === 'top_rated' || category === 'on_the_air' || category === 'airing_today') {
+        data = await this.tmdb('/tv/' + category, { page: page });
+      } else {
+        data = await this.tmdb('/tv/popular', { page: page });
+      }
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'tv'))) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getAnime(category = 'popular', page = 1) {
-    return this.request(`/anime?category=${category}&page=${page}`);
+  static async getAnime(category, page) {
+    category = category || 'popular'; page = page || 1;
+    try {
+      const params = { page: page, with_genres: 16, with_original_language: 'ja', sort_by: 'popularity.desc' };
+      if (category === 'top_rated') { params.sort_by = 'vote_average.desc'; params['vote_count.gte'] = 250; }
+      const data = await this.tmdb('/discover/tv', params);
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'tv'))) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getAnimeMovies(category = 'popular', page = 1) {
-    return this.request(`/animemovie?category=${category}&page=${page}`);
+  static async getAnimeMovies(category, page) {
+    category = category || 'popular'; page = page || 1;
+    try {
+      const params = { page: page, with_genres: 16, with_original_language: 'ja', sort_by: 'popularity.desc' };
+      if (category === 'top_rated') { params.sort_by = 'vote_average.desc'; params['vote_count.gte'] = 250; }
+      const data = await this.tmdb('/discover/movie', params);
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'movie'))) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getAsianDrama(page = 1) {
-    return this.request(`/asian-drama?page=${page}`);
+  static async getAsianDrama(page) {
+    page = page || 1;
+    try {
+      const data = await this.tmdb('/discover/tv', { page: page, with_original_language: 'ko', sort_by: 'popularity.desc' });
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'tv'))) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getKDramas(page = 1) {
-    return this.request(`/kdramas?page=${page}`);
+  static async getKDramas(page) {
+    page = page || 1;
+    try {
+      const data = await this.tmdb('/discover/tv', { page: page, with_original_language: 'ko', sort_by: 'popularity.desc' });
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'tv'))) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getIndianHits(page = 1) {
-    return this.request(`/indian?page=${page}`);
+  static async getIndianHits(page) {
+    page = page || 1;
+    try {
+      const [res1, res2] = await Promise.all([
+        this.tmdb('/discover/movie', { page: page, with_original_language: 'hi', sort_by: 'popularity.desc' }),
+        this.tmdb('/discover/movie', { page: page, with_original_language: 'te', sort_by: 'popularity.desc' })
+      ]);
+      return { success: true, results: this.deduplicate([
+        ...(res1.results || []).map(m => this.normalize(m, 'movie')),
+        ...(res2.results || []).map(m => this.normalize(m, 'movie'))
+      ]) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getByYear(year, type = 'movie', genre = null, page = 1) {
-    return this.request(`/year/${year}?type=${type}${genre ? `&genre=${genre}` : ''}&page=${page}`);
+  static async getByYear(year, type, genre, page) {
+    type = type || 'movie'; page = page || 1;
+    try {
+      const path = type === 'tv' ? '/discover/tv' : '/discover/movie';
+      const params = { page: page, sort_by: 'popularity.desc' };
+      if (type === 'tv') params.first_air_date_year = year;
+      else params.primary_release_year = year;
+      if (genre) params.with_genres = genre;
+      const data = await this.tmdb(path, params);
+      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, type))) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getDetails(id, type = 'movie') {
-    return this.request(`/details/${id}?type=${type}`);
+  static async getDetails(id, type) {
+    type = type || 'movie';
+    try {
+      const path = type === 'tv' ? '/tv/' + id : '/movie/' + id;
+      const m = await this.tmdb(path, { append_to_response: 'videos,credits,similar' });
+      const norm = this.normalize(m, type);
+      norm.genres = (m.genres || []).map(g => g.name);
+      norm.cast = ((m.credits && m.credits.cast) || []).slice(0, 10).map(c => ({ name: c.name, character: c.character }));
+      const videos = (m.videos && m.videos.results) || [];
+      norm.trailer_key = (videos.find(v => v.type === 'Trailer' && v.site === 'YouTube') || {}).key || null;
+      norm.seasons = m.seasons || [];
+      norm.similar = this.deduplicate(((m.similar && m.similar.results) || []).map(s => this.normalize(s, type)));
+      return { success: true, data: norm };
+    } catch (e) { return { success: false, data: null }; }
   }
 
-  static async getEpisodes(tvId, season = 1) {
-    return this.request(`/tv/${tvId}/season/${season}`);
+  static async getEpisodes(tvId, season) {
+    season = season || 1;
+    try {
+      const data = await this.tmdb('/tv/' + tvId + '/season/' + season);
+      return { success: true, episodes: data.episodes || [] };
+    } catch (e) { return { success: false, episodes: [] }; }
   }
 
-  static async search(query, page = 1) {
-    return this.request(`/search?q=${encodeURIComponent(query)}&page=${page}`);
+  static async search(query, page) {
+    page = page || 1;
+    try {
+      const data = await this.tmdb('/search/multi', { query: query, page: page });
+      return { success: true, results: this.deduplicate(
+        (data.results || []).filter(r => r.media_type !== 'person').map(m => this.normalize(m))
+      ) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
   static async getGenres() {
-    return this.request('/genres');
+    try {
+      const [movies, tv] = await Promise.all([this.tmdb('/genre/movie/list'), this.tmdb('/genre/tv/list')]);
+      const all = [...(movies.genres || []), ...(tv.genres || [])];
+      const seen = new Set();
+      return { success: true, results: all.filter(g => { if (seen.has(g.id)) return false; seen.add(g.id); return true; }) };
+    } catch (e) { return { success: false, results: [] }; }
   }
 
-  // --- Streaming & Live TV ---
-  static async resolveStream(id, type = 'movie', server = null, season = null, episode = null) {
-    let query = `type=${type}`;
-    if (server) query += `&server=${server}`;
-    if (season) query += `&season=${season}`;
-    if (episode) query += `&episode=${episode}`;
-    return this.request(`/stream/resolve/${id}?${query}`);
+  static async resolveStream(id, type, server, season, episode) {
+    type = type || 'movie'; server = server || 'autoembed';
+    const isTv = type === 'tv';
+    const s = season || 1;
+    const ep = episode || 1;
+    const embedMap = {
+      autoembed:   isTv ? 'https://autoembed.co/tv/tmdb/' + id + '-' + s + '-' + ep : 'https://autoembed.co/movie/tmdb/' + id,
+      vidplay:     isTv ? 'https://vidsrc.me/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://vidsrc.me/embed/movie?tmdb=' + id,
+      superstream: isTv ? 'https://multiembed.mov/?video_id=' + id + '&tmdb=1&s=' + s + '&e=' + ep : 'https://multiembed.mov/?video_id=' + id + '&tmdb=1',
+      smashy:      isTv ? 'https://embed.smashystream.com/playere.php?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://embed.smashystream.com/playere.php?tmdb=' + id,
+      kisskh:      isTv ? 'https://2embed.cc/embedtv/' + id + '&s=' + s + '&e=' + ep : 'https://2embed.cc/embed/' + id,
+      toonstream:  isTv ? 'https://vidsrc.to/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.to/embed/movie/' + id,
+      uhdmovies:   isTv ? 'https://vidsrc.cc/v2/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.cc/v2/embed/movie/' + id,
+      desicinemas: isTv ? 'https://autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep : 'https://autoembed.cc/embed/movie/' + id
+    };
+    const allServers = [
+      { id: 'autoembed',   name: 'Server 1 (AutoEmbed 4K)',     status: 'online' },
+      { id: 'vidplay',     name: 'Server 2 (VidSrc VIP)',        status: 'online' },
+      { id: 'superstream', name: 'Server 3 (SuperStream Cloud)', status: 'online' },
+      { id: 'smashy',      name: 'Server 4 (SmashyStream HD)',   status: 'online' },
+      { id: 'kisskh',      name: 'Server 5 (KissKH AsianDrama)', status: 'online' },
+      { id: 'toonstream',  name: 'Server 6 (ToonStream Anime)',  status: 'online' },
+      { id: 'uhdmovies',   name: 'Server 7 (UHDMovies 4K)',     status: 'online' },
+      { id: 'desicinemas', name: 'Server 8 (DesiCinemas Multi)', status: 'online' }
+    ];
+    const activeUrl = embedMap[server] || embedMap['autoembed'];
+    return {
+      success: true,
+      data: {
+        activeServer: {
+          id: server,
+          name: (allServers.find(x => x.id === server) || {}).name || 'AutoEmbed 4K',
+          embedUrl: activeUrl,
+          sources: [{ url: activeUrl, type: 'hls', quality: '1080p', isIframe: true }],
+          subtitles: [
+            { lang: 'English', url: '', label: 'English [CC]' },
+            { lang: 'Hindi',   url: '', label: 'Hindi (Dubbed)' },
+            { lang: 'Tamil',   url: '', label: 'Tamil' },
+            { lang: 'Telugu',  url: '', label: 'Telugu' },
+            { lang: 'Spanish', url: '', label: 'Espanol' }
+          ]
+        },
+        allServers
+      }
+    };
   }
 
-  static async getLiveChannels() {
-    return this.request('/livetv');
-  }
+  static async getLiveChannels() { return { success: true, results: [] }; }
+  static async resolveLiveChannel() { return { success: false }; }
+  static async getHealth() { return { success: true, status: 'ok' }; }
 
-  static async resolveLiveChannel(channelId) {
-    return this.request(`/livetv/${channelId}`);
-  }
-
-  static async getHealth() {
-    return this.request('/health');
-  }
-
-  // --- User State ---
   static async register(username, email, password) {
-    return this.request('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ username, email, password })
-    });
+    const users = JSON.parse(localStorage.getItem('cs_users') || '[]');
+    if (users.find(u => u.email === email)) return { success: false, error: 'Email already registered' };
+    const user = { id: Date.now(), username, email, password };
+    users.push(user);
+    localStorage.setItem('cs_users', JSON.stringify(users));
+    const token = btoa(JSON.stringify({ id: user.id, email, username }));
+    this.setAuthToken(token);
+    return { success: true, token, user: { id: user.id, username, email } };
   }
 
   static async login(email, password) {
-    return this.request('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    });
+    const users = JSON.parse(localStorage.getItem('cs_users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+    if (!user) return { success: false, error: 'Invalid credentials' };
+    const token = btoa(JSON.stringify({ id: user.id, email, username: user.username }));
+    this.setAuthToken(token);
+    return { success: true, token, user: { id: user.id, username: user.username, email } };
   }
 
   static async getMe() {
-    return this.request('/auth/me');
+    const token = this.getAuthToken();
+    if (!token) return { success: false };
+    try { return { success: true, user: JSON.parse(atob(token)) }; }
+    catch (e) { return { success: false }; }
   }
 
   static async getWatchHistory() {
-    const guestId = this.getGuestId();
-    return this.request(`/user/history?guestId=${guestId}`);
+    return { success: true, history: JSON.parse(localStorage.getItem('cs_history') || '[]') };
   }
 
   static async saveProgress(progressData) {
-    const guestId = this.getGuestId();
-    return this.request('/user/progress', {
-      method: 'POST',
-      body: JSON.stringify({ ...progressData, guestId })
-    });
+    const history = JSON.parse(localStorage.getItem('cs_history') || '[]');
+    const idx = history.findIndex(h => h.id === progressData.id && h.type === progressData.type);
+    const entry = Object.assign({}, progressData, { updatedAt: new Date().toISOString() });
+    if (idx >= 0) history[idx] = entry; else history.unshift(entry);
+    localStorage.setItem('cs_history', JSON.stringify(history.slice(0, 50)));
+    return { success: true };
   }
 
   static async getBookmarks() {
-    const guestId = this.getGuestId();
-    return this.request(`/user/bookmarks?guestId=${guestId}`);
+    return { success: true, bookmarks: JSON.parse(localStorage.getItem('cs_bookmarks') || '[]') };
   }
 
   static async toggleBookmark(id, title, poster, rating, year, type) {
-    const guestId = this.getGuestId();
-    const media = typeof id === 'object' ? id : { id, title, poster, rating, year, type };
-    return this.request('/user/bookmarks/toggle', {
-      method: 'POST',
-      body: JSON.stringify({ ...media, guestId })
-    });
+    const bookmarks = JSON.parse(localStorage.getItem('cs_bookmarks') || '[]');
+    const idx = bookmarks.findIndex(b => b.id === id);
+    if (idx >= 0) {
+      bookmarks.splice(idx, 1);
+    } else {
+      bookmarks.unshift({ id, title, poster, rating, year, type, addedAt: new Date().toISOString() });
+    }
+    localStorage.setItem('cs_bookmarks', JSON.stringify(bookmarks));
+    return { success: true, action: idx >= 0 ? 'removed' : 'added' };
   }
+
+  static async request(endpoint, options) {
+    options = options || {};
+    if (options.method === 'POST') return { success: false, error: 'Use direct methods' };
+    if (endpoint.startsWith('/hero')) return this.getHero();
+    const page = parseInt((endpoint.match(/page=(\d+)/) || [])[1]) || 1;
+    if (endpoint.startsWith('/trending')) return this.getTrending(page);
+    if (endpoint.startsWith('/animemovie') || endpoint.startsWith('/anime-movies')) {
+      return this.getAnimeMovies((endpoint.match(/category=([^&]+)/) || [])[1] || 'popular', page);
+    }
+    if (endpoint.startsWith('/asian-drama') || endpoint.startsWith('/asiandrama')) return this.getAsianDrama(page);
+    if (endpoint.startsWith('/anime')) return this.getAnime((endpoint.match(/category=([^&]+)/) || [])[1] || 'popular', page);
+    if (endpoint.startsWith('/kdramas') || endpoint.startsWith('/kdrama')) return this.getKDramas(page);
+    if (endpoint.startsWith('/indian') || endpoint.startsWith('/bollywood')) return this.getIndianHits(page);
+    if (endpoint.startsWith('/movies') || endpoint.startsWith('/movie')) {
+      return this.getMovies(
+        (endpoint.match(/category=([^&]+)/) || [])[1] || 'popular',
+        (endpoint.match(/genre=(\d+)/) || [])[1] || null,
+        page
+      );
+    }
+    if (endpoint.startsWith('/tvseries') || endpoint.startsWith('/tv')) {
+      return this.getTVSeries(
+        (endpoint.match(/category=([^&]+)/) || [])[1] || 'popular',
+        (endpoint.match(/genre=(\d+)/) || [])[1] || null,
+        page
+      );
+    }
+    if (endpoint.startsWith('/details/')) {
+      const id = (endpoint.match(/\/details\/(\d+)/) || [])[1];
+      return this.getDetails(id, endpoint.includes('type=tv') ? 'tv' : 'movie');
+    }
+    if (endpoint.startsWith('/search')) {
+      const q = (endpoint.match(/q=([^&]+)/) || [])[1] || '';
+      return this.search(decodeURIComponent(q));
+    }
+    if (endpoint.startsWith('/stream/resolve/')) {
+      const id = (endpoint.match(/\/stream\/resolve\/(\d+)/) || [])[1];
+      const params = new URLSearchParams((endpoint.split('?')[1]) || '');
+      return this.resolveStream(id, params.get('type') || 'movie', params.get('server'), params.get('season'), params.get('episode'));
+    }
+    if (endpoint.startsWith('/year/')) {
+      const year = (endpoint.match(/\/year\/(\d{4})/) || [])[1] || 2024;
+      const params = new URLSearchParams((endpoint.split('?')[1]) || '');
+      return this.getByYear(year, params.get('type') || 'movie', params.get('genre'), parseInt(params.get('page')) || 1);
+    }
+    if (endpoint.startsWith('/genres')) return this.getGenres();
+    return { success: false, results: [] };
+  }
+
+  static async fallbackTMDB(endpoint) { return this.request(endpoint); }
 }

@@ -569,6 +569,9 @@ class App {
     try {
       let items = [];
       let res = null;
+      const activeFilterObj = (cfg.filters || []).find(f => f.id === subFilter);
+      const genreId = activeFilterObj ? activeFilterObj.genreId : null;
+
       if (catKey === 'movies') {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'now_playing', 'upcoming'].includes(subFilter) ? subFilter : 'popular');
         res = await ApiService.getMovies(endpoint, genreId, page);

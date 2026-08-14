@@ -9,3 +9,7 @@ Thumbs.db
 backend/data/*.db
 .system_generated/
 scratch/
+
+mingit/
+*.zip
+

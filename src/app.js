@@ -480,7 +480,8 @@ class App {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'on_the_air', 'airing_today'].includes(subFilter) ? subFilter : 'popular');
         res = await ApiService.getTVSeries(endpoint, genreId, page);
       } else if (catKey === 'animemovie') {
-        res = await ApiService.getAnimeMovies(page);
+        const endpoint = subFilter === 'top_rated' ? 'top_rated' : 'popular';
+        res = await ApiService.getAnimeMovies(endpoint, page);
       } else if (catKey === 'anime') {
         const endpoint = subFilter === 'top_rated' ? 'top_rated' : 'popular';
         res = await ApiService.getAnime(endpoint, page);
@@ -505,7 +506,10 @@ class App {
       }
 
       if (!items || items.length === 0) {
-        const fallback = await ApiService.fallbackTMDB(`/${catKey}?page=${page}`);
+        let fallbackUrl = `/${catKey}?page=${page}`;
+        if (catKey === 'animemovie') fallbackUrl = `/animemovie?page=${page}`;
+        if (catKey === 'asian_drama') fallbackUrl = `/asian-drama?page=${page}`;
+        const fallback = await ApiService.fallbackTMDB(fallbackUrl);
         if (fallback && Array.isArray(fallback.results)) {
           items = fallback.results;
         }

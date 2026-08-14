@@ -87,6 +87,27 @@ export class MediaController {
     }
   }
 
+  static async getAnimeMovies(req, res) {
+    try {
+      const category = req.query.category || 'popular';
+      const page = parseInt(req.query.page) || 1;
+      const items = await TMDBService.getAnimeMovies(category, page);
+      res.json({ success: true, results: items });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  static async getAsianDrama(req, res) {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const items = await TMDBService.getAsianDrama(page);
+      res.json({ success: true, results: items });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
   static async getKDramas(req, res) {
     try {
       const page = parseInt(req.query.page) || 1;

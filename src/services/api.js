@@ -275,8 +275,8 @@ export class ApiService {
     return this.request(`/anime?category=${category}&page=${page}`);
   }
 
-  static async getAnimeMovies(page = 1) {
-    return this.request(`/anime-movies?page=${page}`);
+  static async getAnimeMovies(category = 'popular', page = 1) {
+    return this.request(`/animemovie?category=${category}&page=${page}`);
   }
 
   static async getAsianDrama(page = 1) {

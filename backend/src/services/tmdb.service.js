@@ -144,6 +144,36 @@ export class TMDBService {
     });
   }
 
+  // --- 🎬 Anime Movies & Feature Films ---
+  static async getAnimeMovies(category = 'popular', page = 1) {
+    return cached('anime_movies_' + category + '_' + page, async () => {
+      const params = {
+        page: parseInt(page) || 1,
+        with_genres: 16,
+        with_original_language: 'ja',
+        sort_by: 'popularity.desc'
+      };
+      if (category === 'top_rated') {
+        params.sort_by = 'vote_average.desc';
+        params['vote_count.gte'] = 250;
+      }
+      const data = await tmdb('/discover/movie', params);
+      return (data.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'movie', quality: '4K Ultra HD' }));
+    });
+  }
+
+  // --- 🌸 Asian Drama & Series Hub ---
+  static async getAsianDrama(page = 1) {
+    return cached('asian_drama_' + page, async () => {
+      const data = await tmdb('/discover/tv', {
+        page: parseInt(page) || 1,
+        with_original_language: 'ko|zh|ja|th',
+        sort_by: 'popularity.desc'
+      });
+      return (data.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'tv' }));
+    });
+  }
+
   // --- 🇰🇷 Trending K-Dramas ---
   static async getKDramas(page = 1) {
     return cached('kdramas_' + page, async () => {

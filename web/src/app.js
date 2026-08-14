@@ -262,6 +262,102 @@ class App {
     }
   }
 
+  // ── Home View Engine (Hero + Multi-Category Rows) ────────────────
+  async renderHomeView(heroContainer, mediaContainer) {
+    try {
+      // 1. Fetch hero items and render hero banner
+      let heroItems = [];
+      try {
+        const heroRes = await ApiService.getHero();
+        heroItems = heroRes.results || heroRes.data || (Array.isArray(heroRes) ? heroRes : []);
+      } catch (e) {}
+
+      if (!heroItems || heroItems.length === 0) {
+        const fb = await ApiService.fallbackTMDB('/hero');
+        heroItems = fb.results || [];
+      }
+
+      if (heroContainer && heroItems.length > 0) {
+        HeroBanner.render(heroContainer, heroItems);
+      }
+
+      // 2. Fetch all media sections in parallel
+      const [
+        trendingRes,
+        moviesRes,
+        topRatedRes,
+        tvRes,
+        animeRes,
+        animeMoviesRes,
+        asianDramaRes,
+        kdramaRes,
+        indianRes,
+        actionRes,
+        scifiRes,
+        comedyRes,
+        horrorRes
+      ] = await Promise.all([
+        ApiService.getTrending().catch(() => ({ results: [] })),
+        ApiService.getMovies('popular').catch(() => ({ results: [] })),
+        ApiService.getMovies('top_rated').catch(() => ({ results: [] })),
+        ApiService.getTVSeries('popular').catch(() => ({ results: [] })),
+        ApiService.getAnime('popular').catch(() => ({ results: [] })),
+        ApiService.getAnimeMovies('popular').catch(() => ({ results: [] })),
+        ApiService.getAsianDrama().catch(() => ({ results: [] })),
+        ApiService.getKDramas().catch(() => ({ results: [] })),
+        ApiService.getIndianHits().catch(() => ({ results: [] })),
+        ApiService.getMovies('popular', 28).catch(() => ({ results: [] })),
+        ApiService.getMovies('popular', 878).catch(() => ({ results: [] })),
+        ApiService.getMovies('popular', 35).catch(() => ({ results: [] })),
+        ApiService.getMovies('popular', 27).catch(() => ({ results: [] }))
+      ]);
+
+      const unwrap = (r) => (r && (r.results || r.data || (Array.isArray(r) ? r : []))) || [];
+
+      const rows = [
+        { title: "⚡ Trending Worldwide", items: unwrap(trendingRes), id: "row-trending", type: "trending", cat: "popular" },
+        { title: "🎬 Blockbuster Hollywood Hits", items: unwrap(moviesRes), id: "row-movies", type: "movie", cat: "popular" },
+        { title: "⭐ Critically Acclaimed Masterpieces", items: unwrap(topRatedRes), id: "row-top-rated", type: "movie", cat: "top_rated" },
+        { title: "📺 Binge-Worthy TV Series", items: unwrap(tvRes), id: "row-tv", type: "tv", cat: "popular" },
+        { title: "⛩️ Anime Universe & Simulcasts", items: unwrap(animeRes), id: "row-anime", type: "anime", cat: "popular" },
+        { title: "🎬 Anime Movies & Theatrical Hits", items: unwrap(animeMoviesRes), id: "row-animemovie", type: "animemovie", cat: "popular" },
+        { title: "🌸 Asian Drama & K-Drama Hits", items: unwrap(asianDramaRes).length ? unwrap(asianDramaRes) : unwrap(kdramaRes), id: "row-asian-drama", type: "asian_drama", cat: "popular" },
+        { title: "🎭 Bollywood & Indian Blockbusters", items: unwrap(indianRes), id: "row-indian", type: "indian", cat: "popular" },
+        { title: "💥 Adrenaline-Fueled Action Sagas", items: unwrap(actionRes), id: "row-action", type: "movie", cat: "action" },
+        { title: "🚀 Sci-Fi, Cyberpunk & Futuristic", items: unwrap(scifiRes), id: "row-scifi", type: "movie", cat: "scifi" },
+        { title: "😂 Stand-Up & Comedy Hits", items: unwrap(comedyRes), id: "row-comedy", type: "movie", cat: "comedy" },
+        { title: "👻 Supernatural & Horror Thrillers", items: unwrap(horrorRes), id: "row-horror", type: "movie", cat: "horror" }
+      ];
+
+      // 3. Render rows into mediaContainer
+      mediaContainer.innerHTML = rows
+        .filter(r => r.items && r.items.length > 0)
+        .map(r => MediaGrid.renderRow(r.title, r.items, r.id, r.type, r.cat))
+        .join('');
+
+    } catch (err) {
+      console.error('Error rendering home view:', err);
+    }
+  }
+
+  exploreCategory(title, type, endpoint) {
+    if (type === 'tv') {
+      window.Router.navigate('tv');
+    } else if (type === 'anime') {
+      window.Router.navigate('anime');
+    } else if (type === 'animemovie') {
+      window.Router.navigate('animemovie');
+    } else if (type === 'asian_drama' || type === 'kdrama') {
+      window.Router.navigate('asian_drama');
+    } else if (type === 'indian') {
+      window.Router.navigate('indian');
+    } else if (type === 'trending') {
+      window.Router.navigate('trending');
+    } else {
+      window.Router.navigate('movies');
+    }
+  }
+
   // ── Unified Dedicated Category Hub Engine ────────────────────────
   async renderCategoryHub(catKey, subFilter = 'all', page = 1, append = false) {
     this.currentCategory = { key: catKey, filter: subFilter, page: page };
@@ -1899,6 +1995,6 @@ class App {
 }
 
 const app = new App();
-app.init();
 window.App = app;
 window.Router = { navigate: (r) => app.navigate(r) };
+app.init();

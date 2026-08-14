@@ -64,7 +64,7 @@ app.get('/robots.txt', (req, res) => {
 app.use('/api/v1', apiRoutes);
 app.use('/v1', apiRoutes);
 app.use('/api', apiRoutes);
-app.use('/', apiRoutes);
+
 
 // 6. Serve Web Frontend
 const webPath = path.resolve(__dirname, '../../web');

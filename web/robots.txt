@@ -3,9 +3,14 @@ Allow: /
 Allow: /movie
 Allow: /movies
 Allow: /tv
+Allow: /tvseries
 Allow: /tv-shows
 Allow: /series
 Allow: /anime
+Allow: /animemovie
+Allow: /anime-movies
+Allow: /asian-drama
+Allow: /asiandrama
 Allow: /kdrama
 Allow: /kdramas
 Allow: /indian

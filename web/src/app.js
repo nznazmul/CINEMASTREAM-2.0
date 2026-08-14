@@ -79,7 +79,7 @@ class App {
       }
     }
 
-    // Category Hubs: /movie, /movies, /tv, /tv-shows, /series, /anime, /kdrama, /kdramas, /korean, /indian, /bollywood, /trending
+    // Category Hubs: /movie, /movies, /tv, /tvseries, /tv-shows, /series, /animemovie, /anime, /asian-drama, /kdrama, /indian, /trending
     if (hash === 'movie' || hash === 'movies' || hash.startsWith('movies?') || hash.startsWith('movie?')) {
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const filter = params.get('filter') || 'all';
@@ -87,10 +87,17 @@ class App {
       return;
     }
 
-    if (hash === 'tv' || hash === 'tv-shows' || hash === 'series' || hash.startsWith('tv?') || hash.startsWith('tv-shows?')) {
+    if (hash === 'tv' || hash === 'tvseries' || hash === 'tv-series' || hash === 'tv-shows' || hash === 'series' || hash.startsWith('tv?') || hash.startsWith('tvseries?') || hash.startsWith('tv-shows?')) {
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const filter = params.get('filter') || 'all';
       await this.renderCategoryHub('tv', filter, 1);
+      return;
+    }
+
+    if (hash === 'animemovie' || hash === 'anime-movie' || hash === 'anime-movies' || hash.startsWith('animemovie?')) {
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const filter = params.get('filter') || 'all';
+      await this.renderCategoryHub('animemovie', filter, 1);
       return;
     }
 
@@ -98,6 +105,13 @@ class App {
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const filter = params.get('filter') || 'all';
       await this.renderCategoryHub('anime', filter, 1);
+      return;
+    }
+
+    if (hash === 'asian-drama' || hash === 'asiandrama' || hash === 'asian_drama' || hash.startsWith('asian-drama?')) {
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const filter = params.get('filter') || 'all';
+      await this.renderCategoryHub('asian_drama', filter, 1);
       return;
     }
 
@@ -303,13 +317,41 @@ class App {
         title: "Anime Hub & Simulcasts",
         icon: "⛩️",
         badge: "Anime Nation",
-        desc: "Stream the latest Japanese anime episodes, simulcasts, and legendary anime movies with original Japanese audio and multi-language dubs.",
+        desc: "Stream the latest Japanese anime episodes, simulcasts, and legendary anime series with original Japanese audio and multi-language dubs.",
         type: "anime",
         filters: [
           { id: "all", label: "🔥 Top Trending" },
           { id: "top_rated", label: "⭐ Masterpieces" },
           { id: "action", label: "⚔️ Action & Shonen" },
           { id: "fantasy", label: "🌸 Fantasy & Isekai" }
+        ]
+      },
+      animemovie: {
+        title: "Anime Movies & Theatrical Hits",
+        icon: "🎬",
+        badge: "Anime Cinema",
+        desc: "Watch critically acclaimed anime movies, box-office blockbusters, Studio Ghibli masterpieces, and theatrical feature films in 4K Ultra HD.",
+        type: "animemovie",
+        filters: [
+          { id: "all", label: "🔥 All Anime Movies" },
+          { id: "top_rated", label: "⭐ All-Time Masterpieces" },
+          { id: "action", label: "⚔️ Action Films" },
+          { id: "fantasy", label: "🌸 Fantasy & Romance" }
+        ]
+      },
+      asian_drama: {
+        title: "Asian Drama & Series Hub",
+        icon: "🌸",
+        badge: "Drama Universe",
+        desc: "Stream the finest Korean Dramas (K-Drama), Chinese Dramas (C-Drama), Japanese Dramas (J-Drama), and Thai series with English subtitles.",
+        type: "asian_drama",
+        filters: [
+          { id: "all", label: "🔥 All Asian Drama" },
+          { id: "kdrama", label: "🇰🇷 Korean Dramas" },
+          { id: "chinese", label: "🇨🇳 Chinese Dramas" },
+          { id: "japanese", label: "🇯🇵 Japanese Dramas" },
+          { id: "romance", label: "💖 Romantic Dramas" },
+          { id: "thriller", label: "🔪 Thrillers & Mystery" }
         ]
       },
       kdrama: {
@@ -437,9 +479,15 @@ class App {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'on_the_air', 'airing_today'].includes(subFilter) ? subFilter : 'popular');
         const res = await ApiService.getTVSeries(endpoint, genreId, page);
         items = res.results || res || [];
+      } else if (catKey === 'animemovie') {
+        const res = await ApiService.getAnimeMovies(page);
+        items = res.results || res || [];
       } else if (catKey === 'anime') {
         const endpoint = subFilter === 'top_rated' ? 'top_rated' : 'popular';
         const res = await ApiService.getAnime(endpoint, page);
+        items = res.results || res || [];
+      } else if (catKey === 'asian_drama') {
+        const res = await ApiService.getAsianDrama(page);
         items = res.results || res || [];
       } else if (catKey === 'kdrama') {
         const res = await ApiService.getKDramas(page);

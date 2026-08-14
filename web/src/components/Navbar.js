@@ -8,9 +8,10 @@ export class Navbar {
         <span class="nf-logo" onclick="window.Router.navigate('home')">CINEMASTREAM</span>
         <ul class="nf-nav-links">
           <li><a href="/movies" class="${route === 'movies' || route === 'movie' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('movies')">Movies</a></li>
-          <li><a href="/tv" class="${route === 'tv' || route === 'tv-shows' || route === 'series' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('tv')">TV Shows</a></li>
+          <li><a href="/tv" class="${route === 'tv' || route === 'tvseries' || route === 'tv-shows' || route === 'series' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('tv')">TV Shows</a></li>
           <li><a href="/anime" class="${route === 'anime' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('anime')">⛩️ Anime</a></li>
-          <li><a href="/kdrama" class="${route === 'kdrama' || route === 'kdramas' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('kdrama')">🌸 K-Drama</a></li>
+          <li><a href="/animemovie" class="${route === 'animemovie' || route === 'anime-movies' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('animemovie')">🎬 Anime Movies</a></li>
+          <li><a href="/asian-drama" class="${route === 'asian_drama' || route === 'asian-drama' || route === 'kdrama' || route === 'kdramas' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('asian_drama')">🌸 Asian Drama</a></li>
           <li><a href="/indian" class="${route === 'indian' || route === 'bollywood' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('indian')">🎭 Indian Hits</a></li>
           <li><a href="/years" class="${route === 'years' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('years')">📅 2000–2026</a></li>
           <li><a href="/bookmarks" class="${route === 'bookmarks' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('bookmarks')">My List</a></li>
@@ -37,17 +38,17 @@ export class Navbar {
           <span class="icon">🎬</span>
           <span>Movies</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'tv' ? 'active' : ''}" onclick="window.Router.navigate('tv')">
+        <a class="nf-mobile-nav-item ${route === 'tv' || route === 'tvseries' ? 'active' : ''}" onclick="window.Router.navigate('tv')">
           <span class="icon">📺</span>
           <span>TV</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'anime' ? 'active' : ''}" onclick="window.Router.navigate('anime')">
+        <a class="nf-mobile-nav-item ${route === 'anime' || route === 'animemovie' ? 'active' : ''}" onclick="window.Router.navigate('anime')">
           <span class="icon">⛩️</span>
           <span>Anime</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'kdrama' ? 'active' : ''}" onclick="window.Router.navigate('kdrama')">
+        <a class="nf-mobile-nav-item ${route === 'asian_drama' || route === 'asian-drama' || route === 'kdrama' ? 'active' : ''}" onclick="window.Router.navigate('asian_drama')">
           <span class="icon">🌸</span>
-          <span>K-Drama</span>
+          <span>Drama</span>
         </a>
         <a class="nf-mobile-nav-item ${route === 'bookmarks' ? 'active' : ''}" onclick="window.Router.navigate('bookmarks')">
           <span class="icon">❤️</span>

@@ -1,94 +1,112 @@
-# CinemaStream 2.0 - Secure Full-Stack Movie Web Platform & Android/Android TV Apps
+# 🎬 CinemaStream 2.0 — Ultimate 4K Streaming Platform
 
 [![Node.js](https://img.shields.io/badge/Node.js-v20+-green.svg)](https://nodejs.org)
 [![Express](https://img.shields.io/badge/API-Express%20Fastify-blue.svg)](https://expressjs.com)
-[![Android](https://img.shields.io/badge/Android%20%26%20TV-Leanback%20%2B%20ExoPlayer-brightgreen.svg)](https://developer.android.com/tv)
-[![Security](https://img.shields.io/badge/Security-HMAC--SHA256%20%2B%20Ad--Shield-red.svg)](#security-architecture)
+[![Streaming Mirrors](https://img.shields.io/badge/Mirrors-6%20Ultra%20HD%20CDNs-red.svg)](#-multi-mirror-streaming-matrix)
+[![Audio](https://img.shields.io/badge/Audio-Multi--Dub%20(Hindi%2FTamil%2FTelugu%2FEng)-orange.svg)](#-multi-audio-dubbing-matrix)
+[![Catalog](https://img.shields.io/badge/Catalog-2000%20to%202026%20(700K%2B%20Titles)-purple.svg)](#-2000-to-2026-complete-catalog-universe)
+[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
 
-A cinema-grade movie & TV streaming ecosystem with multi-source dynamic scraper fallback, M3U8 proxy stream encryption, ad-shield sandbox protection, and cross-platform Android & Android TV compatibility.
+A cinema-grade, full-stack movie, TV series, and anime streaming ecosystem featuring **6 fast live streaming mirrors**, **multi-language audio dubbing**, **ambient 4K teaser autoplay**, **scroll-aware auto-pause/resume**, **automatic continue watching history**, and **complete 2000–2026 catalog discovery**.
 
 ---
 
 ## 🌟 Key Features
 
-1. **Dynamic Multi-Source Scraper & Fallback Engine**:
-   - Synthesizes extractors inspired by `LibreTV`, `amvstrm`, `hitfilm-core`, and `Undermovies`.
-   - Queries multiple providers concurrently; if an upstream site changes its structure or obfuscation, the engine automatically falls back to healthy servers in < 300ms.
-   - Live stream health monitor with latency telemetry and uptime scoring.
-
-2. **Full Security & Anti-Leak Architecture**:
-   - **M3U8 Rewriter & Segment Proxy**: Proxies upstream HLS playlists and media segments, masking the origin CDN/IP and stripping CORS headers.
-   - **Signed Short-Lived Stream Tokens**: HMAC-SHA256 encrypted tokens (`/api/v1/stream/watch?token=...`) prevent hotlinking and external bandwidth theft.
-   - **Ad-Shield Sandbox**: Blocks malicious redirects, popunders, and crypto-miners from third-party scraper embeds.
-   - **Rate Limiting & CORS Armor**: Protects search and streaming endpoints from scraping bots.
-
-3. **Modern Cinematic Web Interface**:
-   - Dark Luxury Obsidian theme with neon cyan and gold highlights.
-   - Glassmorphism overlays, responsive carousels, and interactive hover cards.
-   - Custom HLS.js video player with quality switcher (4K/1080p/720p), multi-language subtitle parser (.vtt), skip intro (85s), multi-server switcher, and season/episode drawer.
-   - Resume playback progress bar synced to local and server state.
-
-4. **Android Mobile & Android TV (Leanback) Support**:
-   - Native TV remote D-pad spatial navigation support.
-   - Hardware-accelerated video decoding with ExoPlayer and WebKit WebView bridge.
-   - Progressive Web App (PWA) with offline asset caching.
+### 1. 🌐 6 Fast Ultra HD Streaming Mirrors
+CinemaStream dynamically resolves and balances playback across 6 global CDN mirrors:
+1. **Server 1 (AutoEmbed Ultra HD)**: Fast 4K/1080p playback with multi-audio dub tracks (Hindi, Tamil, Telugu, English).
+2. **Server 2 (VidSrc Ultra HD)**: Low-latency original audio with multi-language subtitle tracks.
+3. **Server 3 (SmashyStream)**: Fast backup cluster for new releases.
+4. **Server 4 (2Embed VIP)**: High-speed European & US mirror cluster.
+5. **Server 5 (MultiEmbed Cloud)**: Dedicated regional audio mirror (Bollywood & South Indian hits).
+6. **Server 6 (VidSrc PRO Mirror)**: 99.9% uptime failover node.
 
 ---
 
-## 🏗️ Project Architecture
+### 2. 📅 2000 to 2026 Complete Catalog Universe
+- Browse over **700,000+ movies, TV shows, and anime** released between **2000 and 2026**.
+- Interactive glowing year chip selector (2026 down to 2000) with 1-click **🎬 Movies** vs **📺 TV Series** filters.
+- Multi-page infinite scroll pagination (**"Load More Titles ↓"**).
+
+---
+
+### 3. ⛩️ Dedicated Anime & Asian Drama Hub
+- Dedicated **⛩️ Anime** hub with weekly simulcasts (*Demon Slayer, Solo Leveling, Jujutsu Kaisen, Frieren*).
+- Dedicated categories for **🇰🇷 K-Dramas** and **🇮🇳 Bollywood & Regional Blockbusters**.
+
+---
+
+### 4. 🔊 Ambient 4K Video Teaser Autoplay & Scroll Awareness
+- **Hero & Detail Modal Teasers**: Automatically streams high-definition background trailers with ambient crossfade overlays.
+- **Scroll-Aware Auto-Pause/Resume**: Automatically pauses video playback when scrolling down past the fold (> 320px) and resumes when scrolling back up (< 220px).
+- **🔊 Sound Toggle**: Instant 1-click mute and unmute controls.
+
+---
+
+### 5. 🍿 Automatic "Continue Watching" with Progress Bars
+- Automatically records timestamps and watch percentage during playback.
+- Displays Netflix-style progress bars with episode indicators (e.g. `S1 : E3 • 78% watched`) and 1-click resume.
+
+---
+
+### 6. 📱 Full Mobile & Android TV Responsiveness
+- **Netflix Mobile Bottom Navigation** (`🏠 Home`, `🎬 Movies`, `📺 TV Shows`, `⛩️ Anime`, `❤️ My List`) with iOS safe-area insets.
+- **Native Bottom Sheet Modals** with smooth touch gestures.
+- **D-Pad Spatial Navigation** support for Android TV / Smart TV remotes.
+
+---
+
+### 7. 🔍 SEO-Optimized Pages & Schema.org JSON-LD
+- Built-in **FAQ**, **Privacy Policy**, **Contact Us & Content Request Desk**, and **Speed Test** diagnostic tool.
+- Rich OpenGraph cards and Schema.org `WebSite` & `FAQPage` structured data for Google search indexing.
+
+---
+
+## 🏗️ Project Structure
 
 ```text
 c:\new\
 ├── backend/                       # Core API Gateway, Security, Stream Proxy & Scrapers
 │   ├── src/
-│   │   ├── config/                # Environment variables & provider settings
-│   │   ├── controllers/           # Media, Stream, User & Live TV controllers
-│   │   ├── middleware/            # Security headers, JWT auth, Rate limit, Stream token verifier
-│   │   ├── models/                # Database (Users, Watch History, Bookmarks, Telemetry)
+│   │   ├── config/                # Environment variables & constants
+│   │   ├── controllers/           # Media, Stream, and User controllers
+│   │   ├── middleware/            # Security headers, JWT auth, Rate limiting, HMAC tokens
+│   │   ├── models/                # Local database & telemetry engine
 │   │   ├── routes/                # Express API routes (/api/v1/...)
-│   │   ├── scrapers/              # Modular Scraper Matrix & Providers (Vidplay, Superstream, Smashy, IPTV)
-│   │   ├── services/              # TMDB Metadata Sync, Security HMAC, Stream Proxying
-│   │   └── server.js              # Express Server entrypoint
-│   └── tests/                     # Automated test suite
+│   │   ├── scrapers/              # Multi-mirror scraper extractors (AutoEmbed, VidSrc, Smashy, etc.)
+│   │   ├── services/              # TMDB Metadata API & Stream Proxying
+│   │   └── server.js              # Express server entrypoint
+│   └── tests/                     # Automated test suites
 │
-├── web/                           # Cinematic Frontend Client
-│   ├── index.html                 # Semantic SEO-optimized HTML5
+├── web/                           # Cinematic Frontend Web Client
+│   ├── index.html                 # Semantic SEO HTML5 with Schema.org JSON-LD
 │   ├── manifest.json              # PWA Mobile & Desktop Install Manifest
-│   ├── sw.js                      # Service Worker for offline caching
-│   ├── styles/                    # Luxury CSS system, Video Player CSS, Android TV CSS
-│   └── src/                       # Vanilla JS Components (Navbar, Hero, MediaGrid, VideoPlayer, Auth)
+│   ├── styles/                    # Dark luxury Netflix CSS & player styles
+│   └── src/
+│       ├── components/            # Navbar, HeroBanner, MediaGrid, VideoPlayer
+│       ├── services/              # API Gateway & Ad-Shield Security
+│       └── app.js                 # SPA Router & view controller
 │
-├── android/                       # Android Mobile & Android TV App
-│   ├── capacitor.config.json      # Capacitor Bridge Config
-│   ├── app/src/main/
-│   │   ├── AndroidManifest.xml    # TV Leanback & Mobile permissions
-│   │   └── java/com/cinemastream/app/
-│   │       ├── MainActivity.java  # D-Pad remote listener & WebView hardware acceleration
-│   │       └── ExoPlayerActivity.java # Native 4K player
-│   └── README.md                  # Android Studio build guide
-│
-└── shared/                        # Shared contracts & constants
+└── android/                       # Android Mobile & Android TV Leanback package
 ```
 
 ---
 
 ## 🚀 Quick Start (Running Locally)
 
-### 1. Start the Unified Server (Backend + Web)
+### 1. Install Dependencies
 ```bash
-# In the root directory (c:\new)
-node backend/src/server.js
+npm install
 ```
 
-Then open your browser at:
+### 2. Start the Unified Server
+```bash
+npm run dev
+```
+
+Open your browser at:
 👉 **`http://localhost:4000`**
-
-### 2. Run Automated Test Suite
-```bash
-npm.cmd test
-```
-
----
 
 ## 🔒 Security Configuration & Environment Variables
 
@@ -114,3 +132,8 @@ npx.cmd cap sync android
 npx.cmd cap open android
 ```
 Select **Build > Build APK(s)** to generate the installable Android APK.
+
+---
+
+## 📄 License
+This project is open source and available under the [MIT License](LICENSE).

@@ -161,8 +161,16 @@ export class ApiService {
     } catch (e) { return { success: false, results: [] }; }
   }
 
-  static async getAsianDrama(page, subFilter) {
-    page = page || 1;
+  static async getAsianDrama(pageOrFilter, subFilterOrPage) {
+    let page = 1;
+    let subFilter = 'all';
+    if (typeof pageOrFilter === 'number') {
+      page = pageOrFilter;
+      subFilter = subFilterOrPage || 'all';
+    } else if (typeof pageOrFilter === 'string') {
+      subFilter = pageOrFilter;
+      page = typeof subFilterOrPage === 'number' ? subFilterOrPage : 1;
+    }
     try {
       let params = { page: page, sort_by: 'popularity.desc' };
       if (subFilter === 'chinese') {
@@ -248,35 +256,29 @@ export class ApiService {
         actualType = actualType === 'tv' ? 'movie' : 'tv';
         m = await this.tmdb((actualType === 'tv' ? '/tv/' : '/movie/') + id, { append_to_response: 'videos,credits,similar,external_ids' });
       } catch (e2) {
-        return { success: false, data: null };
+        return { success: false };
       }
     }
-
+    if (!m) return { success: false };
     const norm = this.normalize(m, actualType);
     norm.media_type = actualType;
-    norm.genres = (m.genres || []).map(g => (typeof g === 'string' ? g : g.name));
-    norm.cast = ((m.credits && m.credits.cast) || []).slice(0, 10).map(c => ({
+    norm.genres_list = (m.genres || []).map(g => g.name);
+    norm.cast = (m.credits && m.credits.cast) ? m.credits.cast.slice(0, 10).map(c => ({
       name: c.name,
       character: c.character,
-      profile_path: c.profile_path ? (IMG_BASE + '/w185' + c.profile_path) : null
-    }));
-    const videos = (m.videos && m.videos.results) || [];
-    const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube') ||
-                    videos.find(v => v.type === 'Teaser' && v.site === 'YouTube') ||
-                    videos.find(v => v.site === 'YouTube') || {};
-    norm.trailer_key = trailer.key || null;
+      profile: c.profile_path ? (IMG_BASE + '/w185' + c.profile_path) : null
+    })) : [];
+    norm.imdb_id = (m.external_ids && m.external_ids.imdb_id) || m.imdb_id || null;
 
-    if (actualType === 'tv') {
-      const rawSeasons = m.seasons || [];
-      norm.seasons = rawSeasons
-        .filter(s => s.season_number > 0 || (rawSeasons.length === 1 && s.episode_count > 0))
+    if (actualType === 'tv' && m.seasons && m.seasons.length) {
+      norm.seasons = m.seasons
+        .filter(s => s.season_number > 0)
         .map(s => ({
-          id: s.id,
           season_number: s.season_number,
           name: s.name || `Season ${s.season_number}`,
           episode_count: s.episode_count || 0,
-          poster_path: s.poster_path ? (IMG_BASE + '/w300' + s.poster_path) : norm.poster_path,
-          air_date: s.air_date || '',
+          poster_path: s.poster_path ? (IMG_BASE + '/w300' + s.poster_path) : norm.poster,
+          air_date: s.air_date ? s.air_date.substring(0, 4) : '',
           overview: s.overview || ''
         }));
       norm.seasons_count = norm.seasons.length || m.number_of_seasons || 1;
@@ -288,6 +290,13 @@ export class ApiService {
     norm.duration = m.runtime ? (Math.floor(m.runtime / 60) + 'h ' + (m.runtime % 60) + 'm') : (m.episode_run_time && m.episode_run_time[0] ? m.episode_run_time[0] + 'm' : (actualType === 'tv' ? `${norm.seasons_count} Season${norm.seasons_count > 1 ? 's' : ''}` : '2h 15m'));
     norm.quality = (m.vote_average || 0) >= 7 ? '4K Ultra HD' : '1080p HD';
     norm.similar = this.deduplicate(((m.similar && m.similar.results) || []).map(s => this.normalize(s, actualType)));
+    
+    const videos = (m.videos && m.videos.results) || [];
+    const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube') ||
+                    videos.find(v => v.type === 'Teaser' && v.site === 'YouTube') ||
+                    videos.find(v => v.site === 'YouTube') || {};
+    norm.trailer_key = trailer.key || null;
+
     return Object.assign({ success: true, data: norm }, norm);
   }
 
@@ -310,6 +319,14 @@ export class ApiService {
     } catch (e) {
       return { success: false, results: [], episodes: [] };
     }
+  }
+
+  static async getSeason(tvId, season) {
+    return this.getEpisodes(tvId, season);
+  }
+
+  static async getSeasonDetails(tvId, season) {
+    return this.getEpisodes(tvId, season);
   }
 
   static async search(query, page) {

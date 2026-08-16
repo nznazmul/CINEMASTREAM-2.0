@@ -25,32 +25,46 @@ export class Navbar {
 
           <!-- Notification Bell & Dynamic Center -->
           <div class="nf-bell-wrap" id="nf-bell-wrap">
-            <button class="nf-bell-btn" onclick="window.NotificationCenter && window.NotificationCenter.toggleDropdown(event)" title="Notifications (New Movies & Releases)">
+            <button class="nf-bell-btn" id="nf-bell-trigger-btn" onclick="window.NotificationCenter && window.NotificationCenter.toggleDropdown(event)" title="Notifications (New Movies & Releases)">
               <span class="nf-bell-icon">🔔</span>
               <span class="nf-bell-badge" id="nf-bell-badge" style="display:none;">0</span>
             </button>
 
-            <!-- Notifications Dropdown Panel -->
+            <!-- Mobile Backdrop Overlay -->
+            <div class="nf-notif-backdrop" id="nf-notif-backdrop" onclick="window.NotificationCenter && window.NotificationCenter.closeDropdown()"></div>
+
+            <!-- Notifications Dropdown / Bottom Sheet Panel -->
             <div class="nf-notifications-dropdown" id="nf-notifications-dropdown">
+              <!-- Mobile Drag Bar -->
+              <div class="nf-notif-drag-bar"></div>
+
               <div class="nf-notif-header">
                 <div class="nf-notif-header-title">
                   <h3>🔔 Notifications</h3>
                   <span class="nf-notif-count-pill" id="nf-notif-unread-count">0 unread</span>
                 </div>
-                <button class="nf-notif-mark-all-btn" onclick="window.NotificationCenter && window.NotificationCenter.markAllAsRead(event)">
-                  Mark all as read
-                </button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button class="nf-notif-mark-all-btn" onclick="window.NotificationCenter && window.NotificationCenter.markAllAsRead(event)">
+                    Mark all read
+                  </button>
+                  <button class="nf-notif-close-btn" onclick="window.NotificationCenter && window.NotificationCenter.closeDropdown()" title="Close Notifications">
+                    ✕
+                  </button>
+                </div>
               </div>
 
               <!-- Filter Tabs (All / Unread) -->
               <div class="nf-notif-tabs">
-                <button class="nf-notif-tab active" id="nf-notif-tab-all" onclick="window.NotificationCenter && window.NotificationCenter.setTab('all', event)">All</button>
-                <button class="nf-notif-tab" id="nf-notif-tab-unread" onclick="window.NotificationCenter && window.NotificationCenter.setTab('unread', event)">Unread</button>
+                <button class="nf-notif-tab active" id="nf-notif-tab-all" onclick="window.NotificationCenter && window.NotificationCenter.setTab('all', event)">All Releases</button>
+                <button class="nf-notif-tab" id="nf-notif-tab-unread" onclick="window.NotificationCenter && window.NotificationCenter.setTab('unread', event)">Unread Only</button>
               </div>
 
               <!-- Notifications Scrollable Feed -->
               <div class="nf-notifications-list" id="nf-notifications-list">
-                <div class="nf-notif-loading">Loading new releases...</div>
+                <div class="nf-notif-loading">
+                  <div class="nf-notif-spinner"></div>
+                  <span>Loading new releases...</span>
+                </div>
               </div>
             </div>
           </div>

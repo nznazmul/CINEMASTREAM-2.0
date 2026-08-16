@@ -7,11 +7,11 @@ export class Navbar {
       <nav class="nf-navbar" id="nf-nav">
         <span class="nf-logo" onclick="window.Router.navigate('home')">CINEMASTREAM</span>
         <ul class="nf-nav-links">
-          <li><a href="/movies" class="${route === 'movies' || route === 'movie' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('movies')">Movies</a></li>
-          <li><a href="/tv" class="${route === 'tv' || route === 'tvseries' || route === 'tv-shows' || route === 'series' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('tv')">TV Shows</a></li>
-          <li><a href="/anime" class="${route === 'anime' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('anime')">⛩️ Anime</a></li>
-          <li><a href="/years" class="${route === 'years' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('years')">📅 2000–2026</a></li>
-          <li><a href="/bookmarks" class="${route === 'bookmarks' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('bookmarks')">My List</a></li>
+          <li><a href="/movie" class="${route === 'movie' || route === 'movies' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('movie')">Movies</a></li>
+          <li><a href="/tv-shows" class="${route === 'tv-shows' || route === 'tv-show' || route === 'tv' || route === 'tvseries' || route === 'series' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('tv-shows')">TV Shows</a></li>
+          <li><a href="/anime" class="${route === 'anime' || route === 'animemovie' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('anime')">⛩️ Anime</a></li>
+          <li><a href="/years" class="${route === 'years' || route === 'year' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('years')">📅 2000–2026</a></li>
+          <li><a href="/mylist" class="${route === 'mylist' || route === 'bookmarks' || route === 'saved' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('mylist')">My List</a></li>
         </ul>
         <div class="nf-nav-right">
           <div class="nf-search-wrap" id="nf-search-wrap">
@@ -31,23 +31,23 @@ export class Navbar {
           <span class="icon">🏠</span>
           <span>Home</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'movies' || route === 'movie' ? 'active' : ''}" onclick="window.Router.navigate('movies')">
+        <a class="nf-mobile-nav-item ${route === 'movie' || route === 'movies' ? 'active' : ''}" onclick="window.Router.navigate('movie')">
           <span class="icon">🎬</span>
           <span>Movies</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'tv' || route === 'tvseries' ? 'active' : ''}" onclick="window.Router.navigate('tv')">
+        <a class="nf-mobile-nav-item ${route === 'tv-shows' || route === 'tv-show' || route === 'tv' || route === 'tvseries' ? 'active' : ''}" onclick="window.Router.navigate('tv-shows')">
           <span class="icon">📺</span>
           <span>TV</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'anime' ? 'active' : ''}" onclick="window.Router.navigate('anime')">
+        <a class="nf-mobile-nav-item ${route === 'anime' || route === 'animemovie' ? 'active' : ''}" onclick="window.Router.navigate('anime')">
           <span class="icon">⛩️</span>
           <span>Anime</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'years' ? 'active' : ''}" onclick="window.Router.navigate('years')">
+        <a class="nf-mobile-nav-item ${route === 'years' || route === 'year' ? 'active' : ''}" onclick="window.Router.navigate('years')">
           <span class="icon">📅</span>
           <span>2000–2026</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'bookmarks' ? 'active' : ''}" onclick="window.Router.navigate('bookmarks')">
+        <a class="nf-mobile-nav-item ${route === 'mylist' || route === 'bookmarks' || route === 'saved' ? 'active' : ''}" onclick="window.Router.navigate('mylist')">
           <span class="icon">❤️</span>
           <span>Saved</span>
         </a>

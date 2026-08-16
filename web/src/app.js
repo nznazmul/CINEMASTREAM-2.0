@@ -80,17 +80,21 @@ class App {
       }
     }
 
-    // Category Hubs: /movie, /movies, /tv, /tvseries, /tv-shows, /series, /animemovie, /anime, /asian-drama, /kdrama, /indian, /trending
+    // Category Hubs: /movie, /movies, /tv-shows, /tv-show, /tv, /tvseries, /animemovie, /anime, /asian-drama, /kdrama, /indian, /trending
     if (hash === 'movie' || hash === 'movies' || hash.startsWith('movies?') || hash.startsWith('movie?')) {
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const filter = params.get('filter') || 'all';
+      this.currentRoute = 'movie';
+      Navbar.render(document.getElementById('navbar-container'), 'movie');
       await this.renderCategoryHub('movies', filter, 1);
       return;
     }
 
-    if (hash === 'tv' || hash === 'tvseries' || hash === 'tv-series' || hash === 'tv-shows' || hash === 'series' || hash.startsWith('tv?') || hash.startsWith('tvseries?') || hash.startsWith('tv-shows?')) {
+    if (hash === 'tv-shows' || hash === 'tv-show' || hash === 'tv' || hash === 'tvseries' || hash === 'tv-series' || hash === 'series' || hash.startsWith('tv?') || hash.startsWith('tvseries?') || hash.startsWith('tv-shows?') || hash.startsWith('tv-show?')) {
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const filter = params.get('filter') || 'all';
+      this.currentRoute = 'tv-shows';
+      Navbar.render(document.getElementById('navbar-container'), 'tv-shows');
       await this.renderCategoryHub('tv', filter, 1);
       return;
     }
@@ -98,6 +102,8 @@ class App {
     if (hash === 'animemovie' || hash === 'anime-movie' || hash === 'anime-movies' || hash.startsWith('animemovie?')) {
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const filter = params.get('filter') || 'all';
+      this.currentRoute = 'anime';
+      Navbar.render(document.getElementById('navbar-container'), 'anime');
       await this.renderCategoryHub('animemovie', filter, 1);
       return;
     }
@@ -105,6 +111,8 @@ class App {
     if (hash === 'anime' || hash.startsWith('anime?')) {
       const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
       const filter = params.get('filter') || 'all';
+      this.currentRoute = 'anime';
+      Navbar.render(document.getElementById('navbar-container'), 'anime');
       await this.renderCategoryHub('anime', filter, 1);
       return;
     }
@@ -195,8 +203,21 @@ class App {
       return;
     }
 
-    // Standard static route (bookmarks, faq, privacy, contact, terms, speedtest, serverstatus)
-    await this.navigate(hash, false);
+    // Standard static routes normalization
+    let cleanRoute = hash;
+    if (hash === 'bookmarks' || hash === 'saved') cleanRoute = 'mylist';
+    if (hash === 'helpcenter' || hash === 'help-center') cleanRoute = 'help';
+    if (hash === 'vip' || hash === 'auth') cleanRoute = 'account';
+    if (hash === 'privacy-policy') cleanRoute = 'privacy';
+    if (hash === 'terms-of-use') cleanRoute = 'terms';
+    if (hash === 'cookie' || hash === 'cookie-preferences') cleanRoute = 'cookies';
+    if (hash === 'legal' || hash === 'dmca-legal') cleanRoute = 'dmca';
+    if (hash === 'contact-us') cleanRoute = 'contact';
+    if (hash === 'request-movie' || hash === 'request-show') cleanRoute = 'request';
+    if (hash === 'audio' || hash === 'multi-audio') cleanRoute = 'multiaudio';
+    if (hash === 'speed-test') cleanRoute = 'speedtest';
+
+    await this.navigate(cleanRoute, false);
   }
 
   async navigate(route, updateHistory = true) {
@@ -235,9 +256,9 @@ class App {
       const cw = document.getElementById('continue-watching-section');
       if (cw) { cw.style.display = 'none'; cw.innerHTML = ''; }
 
-      if (this.currentRoute === 'movies' || this.currentRoute === 'movie') {
+      if (this.currentRoute === 'movie' || this.currentRoute === 'movies') {
         await this.renderCategoryHub('movies', 'all', 1);
-      } else if (this.currentRoute === 'tv' || this.currentRoute === 'tvseries' || this.currentRoute === 'tv-series' || this.currentRoute === 'tv-shows' || this.currentRoute === 'series') {
+      } else if (this.currentRoute === 'tv-shows' || this.currentRoute === 'tv-show' || this.currentRoute === 'tv' || this.currentRoute === 'tvseries' || this.currentRoute === 'tv-series' || this.currentRoute === 'series') {
         await this.renderCategoryHub('tv', 'all', 1);
       } else if (this.currentRoute === 'animemovie' || this.currentRoute === 'anime-movie' || this.currentRoute === 'anime-movies') {
         await this.renderCategoryHub('animemovie', 'all', 1);
@@ -251,9 +272,9 @@ class App {
         await this.renderCategoryHub('indian', 'all', 1);
       } else if (this.currentRoute === 'trending') {
         await this.renderCategoryHub('trending', 'all', 1);
-      } else if (this.currentRoute === 'bookmarks' || this.currentRoute === 'mylist') {
+      } else if (this.currentRoute === 'mylist' || this.currentRoute === 'bookmarks' || this.currentRoute === 'saved') {
         await this.renderBookmarksView(mediaContainer);
-      } else if (this.currentRoute === 'years') {
+      } else if (this.currentRoute === 'years' || this.currentRoute === 'year') {
         await this.renderYearsArchiveView(mediaContainer, this.selectedYear, this.selectedYearType);
       } else if (this.currentRoute === 'faq') {
         this.renderFAQView(mediaContainer);
@@ -261,19 +282,19 @@ class App {
         this.renderHelpCenterView(mediaContainer);
       } else if (this.currentRoute === 'account' || this.currentRoute === 'vip' || this.currentRoute === 'auth') {
         this.renderAccountVIPView(mediaContainer);
-      } else if (this.currentRoute === 'privacy') {
+      } else if (this.currentRoute === 'privacy' || this.currentRoute === 'privacy-policy') {
         this.renderPrivacyView(mediaContainer);
-      } else if (this.currentRoute === 'terms') {
+      } else if (this.currentRoute === 'terms' || this.currentRoute === 'terms-of-use') {
         this.renderTermsView(mediaContainer);
-      } else if (this.currentRoute === 'cookie' || this.currentRoute === 'cookies') {
+      } else if (this.currentRoute === 'cookies' || this.currentRoute === 'cookie' || this.currentRoute === 'cookie-preferences') {
         this.renderCookiePreferencesView(mediaContainer);
-      } else if (this.currentRoute === 'dmca' || this.currentRoute === 'legal') {
+      } else if (this.currentRoute === 'dmca' || this.currentRoute === 'dmca-legal' || this.currentRoute === 'legal') {
         this.renderDMCALegalView(mediaContainer);
-      } else if (this.currentRoute === 'contact') {
+      } else if (this.currentRoute === 'contact' || this.currentRoute === 'contact-us') {
         this.renderContactView(mediaContainer);
-      } else if (this.currentRoute === 'request') {
+      } else if (this.currentRoute === 'request' || this.currentRoute === 'request-movie' || this.currentRoute === 'request-show') {
         this.renderRequestMediaView(mediaContainer);
-      } else if (this.currentRoute === 'audio' || this.currentRoute === 'multiaudio' || this.currentRoute === 'multi-audio') {
+      } else if (this.currentRoute === 'multiaudio' || this.currentRoute === 'multi-audio' || this.currentRoute === 'audio') {
         this.renderMultiAudioGuideView(mediaContainer);
       } else if (this.currentRoute === 'speedtest' || this.currentRoute === 'speed-test') {
         this.renderSpeedTestView(mediaContainer);

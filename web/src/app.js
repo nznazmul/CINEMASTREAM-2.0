@@ -40,8 +40,9 @@ class App {
         this.genres = g.results || g || [];
       } catch(e) { this.genres = []; }
 
-      // 4. Hash Router listener for Direct Deep Linking (/#movie/:id, /#tv/:id, /#anime/:id, /#watch?id=...)
+      // 4. Hash & PopState Router listener for Direct Deep Linking and History Navigation
       window.addEventListener('hashchange', () => this.handleHashRoute());
+      window.addEventListener('popstate', () => this.handleHashRoute());
       await this.handleHashRoute();
 
       // 5. Service Worker Registration
@@ -57,13 +58,13 @@ class App {
     let hash = window.location.hash.replace(/^#\/?/, '');
     const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '');
 
-    // Support direct clean URLs like /movies, /tv, /anime, /kdrama, /indian, /trending, /genre/action, /movie/533535
+    // Support direct clean URLs like /movies, /tv, /anime, /kdrama, /indian, /trending, /serverstatus, /speedtest
     if (!hash && pathname) {
       hash = pathname;
     }
 
     if (!hash || hash === '/' || hash === 'home') {
-      await this.navigate('home');
+      await this.navigate('home', false);
       return;
     }
 
@@ -190,16 +191,22 @@ class App {
       }
       this.selectedYear = y;
       this.selectedYearType = type;
-      await this.navigate('years');
+      await this.navigate('years', false);
       return;
     }
 
-    // Standard static route (bookmarks, faq, privacy, contact, terms, speedtest)
-    await this.navigate(hash);
+    // Standard static route (bookmarks, faq, privacy, contact, terms, speedtest, serverstatus)
+    await this.navigate(hash, false);
   }
 
-  async navigate(route) {
+  async navigate(route, updateHistory = true) {
     this.currentRoute = route;
+    if (updateHistory) {
+      const targetPath = route === 'home' ? '/' : `/${route}`;
+      if (window.location.pathname !== targetPath) {
+        history.pushState(null, '', targetPath);
+      }
+    }
     Navbar.render(document.getElementById('navbar-container'), route);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     await this.renderCurrentView();

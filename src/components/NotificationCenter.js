@@ -103,7 +103,9 @@ export class NotificationCenter {
       }
       this.notifications = uniqueNotifs;
       this.updateBadge();
-      this.renderDropdownContent();
+      if (this.isOpen) {
+        this.renderDropdownContent();
+      }
     } catch (e) {
       console.warn('Could not load notifications:', e);
     } finally {
@@ -149,6 +151,7 @@ export class NotificationCenter {
 
     // Open the dropdown
     this.isOpen = true;
+    dropdown.style.setProperty('display', 'flex', 'important');
     dropdown.classList.add('active');
 
     // Always refresh content when opening
@@ -189,7 +192,10 @@ export class NotificationCenter {
     this.isOpen = false;
     if (typeof document === 'undefined') return;
     const dropdown = document.getElementById('nf-notifications-dropdown');
-    if (dropdown) dropdown.classList.remove('active');
+    if (dropdown) {
+      dropdown.style.setProperty('display', 'none', 'important');
+      dropdown.classList.remove('active');
+    }
     // Clean up outside-click handler
     if (typeof window !== 'undefined' && window._closeNotificationsHandler) {
       window.removeEventListener('click', window._closeNotificationsHandler);

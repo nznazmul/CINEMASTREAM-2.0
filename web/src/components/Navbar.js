@@ -30,8 +30,8 @@ export class Navbar {
               <span class="nf-bell-badge" id="nf-bell-badge" style="display:none;">0</span>
             </button>
 
-            <!-- Non-Intrusive Floating Notification Dropdown Popover -->
-            <div class="nf-notifications-dropdown" id="nf-notifications-dropdown">
+            <!-- Non-Intrusive Floating Notification Dropdown Popover (Hidden by default) -->
+            <div class="nf-notifications-dropdown" id="nf-notifications-dropdown" style="display: none !important;">
               <div class="nf-notif-caret"></div>
 
               <div class="nf-notif-header">

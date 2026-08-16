@@ -39,9 +39,9 @@ export class NotificationCenter {
         id: `movie_${m.id}`,
         mediaId: m.id,
         mediaType: 'movie',
-        typeLabel: '🎬 New Movie 4K',
+        typeLabel: '🎬 4K Movie',
         title: m.title || m.name || 'Blockbuster Movie',
-        desc: `Now streaming in 4K Ultra HD & Dolby Atmos 5.1 sound across 12 servers.`,
+        desc: `Now streaming in 4K Ultra HD & Dolby Atmos 5.1 sound.`,
         poster: m.poster_path,
         time: idx === 0 ? 'Just now' : `${(idx + 1) * 20}m ago`,
         timestamp: Date.now() - 1000 * 60 * (idx * 20 + 5)
@@ -51,31 +51,31 @@ export class NotificationCenter {
         id: `tv_${m.id}`,
         mediaId: m.id,
         mediaType: 'tv',
-        typeLabel: '📺 New TV Episode',
+        typeLabel: '📺 New Episode',
         title: m.name || m.title || 'TV Series',
-        desc: `New season episode now available in 1080p/4K with complete multi-language subtitles.`,
+        desc: `New season episode now available with multi-language subtitles.`,
         poster: m.poster_path,
         time: `${idx + 1}h ago`,
         timestamp: Date.now() - 1000 * 60 * 60 * (idx + 1)
       }));
 
-      const animeItems = (anime.results || []).slice(0, 2).map((m, idx) => ({
+      const animeItems = (anime.results || []).slice(0, 2).map((m) => ({
         id: `anime_${m.id}`,
         mediaId: m.id,
         mediaType: 'tv',
-        typeLabel: '⛩️ Anime Simulcast',
+        typeLabel: '⛩️ Anime',
         title: m.name || m.title || 'Anime Series',
-        desc: `New simulcast episode streaming with Japanese original audio & Multi-Dubs.`,
+        desc: `New simulcast episode streaming in Japanese & Multi-Dubs.`,
         poster: m.poster_path,
         time: 'Today',
         timestamp: Date.now() - 1000 * 60 * 240
       }));
 
-      const trendItems = (trending.results || []).slice(0, 2).map((m, idx) => ({
+      const trendItems = (trending.results || []).slice(0, 2).map((m) => ({
         id: `trend_${m.id}`,
         mediaId: m.id,
         mediaType: m.media_type || 'movie',
-        typeLabel: '🔥 Trending #1',
+        typeLabel: '🔥 Trending',
         title: m.title || m.name || 'Trending Hit',
         desc: `Trending worldwide today with ${Math.round((m.vote_average || 7.8) * 10)}% match.`,
         poster: m.poster_path,
@@ -83,7 +83,6 @@ export class NotificationCenter {
         timestamp: Date.now() - 1000 * 60 * 600
       }));
 
-      // Combined dynamic notification feed
       this.notifications = [...npItems, ...tvItems, ...animeItems, ...trendItems];
       this.updateBadge();
       this.renderDropdownContent();
@@ -115,45 +114,40 @@ export class NotificationCenter {
   }
 
   static toggleDropdown(e) {
-    if (e) e.stopPropagation();
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (typeof document === 'undefined') return;
 
     this.isOpen = !this.isOpen;
     const dropdown = document.getElementById('nf-notifications-dropdown');
-    const backdrop = document.getElementById('nf-notif-backdrop');
     if (!dropdown) return;
 
     if (this.isOpen) {
       dropdown.classList.add('active');
-      if (backdrop) backdrop.classList.add('active');
       
-      // If notifications not loaded yet, fetch immediately
       if (this.notifications.length === 0) {
         this.loadNotifications(true);
       } else {
         this.renderDropdownContent();
       }
 
-      // Prevent background scrolling on mobile when open
-      if (window.innerWidth <= 768) {
-        document.body.style.overflow = 'hidden';
-      }
-
-      // Setup outside click listener
+      // Smooth auto-dismiss when clicking outside (does not block clicks)
       setTimeout(() => {
-        window.removeEventListener('click', window._closeNotificationsHandler);
+        if (window._closeNotificationsHandler) {
+          window.removeEventListener('click', window._closeNotificationsHandler);
+        }
         window._closeNotificationsHandler = (evt) => {
           const wrap = document.getElementById('nf-bell-wrap');
           if (wrap && !wrap.contains(evt.target)) {
             NotificationCenter.closeDropdown();
           }
         };
-        window.addEventListener('click', window._closeNotificationsHandler);
+        window.addEventListener('click', window._closeNotificationsHandler, { passive: true });
       }, 50);
     } else {
       dropdown.classList.remove('active');
-      if (backdrop) backdrop.classList.remove('active');
-      document.body.style.overflow = '';
     }
   }
 
@@ -161,10 +155,7 @@ export class NotificationCenter {
     this.isOpen = false;
     if (typeof document === 'undefined') return;
     const dropdown = document.getElementById('nf-notifications-dropdown');
-    const backdrop = document.getElementById('nf-notif-backdrop');
     if (dropdown) dropdown.classList.remove('active');
-    if (backdrop) backdrop.classList.remove('active');
-    document.body.style.overflow = '';
     if (typeof window !== 'undefined' && window._closeNotificationsHandler) {
       window.removeEventListener('click', window._closeNotificationsHandler);
     }
@@ -226,7 +217,7 @@ export class NotificationCenter {
     const unreadCount = this.getUnreadCount();
 
     if (headerCount) {
-      headerCount.textContent = unreadCount > 0 ? `${unreadCount} unread` : '0 unread';
+      headerCount.textContent = unreadCount > 0 ? `${unreadCount} new` : '0 new';
     }
 
     if (tabAll && tabUnread) {
@@ -238,7 +229,7 @@ export class NotificationCenter {
       listContainer.innerHTML = `
         <div class="nf-notif-loading">
           <div class="nf-notif-spinner"></div>
-          <span>Checking latest releases & 4K additions...</span>
+          <span>Loading new releases...</span>
         </div>
       `;
       return;
@@ -252,10 +243,10 @@ export class NotificationCenter {
     if (items.length === 0) {
       listContainer.innerHTML = `
         <div class="nf-notif-empty">
-          <span style="font-size: 2.2rem; margin-bottom: 8px;">🎉</span>
-          <div style="font-weight: 800; color: #fff; font-size: 1rem;">All Caught Up!</div>
-          <p style="color: #888; font-size: 0.82rem; margin-top: 4px; max-width: 240px; line-height: 1.4;">
-            ${this.activeTab === 'unread' ? 'No unread notifications. Check the "All" tab for past releases.' : 'You have viewed all recent movie and TV show updates.'}
+          <span style="font-size: 1.8rem; margin-bottom: 6px;">🎉</span>
+          <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">You're All Caught Up!</div>
+          <p style="color: #888; font-size: 0.78rem; margin-top: 4px; line-height: 1.3;">
+            ${this.activeTab === 'unread' ? 'No unread notifications right now.' : 'No recent updates at the moment.'}
           </p>
         </div>
       `;
@@ -269,25 +260,25 @@ export class NotificationCenter {
         <div class="nf-notif-item ${isRead ? 'read' : 'unread'}" onclick="NotificationCenter.openMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
           <div class="nf-notif-poster-wrap">
             <img src="${poster}" alt="${item.title}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
-            ${!isRead ? '<span class="nf-notif-unread-dot" title="Unread release"></span>' : ''}
+            ${!isRead ? '<span class="nf-notif-unread-dot" title="New release"></span>' : ''}
           </div>
           <div class="nf-notif-info">
             <div class="nf-notif-meta-line">
               <span class="nf-notif-type-tag">${item.typeLabel}</span>
               <span class="nf-notif-time">${item.time}</span>
             </div>
-            <h4 class="nf-notif-title">${item.title}</h4>
+            <h4 class="nf-notif-title" title="${item.title}">${item.title}</h4>
             <p class="nf-notif-desc">${item.desc}</p>
             <div class="nf-notif-actions">
               <button class="nf-notif-btn-play" onclick="NotificationCenter.playMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
-                ▶ Play 4K
+                ▶ Play
               </button>
               <button class="nf-notif-btn-info" onclick="NotificationCenter.openMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
                 ℹ Info
               </button>
               ${!isRead ? `
                 <button class="nf-notif-btn-read" onclick="NotificationCenter.markAsRead('${item.id}', event)" title="Mark as read">
-                  ✓ Mark read
+                  ✓
                 </button>
               ` : ''}
             </div>

@@ -35,17 +35,19 @@ export class ApiService {
 
   static normalize(m, type) {
     const t = type || m.media_type || (m.first_air_date ? 'tv' : 'movie');
+    const rawGenres = m.genres ? m.genres.map(g => (typeof g === 'object' && g ? g.name : g)) : [];
     return {
       id: m.id,
       title: m.title || m.name || 'Untitled',
       name: m.name || m.title || 'Untitled',
       overview: m.overview || '',
-      poster_path: m.poster_path ? IMG_BASE + '/w500' + m.poster_path : null,
-      backdrop_path: m.backdrop_path ? IMG_BASE + '/original' + m.backdrop_path : null,
+      poster_path: m.poster_path ? (m.poster_path.startsWith('http') ? m.poster_path : IMG_BASE + '/w500' + m.poster_path) : null,
+      backdrop_path: m.backdrop_path ? (m.backdrop_path.startsWith('http') ? m.backdrop_path : IMG_BASE + '/original' + m.backdrop_path) : null,
       vote_average: m.vote_average || 7.5,
       release_date: m.release_date || m.first_air_date || '2024',
       first_air_date: m.first_air_date || m.release_date || '2024',
       media_type: t,
+      genres: rawGenres,
       genre_ids: m.genre_ids || []
     };
   }
@@ -315,6 +317,14 @@ export class ApiService {
     } else {
       norm.seasons = [];
       norm.seasons_count = 0;
+    }
+
+    norm.genres = (m.genres || []).map(g => (g && g.name) ? g.name : g);
+    if (!norm.genres.length && norm.genre_ids && norm.genre_ids.length && this.genreMap) {
+      norm.genres = norm.genre_ids.map(id => this.genreMap[id] || 'Featured').slice(0, 3);
+    }
+    if (!norm.genres.length) {
+      norm.genres = actualType === 'tv' ? ['TV Series', 'Drama'] : ['Feature Film', 'Cinema'];
     }
 
     norm.duration = m.runtime ? (Math.floor(m.runtime / 60) + 'h ' + (m.runtime % 60) + 'm') : (m.episode_run_time && m.episode_run_time[0] ? m.episode_run_time[0] + 'm' : (actualType === 'tv' ? `${norm.seasons_count} Season${norm.seasons_count > 1 ? 's' : ''}` : '2h 15m'));

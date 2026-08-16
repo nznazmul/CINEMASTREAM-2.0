@@ -23,7 +23,7 @@ export class HeroBanner {
     }, 12000);
   }
 
-  static renderHero(container, item) {
+  static async renderHero(container, item) {
     if (!item) return;
     clearTimeout(this.trailerTimeout);
 
@@ -34,7 +34,7 @@ export class HeroBanner {
     const backdrop = item.backdrop_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg';
     const isTv = item.media_type === 'tv';
     const genreText = (item.genres || []).slice(0, 3).join(' • ');
-    const trailerKey = item.trailer_key;
+    let trailerKey = item.trailer_key;
 
     container.innerHTML = `
       <div class="nf-hero" id="nf-hero-viewport">
@@ -67,11 +67,9 @@ export class HeroBanner {
         </div>
 
         <!-- Audio Mute / Unmute Button -->
-        ${trailerKey ? `
-          <button class="nf-hero-audio-btn" id="hero-audio-btn" onclick="HeroBanner.toggleMute()" title="${this.isMuted ? 'Unmute Teaser' : 'Mute Teaser'}">
-            ${this.isMuted ? '🔇' : '🔊'}
-          </button>
-        ` : ''}
+        <button class="nf-hero-audio-btn" id="hero-audio-btn" style="display:none;" onclick="HeroBanner.toggleMute()" title="${this.isMuted ? 'Unmute Teaser' : 'Mute Teaser'}">
+          ${this.isMuted ? '🔇' : '🔊'}
+        </button>
 
         <!-- Carousel Indicators -->
         <div class="nf-hero-dots" id="hero-dots">
@@ -83,11 +81,22 @@ export class HeroBanner {
       </div>
     `;
 
-    // Ambient Video Teaser Autoplay after 1.2s delay
+    // If trailer key not yet cached on this item, fetch on the fly
+    if (!trailerKey && window.ApiService && window.ApiService.getTrailerKey) {
+      try {
+        trailerKey = await window.ApiService.getTrailerKey(item.id, item.media_type);
+        item.trailer_key = trailerKey;
+      } catch(e) {}
+    }
+
+    // Ambient Video Teaser Autoplay after 1s delay
     if (trailerKey) {
+      const audioBtn = document.getElementById('hero-audio-btn');
+      if (audioBtn) audioBtn.style.display = 'flex';
+
       this.trailerTimeout = setTimeout(() => {
         this.mountTrailerVideo(trailerKey);
-      }, 1200);
+      }, 1000);
     }
   }
 
@@ -98,8 +107,8 @@ export class HeroBanner {
     wrap.innerHTML = `
       <iframe id="hero-trailer-iframe"
         class="nf-hero-iframe"
-        src="https://www.youtube-nocookie.com/embed/${key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${key}&enablejsapi=1&playsinline=1&rel=0&iv_load_policy=3&modestbranding=1"
-        allow="autoplay; encrypted-media"
+        src="https://www.youtube-nocookie.com/embed/${key}?autoplay=1&mute=1&controls=0&loop=1&playlist=${key}&enablejsapi=1&playsinline=1&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1&fs=0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen>
       </iframe>
     `;
@@ -107,10 +116,12 @@ export class HeroBanner {
     const iframe = document.getElementById('hero-trailer-iframe');
     if (iframe) {
       iframe.onload = () => {
-        wrap.classList.add('playing');
-        if (!this.isHeroVisible) {
-          this.pauseTeaser();
-        }
+        setTimeout(() => {
+          wrap.classList.add('playing');
+          if (!this.isHeroVisible) {
+            this.pauseTeaser();
+          }
+        }, 400);
       };
     }
   }
@@ -195,4 +206,6 @@ export class HeroBanner {
   }
 }
 
-window.HeroBanner = HeroBanner;
+if (typeof window !== 'undefined') {
+  window.HeroBanner = HeroBanner;
+}

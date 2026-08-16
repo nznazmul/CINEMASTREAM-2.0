@@ -64,10 +64,42 @@ export class ApiService {
     return result;
   }
 
+  static async getTrailerKey(id, type) {
+    if (!id) return null;
+    const mediaType = type === 'tv' ? 'tv' : 'movie';
+    try {
+      const data = await this.tmdb(`/${mediaType}/${id}/videos`);
+      const vids = data.results || [];
+      const ytTrailers = vids.filter(v => v.site === 'YouTube');
+      const trailer = ytTrailers.find(v => v.type === 'Trailer' && v.official)
+        || ytTrailers.find(v => v.type === 'Trailer')
+        || ytTrailers.find(v => v.type === 'Teaser')
+        || ytTrailers.find(v => v.type === 'Clip')
+        || ytTrailers[0];
+      return trailer ? trailer.key : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   static async getHero() {
     try {
       const data = await this.tmdb('/trending/all/week', { page: 1 });
-      return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m))).slice(0, 10) };
+      const items = this.deduplicate((data.results || []).map(m => this.normalize(m))).slice(0, 10);
+      
+      // Fetch trailer keys for top hero items
+      const itemsWithTrailers = await Promise.all(items.map(async (item, idx) => {
+        if (idx < 6) {
+          try {
+            item.trailer_key = await this.getTrailerKey(item.id, item.media_type);
+          } catch(e) {
+            item.trailer_key = null;
+          }
+        }
+        return item;
+      }));
+
+      return { success: true, results: itemsWithTrailers };
     } catch (e) { return { success: false, results: [] }; }
   }
 
@@ -464,4 +496,8 @@ export class ApiService {
   }
 
   static async fallbackTMDB(endpoint) { return this.request(endpoint); }
+}
+
+if (typeof window !== 'undefined') {
+  window.ApiService = ApiService;
 }

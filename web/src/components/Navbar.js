@@ -11,8 +11,6 @@ export class Navbar {
           <li><a href="/tv" class="${route === 'tv' || route === 'tvseries' || route === 'tv-shows' || route === 'series' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('tv')">TV Shows</a></li>
           <li><a href="/anime" class="${route === 'anime' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('anime')">⛩️ Anime</a></li>
           <li><a href="/years" class="${route === 'years' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('years')">📅 2000–2026</a></li>
-          <li><a href="/speedtest" class="${route === 'speedtest' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('speedtest')" title="Streaming Speed Test">⚡ Speed Test</a></li>
-          <li><a href="/serverstatus" class="${route === 'serverstatus' || route === 'status' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('serverstatus')" title="12 Mirror Clusters Status">🌐 Servers</a></li>
           <li><a href="/bookmarks" class="${route === 'bookmarks' ? 'active' : ''}" onclick="event.preventDefault(); window.Router.navigate('bookmarks')">My List</a></li>
         </ul>
         <div class="nf-nav-right">
@@ -22,7 +20,7 @@ export class Navbar {
               oninput="Navbar.handleSearch(this.value)"
               onkeydown="if(event.key==='Escape') Navbar.closeSearch()">
           </div>
-          <span class="nf-bell" onclick="window.Router.navigate('serverstatus')" title="Server Status (100% Online)">🟢</span>
+          <span class="nf-bell" title="Notifications">🔔</span>
           <div class="nf-avatar" onclick="window.App.openAuthModal()" title="Account">CS</div>
         </div>
       </nav>
@@ -45,13 +43,9 @@ export class Navbar {
           <span class="icon">⛩️</span>
           <span>Anime</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'speedtest' ? 'active' : ''}" onclick="window.Router.navigate('speedtest')">
-          <span class="icon">⚡</span>
-          <span>Speed</span>
-        </a>
-        <a class="nf-mobile-nav-item ${route === 'serverstatus' || route === 'status' ? 'active' : ''}" onclick="window.Router.navigate('serverstatus')">
-          <span class="icon">🌐</span>
-          <span>Status</span>
+        <a class="nf-mobile-nav-item ${route === 'years' ? 'active' : ''}" onclick="window.Router.navigate('years')">
+          <span class="icon">📅</span>
+          <span>2000–2026</span>
         </a>
         <a class="nf-mobile-nav-item ${route === 'bookmarks' ? 'active' : ''}" onclick="window.Router.navigate('bookmarks')">
           <span class="icon">❤️</span>

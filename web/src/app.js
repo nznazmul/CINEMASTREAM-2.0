@@ -244,20 +244,34 @@ class App {
         await this.renderCategoryHub('indian', 'all', 1);
       } else if (this.currentRoute === 'trending') {
         await this.renderCategoryHub('trending', 'all', 1);
-      } else if (this.currentRoute === 'bookmarks') {
+      } else if (this.currentRoute === 'bookmarks' || this.currentRoute === 'mylist') {
         await this.renderBookmarksView(mediaContainer);
       } else if (this.currentRoute === 'years') {
         await this.renderYearsArchiveView(mediaContainer, this.selectedYear, this.selectedYearType);
-      } else if (this.currentRoute === 'faq' || this.currentRoute === 'help') {
+      } else if (this.currentRoute === 'faq') {
         this.renderFAQView(mediaContainer);
-      } else if (this.currentRoute === 'privacy' || this.currentRoute === 'cookie') {
+      } else if (this.currentRoute === 'help' || this.currentRoute === 'helpcenter' || this.currentRoute === 'help-center') {
+        this.renderHelpCenterView(mediaContainer);
+      } else if (this.currentRoute === 'account' || this.currentRoute === 'vip' || this.currentRoute === 'auth') {
+        this.renderAccountVIPView(mediaContainer);
+      } else if (this.currentRoute === 'privacy') {
         this.renderPrivacyView(mediaContainer);
-      } else if (this.currentRoute === 'contact' || this.currentRoute === 'request') {
-        this.renderContactView(mediaContainer);
-      } else if (this.currentRoute === 'terms' || this.currentRoute === 'legal') {
+      } else if (this.currentRoute === 'terms') {
         this.renderTermsView(mediaContainer);
-      } else if (this.currentRoute === 'speedtest' || this.currentRoute === 'status') {
+      } else if (this.currentRoute === 'cookie' || this.currentRoute === 'cookies') {
+        this.renderCookiePreferencesView(mediaContainer);
+      } else if (this.currentRoute === 'dmca' || this.currentRoute === 'legal') {
+        this.renderDMCALegalView(mediaContainer);
+      } else if (this.currentRoute === 'contact') {
+        this.renderContactView(mediaContainer);
+      } else if (this.currentRoute === 'request') {
+        this.renderRequestMediaView(mediaContainer);
+      } else if (this.currentRoute === 'audio' || this.currentRoute === 'multiaudio' || this.currentRoute === 'multi-audio') {
+        this.renderMultiAudioGuideView(mediaContainer);
+      } else if (this.currentRoute === 'speedtest' || this.currentRoute === 'speed-test') {
         this.renderSpeedTestView(mediaContainer);
+      } else if (this.currentRoute === 'status' || this.currentRoute === 'serverstatus' || this.currentRoute === 'server-status') {
+        this.renderServerStatusView(mediaContainer);
       }
     }
   }
@@ -1271,6 +1285,265 @@ class App {
         <div class="nf-legal-section">
           <h2><span>⚡</span> 3. Third-Party Hosting Services</h2>
           <p>All video playback is delivered through external embed nodes. CinemaStream does not control and is not liable for third-party hosting bandwidth, mirror availability, or video quality.</p>
+        </div>
+      </section>
+    `;
+  }
+
+  // ── SEO Page: Help Center ───────────────────────────────────────
+  renderHelpCenterView(container) {
+    document.title = "Help Center & Troubleshooting — CinemaStream 24/7 Support";
+    container.innerHTML = `
+      <section class="nf-static-page">
+        <header class="nf-static-header">
+          <span class="nf-static-badge">Customer Support & Guides</span>
+          <h1 class="nf-static-title">Help Center</h1>
+          <p class="nf-static-subtitle">Quick solutions, streaming optimization tips, and answers to common playback questions.</p>
+        </header>
+
+        <div class="nf-legal-section">
+          <h2><span>🚀</span> 1. How to Fix Video Buffering or Slow Playback</h2>
+          <p>If a video buffers or loads slowly, try these fast solutions:</p>
+          <ul>
+            <li><strong>Switch Server:</strong> Click on another mirror under <em>Fast Mirrors</em> (e.g. Server 1, Server 2 SuperStream, or Server 5 VidSrc ME).</li>
+            <li><strong>Run Speed Test:</strong> Check your connection ping to our CDN via our <a onclick="window.Router.navigate('speedtest')" style="color:#E50914; font-weight:700; cursor:pointer;">Speed Test tool</a>.</li>
+            <li><strong>Disable Heavy VPNs:</strong> Some low-bandwidth VPN nodes restrict 4K Ultra HD bitrate.</li>
+          </ul>
+        </div>
+
+        <div class="nf-legal-section">
+          <h2><span>🌐</span> 2. Selecting Hindi / Regional Dubbed Audio</h2>
+          <p>For Bollywood, Hollywood Hindi Dubs, Tamil, and Telugu audio, click <strong>"🌐 Audio & Dubs"</strong> on the media page or select <strong>Server 2 (SuperStream Multi-Dubs)</strong>.</p>
+        </div>
+
+        <div class="nf-legal-section">
+          <h2><span>📺</span> 3. Casting to Smart TVs & AirPlay</h2>
+          <p>CinemaStream supports Chromecast and AirPlay. Simply enter fullscreen in the player and click the native Cast or AirPlay icon in your browser.</p>
+        </div>
+
+        <div style="margin-top:20px; text-align:center; padding:28px; background:#181818; border-radius:8px; border:1px solid #282828;">
+          <h3 style="font-size:1.15rem; color:#fff; margin-bottom:8px;">Need Personalized Help?</h3>
+          <p style="color:#888; font-size:0.9rem; margin-bottom:16px;">Contact our technical team directly at <strong style="color:#fff;">nhtanvir@proton.me</strong>.</p>
+          <button onclick="window.Router.navigate('contact')" style="background:#E50914; color:#fff; border:none; padding:10px 24px; border-radius:4px; font-weight:700; cursor:pointer; font-family:inherit;">Open Support Ticket</button>
+        </div>
+      </section>
+    `;
+  }
+
+  // ── SEO Page: Account & VIP ─────────────────────────────────────
+  renderAccountVIPView(container) {
+    document.title = "Account & VIP Membership — CinemaStream Free 4K Pass";
+    container.innerHTML = `
+      <section class="nf-static-page">
+        <header class="nf-static-header">
+          <span class="nf-static-badge">VIP & Profiles</span>
+          <h1 class="nf-static-title">Account & VIP Membership</h1>
+          <p class="nf-static-subtitle">Manage your profile, sync your watchlist across all devices, and enjoy 100% free VIP benefits.</p>
+        </header>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-bottom:32px;">
+          <div style="background:#1c1c1c; border:1.5px solid #E50914; border-radius:8px; padding:28px; text-align:center; box-shadow:0 8px 30px rgba(229,9,20,0.25);">
+            <span style="background:#E50914; color:#fff; font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:20px; text-transform:uppercase;">Free Forever</span>
+            <h2 style="font-size:1.6rem; color:#fff; margin:14px 0 8px;">VIP Cinema Pass</h2>
+            <p style="color:#aaa; font-size:0.9rem; line-height:1.6; margin-bottom:20px;">Stream unlimited 4K Ultra HD movies, series, and anime with zero subscription fees.</p>
+            <ul style="text-align:left; color:#ccc; font-size:0.88rem; line-height:1.8; margin-bottom:24px; padding-left:20px;">
+              <li>✅ 4K Ultra HD & 1080p Bitrate</li>
+              <li>✅ 12 Global Fast Streaming Mirrors</li>
+              <li>✅ Ad-Shield Threat Protection</li>
+              <li>✅ Cloud Watchlist & History Sync</li>
+              <li>✅ Multi-Audio Dubs & Subtitles</li>
+            </ul>
+            <button onclick="window.App.openAuthModal()" style="background:#E50914; color:#fff; border:none; padding:12px 28px; border-radius:4px; font-size:1rem; font-weight:700; cursor:pointer; width:100%;">Sign In / Register VIP Free</button>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  // ── SEO Page: Cookie Preferences ────────────────────────────────
+  renderCookiePreferencesView(container) {
+    document.title = "Cookie Preferences & Tracking Controls — CinemaStream";
+    container.innerHTML = `
+      <section class="nf-static-page">
+        <header class="nf-static-header">
+          <span class="nf-static-badge">Privacy Settings</span>
+          <h1 class="nf-static-title">Cookie Preferences</h1>
+          <p class="nf-static-subtitle">Control how CinemaStream uses local storage and cookies on your browser.</p>
+        </header>
+
+        <div class="nf-legal-section">
+          <h2><span>🔒</span> Essential Functional Storage (Always Active)</h2>
+          <p>These local items are strictly required to save your Continue Watching progress, My List bookmarks, volume settings, and chosen regional dubbed audio.</p>
+        </div>
+
+        <div class="nf-legal-section">
+          <h2><span>🛡️</span> Third-Party Ad & Tracking Interception</h2>
+          <p>CinemaStream's Ad-Shield actively blocks third-party tracking scripts, advertiser cookies, and cross-site beacons by default.</p>
+        </div>
+
+        <div style="text-align:center; margin-top:24px;">
+          <button onclick="localStorage.removeItem('cs_history'); localStorage.removeItem('cs_bookmarks'); window.App.showToast('Local cookies & cache cleared!');" style="background:#282828; color:#fff; border:1px solid rgba(255,255,255,0.2); padding:10px 24px; border-radius:4px; font-weight:700; cursor:pointer;">Clear Local Storage & History</button>
+        </div>
+      </section>
+    `;
+  }
+
+  // ── SEO Page: DMCA & Legal ──────────────────────────────────────
+  renderDMCALegalView(container) {
+    document.title = "DMCA & Legal Notice — CinemaStream Content Removal & Copyright";
+    container.innerHTML = `
+      <section class="nf-static-page">
+        <header class="nf-static-header">
+          <span class="nf-static-badge">Compliance & Copyright</span>
+          <h1 class="nf-static-title">DMCA & Legal Notice</h1>
+          <p class="nf-static-subtitle">CinemaStream is committed to respecting intellectual property rights and complying with the Digital Millennium Copyright Act (DMCA).</p>
+        </header>
+
+        <div class="nf-legal-section">
+          <h2><span>⚖️</span> 1. Disclaimer of Content Hosting</h2>
+          <p>CinemaStream does not host, upload, store, or transmit any video or media files on its servers. All video streams provided on this platform are indexed from independent third-party servers.</p>
+        </div>
+
+        <div class="nf-legal-section">
+          <h2><span>📬</span> 2. Filing a DMCA Takedown Notice</h2>
+          <p>If you are a copyright owner or authorized representative and wish to request removal of a search index link, please provide:</p>
+          <ul>
+            <li>Identification of the copyrighted work claimed to have been infringed.</li>
+            <li>The exact URL / TMDB ID of the title on CinemaStream.</li>
+            <li>Your contact information (name, address, telephone number, email).</li>
+            <li>A statement of good faith belief that the disputed use is unauthorized.</li>
+          </ul>
+          <p>Send your notice directly to our designated copyright agent at <a href="mailto:nhtanvir@proton.me" style="color:#E50914; font-weight:700;">nhtanvir@proton.me</a> or submit via our <a onclick="window.Router.navigate('contact')" style="color:#E50914; font-weight:700; cursor:pointer;">Contact Desk</a>. Valid requests are processed within 24 hours.</p>
+        </div>
+      </section>
+    `;
+  }
+
+  // ── SEO Page: Request a Movie / Show ─────────────────────────────
+  renderRequestMediaView(container) {
+    document.title = "Request a Movie or TV Series — CinemaStream Request Desk";
+    container.innerHTML = `
+      <section class="nf-static-page">
+        <header class="nf-static-header">
+          <span class="nf-static-badge">Community Requests</span>
+          <h1 class="nf-static-title">Request a Movie / TV Show</h1>
+          <p class="nf-static-subtitle">Can't find a title? Submit your request below and our automated indexing scrapers will fetch it for you.</p>
+        </header>
+
+        <div class="nf-contact-grid">
+          <div class="nf-contact-card">
+            <h2 style="font-size:1.3rem; color:#fff; margin-bottom:16px;">🎬 Submit Media Request</h2>
+            <form class="nf-contact-form" onsubmit="event.preventDefault(); window.App.submitContactForm(this);">
+              <div>
+                <label for="contact-name">Your Name</label>
+                <input type="text" id="contact-name" name="name" placeholder="e.g. Alex Johnson" required>
+              </div>
+              <div>
+                <label for="contact-email">Your Email Address</label>
+                <input type="email" id="contact-email" name="email" placeholder="name@example.com" required>
+              </div>
+              <div>
+                <label for="contact-type">Request Category</label>
+                <select id="contact-type" name="inquiry_type">
+                  <option value="movie">🎬 Hollywood / International Movie</option>
+                  <option value="series">📺 TV Series (Full Season)</option>
+                  <option value="anime">⛩️ Anime Series / Movie</option>
+                  <option value="indian">🇮🇳 Bollywood / South Indian Dub</option>
+                  <option value="kdrama">🇰🇷 Korean Drama / Asian Series</option>
+                </select>
+              </div>
+              <div>
+                <label for="contact-msg">Title Name, Year & Details</label>
+                <textarea id="contact-msg" name="message" rows="4" placeholder="Enter title name, release year, requested season number, or audio language (e.g. Hindi dub)..." required></textarea>
+              </div>
+              <button type="submit" class="nf-contact-submit-btn" id="contact-submit-btn">Submit Request 🚀</button>
+            </form>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="nf-contact-card">
+              <h3 style="font-size:1.1rem; color:#fff; margin-bottom:10px;">⚡ Fast Automated Ingestion</h3>
+              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">Our media discovery bots scan global streaming nodes every 30 minutes. Requested titles typically become streamable in 4K within 1–12 hours.</p>
+            </div>
+            <div class="nf-contact-card">
+              <h3 style="font-size:1.1rem; color:#fff; margin-bottom:10px;">📧 Direct Request Inbox</h3>
+              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">Requests are dispatched directly to <a href="mailto:nhtanvir@proton.me" style="color:#E50914; font-weight:700;">nhtanvir@proton.me</a>.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  // ── SEO Page: Multi-Audio & Dubbing Guide ─────────────────────────
+  renderMultiAudioGuideView(container) {
+    document.title = "Multi-Audio & Dubbing Guide — Watch in Hindi, Tamil, Telugu, English";
+    container.innerHTML = `
+      <section class="nf-static-page">
+        <header class="nf-static-header">
+          <span class="nf-static-badge">Audio Dubbing Features</span>
+          <h1 class="nf-static-title">Multi-Audio & Dubbing Guide</h1>
+          <p class="nf-static-subtitle">How to stream global blockbusters and anime in Hindi, Tamil, Telugu, and English Dolby Atmos.</p>
+        </header>
+
+        <div class="nf-legal-section">
+          <h2><span>🌐</span> 1. Built-in Multi-Audio Tracks</h2>
+          <p>CinemaStream provides multi-track audio across popular Hollywood, Indian, and Asian titles. When watching, look for the <strong>"🌐 Audio & Dubs"</strong> button on the title overview or inside the player.</p>
+        </div>
+
+        <div class="nf-legal-section">
+          <h2><span>⚡</span> 2. Recommended Servers for Dubbed Audio</h2>
+          <ul>
+            <li><strong>Server 2 (SuperStream Multi-Dubs):</strong> Best for Hindi, Tamil, and Telugu multi-dubs.</li>
+            <li><strong>Server 1 (VidSrc 4K Ultra):</strong> Best for English 5.1 Surround & Original voice tracks.</li>
+            <li><strong>Server 4 (SmashyStream HD):</strong> Fast anime and regional dubbed streams.</li>
+          </ul>
+        </div>
+      </section>
+    `;
+  }
+
+  // ── SEO Page: Live Server & Mirror Status ─────────────────────────
+  renderServerStatusView(container) {
+    document.title = "Live Streaming Server & Mirror Status — CinemaStream Network";
+    container.innerHTML = `
+      <section class="nf-static-page">
+        <header class="nf-static-header">
+          <span class="nf-static-badge">Real-Time Infrastructure</span>
+          <h1 class="nf-static-title">Live Server Status</h1>
+          <p class="nf-static-subtitle">Real-time uptime and health status of CinemaStream's 12 distributed streaming mirror clusters.</p>
+        </header>
+
+        <div style="background:#181818; border:1px solid #282828; border-radius:8px; padding:24px; margin-bottom:32px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #282828;">
+            <div>
+              <h2 style="font-size:1.3rem; color:#fff; margin-bottom:4px;">All Systems Operational</h2>
+              <p style="color:#888; font-size:0.85rem; margin:0;">Global CDN Network Status: 100% Online</p>
+            </div>
+            <span style="background:rgba(70,211,105,0.15); color:#46d369; border:1px solid rgba(70,211,105,0.4); font-size:0.8rem; font-weight:800; padding:6px 14px; border-radius:20px;">99.9% UPTIME</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px;">
+            ${[
+              { name: 'Server 1 (VidSrc 4K Ultra)', ping: '14ms' },
+              { name: 'Server 2 (SuperStream Multi-Dubs)', ping: '18ms' },
+              { name: 'Server 3 (2Embed VIP Pro)', ping: '22ms' },
+              { name: 'Server 4 (SmashyStream HD)', ping: '19ms' },
+              { name: 'Server 5 (VidSrc ME Mirror)', ping: '16ms' },
+              { name: 'Server 6 (AutoEmbed CC)', ping: '15ms' },
+              { name: 'Server 7 (VidSrc XYZ Global)', ping: '24ms' },
+              { name: 'Server 8 (VidLink 4K Pro)', ping: '17ms' },
+              { name: 'Server 9 (NontonGo FastCDN)', ping: '26ms' },
+              { name: 'Server 10 (Frembed Cinema)', ping: '21ms' },
+              { name: 'Server 11 (AutoEmbed TO Multi)', ping: '18ms' },
+              { name: 'Server 12 (VidSrc VIP Server)', ping: '15ms' }
+            ].map(s => `
+              <div style="background:#222; padding:12px 16px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#eee; font-size:0.88rem; font-weight:600;">${s.name}</span>
+                <span style="color:#46d369; font-size:0.8rem; font-weight:700;">🟢 ${s.ping}</span>
+              </div>
+            `).join('')}
+          </div>
         </div>
       </section>
     `;

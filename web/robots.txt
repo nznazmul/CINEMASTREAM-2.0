@@ -21,6 +21,25 @@ Allow: /genres
 Allow: /year/
 Allow: /years
 Allow: /watch/
+Allow: /mylist
+Allow: /bookmarks
+Allow: /faq
+Allow: /help
+Allow: /account
+Allow: /vip
+Allow: /speedtest
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /cookie
+Allow: /dmca
+Allow: /legal
+Allow: /contact
+Allow: /request
+Allow: /multiaudio
+Allow: /audio
+Allow: /serverstatus
+Allow: /status
 Disallow: /api/v1/stream/
 Disallow: /api/v1/user/
 

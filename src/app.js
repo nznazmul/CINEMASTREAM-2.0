@@ -1177,7 +1177,7 @@ class App {
         <header class="nf-static-header">
           <span class="nf-static-badge">24/7 Support & Inquiries</span>
           <h1 class="nf-static-title">Contact CinemaStream</h1>
-          <p class="nf-static-subtitle">Have a question, feedback, bug report, or want to request a movie or anime series? Send us a message below.</p>
+          <p class="nf-static-subtitle">Have a question, feedback, bug report, or want to request a movie or TV show? Send us a message below and it will be delivered directly to our support inbox at <strong style="color:#fff;">nhtanvir@proton.me</strong>.</p>
         </header>
 
         <div class="nf-contact-grid">
@@ -1185,51 +1185,60 @@ class App {
           <!-- Contact Form -->
           <div class="nf-contact-card">
             <h2 style="font-size:1.3rem; color:#fff; margin-bottom:16px;">💬 Send Us a Message</h2>
-            <form class="nf-contact-form" onsubmit="event.preventDefault(); window.App.submitContactForm(this);">
+            <form class="nf-contact-form" id="cs-contact-form" onsubmit="event.preventDefault(); window.App.submitContactForm(this);">
               <div>
                 <label for="contact-name">Your Name</label>
-                <input type="text" id="contact-name" placeholder="e.g. Alex Johnson" required>
+                <input type="text" id="contact-name" name="name" placeholder="e.g. Alex Johnson" required>
               </div>
               <div>
-                <label for="contact-email">Email Address</label>
-                <input type="email" id="contact-email" placeholder="name@example.com" required>
+                <label for="contact-email">Your Email Address</label>
+                <input type="email" id="contact-email" name="email" placeholder="name@example.com" required>
               </div>
               <div>
                 <label for="contact-type">Inquiry Type</label>
-                <select id="contact-type">
-                  <option value="request">🎬 Request a Movie / Show / Anime</option>
+                <select id="contact-type" name="inquiry_type">
+                  <option value="request">🎬 Request a Movie / TV Series / Anime</option>
                   <option value="audio">🎧 Multi-Audio / Dubbing Request</option>
-                  <option value="bug">🐛 Streaming / Mirror Bug Report</option>
+                  <option value="bug">🐛 Streaming Server / Mirror Bug Report</option>
                   <option value="dmca">⚖️ DMCA / Content Removal</option>
-                  <option value="general">💡 General Feedback</option>
+                  <option value="general">💡 General Feedback / Other</option>
                 </select>
               </div>
               <div>
                 <label for="contact-msg">Message & Details</label>
-                <textarea id="contact-msg" rows="4" placeholder="Tell us the title name, release year, season/episode, or issue details..." required></textarea>
+                <textarea id="contact-msg" name="message" rows="4" placeholder="Tell us the title name, release year, season/episode, or issue details..." required></textarea>
               </div>
-              <button type="submit" class="nf-contact-submit-btn">Send Message 🚀</button>
+              <button type="submit" class="nf-contact-submit-btn" id="contact-submit-btn">Send Message 🚀</button>
             </form>
           </div>
 
           <!-- Contact Information & Quick Support Cards -->
           <div style="display:flex; flex-direction:column; gap:16px;">
             <div class="nf-contact-card">
-              <h3 style="font-size:1.1rem; color:#fff; margin-bottom:10px;">⚡ Instant Content Request</h3>
-              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">Looking for a specific Bollywood blockbuster, South Indian dub, K-Drama, or new anime episode? Our automated scraper queue checks requests every 30 minutes.</p>
+              <h3 style="font-size:1.1rem; color:#fff; margin-bottom:10px;">📧 Direct Support Email</h3>
+              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">You can message us directly using the form, or send an email directly to:</p>
+              <a href="mailto:nhtanvir@proton.me" style="display:inline-flex; align-items:center; gap:8px; color:#E50914; font-weight:700; font-size:1.05rem; margin-top:8px; text-decoration:none; word-break:break-all;">
+                <span>✉️</span> nhtanvir@proton.me
+              </a>
+              <div style="margin-top:10px; color:#888; font-size:0.8rem;">Typical response time: within 2–12 hours.</div>
             </div>
 
             <div class="nf-contact-card">
-              <h3 style="font-size:1.1rem; color:#fff; margin-bottom:10px;">🌐 Global Multi-CDN Network</h3>
-              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">CinemaStream utilizes 6 distributed fast mirror clusters (AutoEmbed, VidSrc, SmashyStream, 2Embed, MultiEmbed, and VidSrc PRO) to guarantee 99.9% streaming uptime.</p>
+              <h3 style="font-size:1.1rem; color:#fff; margin-bottom:10px;">⚡ Instant Content Request</h3>
+              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">Looking for a specific Bollywood blockbuster, South Indian dub, K-Drama, or new anime episode? Send us the title name and details above.</p>
+            </div>
+
+            <div class="nf-contact-card">
+              <h3 style="font-size:1.1rem; color:#fff; margin-bottom:10px;">🌐 Global Fast Mirror Clusters</h3>
+              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">CinemaStream connects to 12 distributed mirror clusters to guarantee 99.9% streaming uptime in 4K Ultra HD.</p>
               <div style="margin-top:10px; display:inline-flex; align-items:center; gap:8px; color:#46d369; font-size:0.85rem; font-weight:700;">
-                <span style="width:8px; height:8px; border-radius:50%; background:#46d369;"></span> All Mirrors Operational
+                <span style="width:8px; height:8px; border-radius:50%; background:#46d369;"></span> All 12 Streaming Mirrors Operational
               </div>
             </div>
 
             <div class="nf-contact-card">
               <h3 style="font-size:1.1rem; color:#fff; margin-bottom:10px;">⚖️ DMCA & Copyright Notices</h3>
-              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">For copyright takedown inquiries, please select "DMCA" in the form above and provide the exact TMDB ID or title URL for swift processing within 24 hours.</p>
+              <p style="color:#aaa; font-size:0.9rem; line-height:1.6;">For copyright takedown inquiries, select "DMCA" in the form above or email <a href="mailto:nhtanvir@proton.me" style="color:#E50914; font-weight:700;">nhtanvir@proton.me</a> for swift processing within 24 hours.</p>
             </div>
           </div>
 
@@ -1306,9 +1315,64 @@ class App {
     item.classList.toggle('open');
   }
 
-  submitContactForm(form) {
-    this.showToast('Thank you! Your message has been sent successfully. 🚀', 'info');
-    form.reset();
+  async submitContactForm(form) {
+    const name = (document.getElementById('contact-name')?.value || '').trim();
+    const email = (document.getElementById('contact-email')?.value || '').trim();
+    const typeSelect = document.getElementById('contact-type');
+    const type = typeSelect ? typeSelect.options[typeSelect.selectedIndex]?.text : 'General Inquiry';
+    const message = (document.getElementById('contact-msg')?.value || '').trim();
+    const submitBtn = document.getElementById('contact-submit-btn') || form.querySelector('.nf-contact-submit-btn');
+
+    if (!name || !email || !message) {
+      this.showToast('Please fill out all required fields.', 'warning');
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Sending Message... ⏳';
+    }
+
+    try {
+      const payload = {
+        name: name,
+        email: email,
+        inquiry_type: type,
+        message: message,
+        _subject: `[CinemaStream Contact] ${type} from ${name}`,
+        _template: 'table',
+        _captcha: 'false'
+      };
+
+      const response = await fetch('https://formsubmit.co/ajax/nhtanvir@proton.me', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        this.showToast('Thank you! Your message was sent directly to nhtanvir@proton.me. 🚀', 'info');
+        form.reset();
+      } else {
+        // Fallback: trigger mailto link
+        window.location.href = `mailto:nhtanvir@proton.me?subject=${encodeURIComponent('[CinemaStream Inquiry] ' + type)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\nInquiry: ${type}\n\nMessage:\n${message}`)}`;
+        this.showToast('Opening your email client to send message to nhtanvir@proton.me 📧', 'info');
+        form.reset();
+      }
+    } catch (err) {
+      console.warn('FormSubmit AJAX fallback:', err);
+      window.location.href = `mailto:nhtanvir@proton.me?subject=${encodeURIComponent('[CinemaStream Inquiry] ' + type)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\nInquiry: ${type}\n\nMessage:\n${message}`)}`;
+      this.showToast('Opening your email client to send message to nhtanvir@proton.me 📧', 'info');
+      form.reset();
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Send Message 🚀';
+      }
+    }
   }
 
   runSpeedTest() {

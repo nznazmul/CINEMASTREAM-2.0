@@ -2049,13 +2049,21 @@ class App {
               <div style="margin-bottom:40px;">
                 <h2 style="font-size:1.3rem; font-weight:800; margin-bottom:16px;">🌟 Top Billed Cast</h2>
                 <div class="nf-cast-carousel">
-                  ${cast.slice(0, 10).map(c => `
-                    <div class="nf-cast-card">
-                      <img class="nf-cast-avatar" src="${c.profile_path ? 'https://image.tmdb.org/t/p/w185' + c.profile_path : 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}" alt="${c.name}">
-                      <div class="nf-cast-name">${c.name}</div>
-                      <div class="nf-cast-role">${c.character || 'Cast'}</div>
-                    </div>
-                  `).join('')}
+                  ${cast.slice(0, 15).map(c => {
+                    const avatarUrl = c.profile || c.photo || (c.profile_path ? (c.profile_path.startsWith('http') ? c.profile_path : 'https://image.tmdb.org/t/p/w185' + c.profile_path) : null) || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Cast')}&background=282828&color=ffffff&size=185&bold=true`;
+                    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Cast')}&background=282828&color=ffffff&size=185&bold=true`;
+                    return `
+                      <div class="nf-cast-card">
+                        <img class="nf-cast-avatar" 
+                             src="${avatarUrl}" 
+                             alt="${c.name}" 
+                             loading="lazy" 
+                             onerror="this.onerror=null; this.src='${fallbackAvatar}';">
+                        <div class="nf-cast-name" title="${c.name}">${c.name}</div>
+                        <div class="nf-cast-role" title="${c.character || 'Cast'}">${c.character || 'Cast'}</div>
+                      </div>
+                    `;
+                  }).join('')}
                 </div>
               </div>
             ` : ''}
@@ -2256,6 +2264,29 @@ class App {
               <p class="nf-modal-genres-label" style="margin-top:10px;">Audio Tracks: <span style="color:#00f0ff;">English, Hindi (हिन्दी), Tamil, Telugu</span></p>
             </div>
           </div>
+
+          ${(item.cast || []).length > 0 ? `
+          <div style="padding: 0 36px 20px;">
+            <div style="font-size:1.15rem; font-weight:700; color:#fff; margin-bottom:12px;">🌟 Top Billed Cast</div>
+            <div class="nf-cast-carousel" style="margin-bottom:0; padding-bottom:8px;">
+              ${(item.cast || []).slice(0, 10).map(c => {
+                const avatarUrl = c.profile || c.photo || (c.profile_path ? (c.profile_path.startsWith('http') ? c.profile_path : 'https://image.tmdb.org/t/p/w185' + c.profile_path) : null) || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Cast')}&background=282828&color=ffffff&size=185&bold=true`;
+                const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Cast')}&background=282828&color=ffffff&size=185&bold=true`;
+                return `
+                  <div class="nf-cast-card">
+                    <img class="nf-cast-avatar" 
+                         src="${avatarUrl}" 
+                         alt="${c.name}" 
+                         loading="lazy" 
+                         onerror="this.onerror=null; this.src='${fallbackAvatar}';">
+                    <div class="nf-cast-name" title="${c.name}">${c.name}</div>
+                    <div class="nf-cast-role" title="${c.character || 'Cast'}">${c.character || 'Cast'}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+          ` : ''}
 
           ${isTv && seasons.length > 0 ? `
           <div class="nf-modal-seasons">

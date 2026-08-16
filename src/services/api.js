@@ -249,12 +249,12 @@ export class ApiService {
     let actualType = type === 'tv' ? 'tv' : 'movie';
     let m = null;
     try {
-      m = await this.tmdb((actualType === 'tv' ? '/tv/' : '/movie/') + id, { append_to_response: 'videos,credits,similar,external_ids' });
+      m = await this.tmdb((actualType === 'tv' ? '/tv/' : '/movie/') + id, { append_to_response: 'videos,credits,aggregate_credits,similar,external_ids' });
     } catch (e1) {
       // Crossover fallback (try alternative media type if initial failed)
       try {
         actualType = actualType === 'tv' ? 'movie' : 'tv';
-        m = await this.tmdb((actualType === 'tv' ? '/tv/' : '/movie/') + id, { append_to_response: 'videos,credits,similar,external_ids' });
+        m = await this.tmdb((actualType === 'tv' ? '/tv/' : '/movie/') + id, { append_to_response: 'videos,credits,aggregate_credits,similar,external_ids' });
       } catch (e2) {
         return { success: false };
       }
@@ -262,12 +262,24 @@ export class ApiService {
     if (!m) return { success: false };
     const norm = this.normalize(m, actualType);
     norm.media_type = actualType;
-    norm.genres_list = (m.genres || []).map(g => g.name);
-    norm.cast = (m.credits && m.credits.cast) ? m.credits.cast.slice(0, 10).map(c => ({
-      name: c.name,
-      character: c.character,
-      profile: c.profile_path ? (IMG_BASE + '/w185' + c.profile_path) : null
-    })) : [];
+    
+    // Support both standard credits (movies) and aggregate_credits (TV shows / Anime)
+    const rawCast = (m.credits && m.credits.cast && m.credits.cast.length > 0)
+      ? m.credits.cast
+      : ((m.aggregate_credits && m.aggregate_credits.cast) ? m.aggregate_credits.cast : []);
+
+    norm.cast = rawCast.slice(0, 15).map(c => {
+      const charName = (c.roles && c.roles[0] && c.roles[0].character) || c.character || 'Cast';
+      const profileUrl = c.profile_path ? (IMG_BASE + '/w185' + c.profile_path) : null;
+      return {
+        id: c.id,
+        name: c.name || 'Cast Member',
+        character: charName,
+        profile: profileUrl,
+        profile_path: c.profile_path ? (IMG_BASE + '/w185' + c.profile_path) : null,
+        photo: profileUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Actor')}&background=282828&color=ffffff&size=185&bold=true`
+      };
+    });
     norm.imdb_id = (m.external_ids && m.external_ids.imdb_id) || m.imdb_id || null;
 
     if (actualType === 'tv' && m.seasons && m.seasons.length) {

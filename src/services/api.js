@@ -340,6 +340,20 @@ export class ApiService {
     return Object.assign({ success: true, data: norm }, norm);
   }
 
+  static async getTrailerKey(id, type = 'movie') {
+    const actualType = type === 'tv' ? 'tv' : 'movie';
+    try {
+      const data = await this.tmdb(`/${actualType}/${id}/videos`);
+      const videos = (data && data.results) || [];
+      const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube') ||
+                      videos.find(v => v.type === 'Teaser' && v.site === 'YouTube') ||
+                      videos.find(v => v.site === 'YouTube') || {};
+      return trailer.key || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   static async getEpisodes(tvId, season) {
     season = parseInt(season) || 1;
     try {

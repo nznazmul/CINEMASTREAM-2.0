@@ -2306,6 +2306,21 @@ body {
   display: flex;
   align-items: flex-end;
   padding: 40px 50px;
+  overflow: hidden;
+}
+
+.nf-media-hero .nf-hero-video-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.nf-media-hero .nf-hero-video-wrap.playing {
+  opacity: 1;
 }
 
 .nf-media-hero::before {
@@ -2314,16 +2329,35 @@ body {
   inset: 0;
   background: linear-gradient(0deg, var(--netflix-bg) 0%, rgba(20,20,20,0.85) 45%, rgba(0,0,0,0.4) 100%),
               linear-gradient(90deg, var(--netflix-bg) 0%, rgba(20,20,20,0.65) 50%, transparent 100%);
+  z-index: 2;
+  pointer-events: none;
 }
 
 .nf-media-hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   gap: 36px;
   width: 100%;
   max-width: 1300px;
   align-items: flex-end;
+}
+
+.nf-media-hero .nf-hero-audio-btn {
+  position: absolute;
+  bottom: 40px;
+  right: 50px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .nf-media-hero .nf-hero-audio-btn {
+    bottom: 20px;
+    right: 20px;
+  }
 }
 
 .nf-media-poster-wrap {

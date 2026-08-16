@@ -15,6 +15,8 @@ class App {
     this.currentSubLang = 'en';
     this.modalTrailerTimeout = null;
     this.modalIsMuted = true;
+    this.pageTrailerTimeout = null;
+    this.pageTrailerMuted = true;
     this.selectedYear = 2026;
     this.selectedYearType = 'movie';
     this.yearArchivePage = 1;
@@ -227,6 +229,7 @@ class App {
   }
 
   async navigate(route, updateHistory = true) {
+    this.cleanupTrailers();
     this.currentRoute = route;
     if (updateHistory) {
       const targetPath = route === 'home' ? '/' : `/${route}`;
@@ -1963,7 +1966,18 @@ class App {
       const poster = item.poster_path || item.backdrop_path || '';
       const isTv = type === 'tv';
       const seasons = item.seasons || [];
-      const trailerKey = item.trailer_key;
+      // Stop previous trailers
+      clearTimeout(this.pageTrailerTimeout);
+      clearTimeout(this.modalTrailerTimeout);
+
+      let trailerKey = item.trailer_key;
+      if (!trailerKey && ApiService.getTrailerKey) {
+        try {
+          trailerKey = await ApiService.getTrailerKey(item.id, type);
+          item.trailer_key = trailerKey;
+        } catch(e) {}
+      }
+
       const cast = item.cast || [];
       const genres = item.genres || [];
       const pageUrl = encodeURIComponent(`https://cinemastream2.vercel.app/#${type}/${item.id}`);
@@ -1995,8 +2009,11 @@ class App {
 
       mediaContainer.innerHTML = `
         <div class="nf-media-page">
-          <!-- Hero Section with Backdrop -->
-          <div class="nf-media-hero" style="background-image: url('${backdrop}');">
+          <!-- Hero Section with Ambient Trailer Backdrop -->
+          <div class="nf-media-hero" id="page-hero-viewport" style="background-image: url('${backdrop}');">
+            <!-- Ambient Video Teaser Iframe Container -->
+            <div class="nf-hero-video-wrap" id="page-hero-video-wrap"></div>
+
             <div class="nf-media-hero-content">
               <div class="nf-media-poster-wrap">
                 <img class="nf-media-poster" src="${poster}" alt="${title}" onerror="this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
@@ -2049,6 +2066,11 @@ class App {
                 </div>
               </div>
             </div>
+
+            <!-- Audio Mute / Unmute Button -->
+            <button class="nf-hero-audio-btn" id="page-hero-audio-btn" style="display:${trailerKey ? 'flex' : 'none'};" onclick="window.App.togglePageTrailerAudio()" title="${this.pageTrailerMuted ? 'Unmute Trailer' : 'Mute Trailer'}">
+              ${this.pageTrailerMuted ? '🔇' : '🔊'}
+            </button>
           </div>
 
           <!-- Page Body & Interactive Features -->
@@ -2147,6 +2169,13 @@ class App {
           </div>
         </div>
       `;
+
+      // Autoplay Trailer in ambient hero backdrop
+      if (trailerKey) {
+        this.pageTrailerTimeout = setTimeout(() => {
+          this.mountPageTrailer(trailerKey);
+        }, 400);
+      }
 
       if (isTv && seasons.length > 0) {
         this.loadPageSeasonEpisodes(item.id, season || seasons[0].season_number);
@@ -2398,7 +2427,16 @@ class App {
     if (trailerKey) {
       this.modalTrailerTimeout = setTimeout(() => {
         this.mountModalTrailer(trailerKey);
-      }, 650);
+      }, 400);
+    } else if (ApiService.getTrailerKey) {
+      ApiService.getTrailerKey(item.id, type).then(k => {
+        if (k) {
+          item.trailer_key = k;
+          const audioBtn = document.getElementById('modal-audio-btn');
+          if (audioBtn) audioBtn.style.display = 'flex';
+          this.mountModalTrailer(k);
+        }
+      }).catch(() => {});
     }
 
     // Auto-load first season episodes for TV shows
@@ -2480,8 +2518,60 @@ class App {
     }
   }
 
-  closeDetails() {
+  mountPageTrailer(key) {
+    const wrap = document.getElementById('page-hero-video-wrap');
+    if (!wrap || !key) return;
+
+    wrap.innerHTML = `
+      <iframe id="page-trailer-iframe"
+        class="nf-hero-iframe"
+        src="https://www.youtube-nocookie.com/embed/${key}?autoplay=1&mute=${this.pageTrailerMuted ? 1 : 0}&controls=0&loop=1&playlist=${key}&enablejsapi=1&playsinline=1&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1&fs=0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+    `;
+
+    const iframe = document.getElementById('page-trailer-iframe');
+    if (iframe) {
+      iframe.onload = () => {
+        setTimeout(() => {
+          wrap.classList.add('playing');
+        }, 300);
+      };
+    }
+  }
+
+  togglePageTrailerAudio() {
+    this.pageTrailerMuted = !this.pageTrailerMuted;
+    const btn = document.getElementById('page-hero-audio-btn');
+    const iframe = document.getElementById('page-trailer-iframe');
+    if (iframe && iframe.contentWindow) {
+      const func = this.pageTrailerMuted ? 'mute' : 'unMute';
+      iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: [] }), '*');
+      if (!this.pageTrailerMuted) {
+        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [60] }), '*');
+      }
+    }
+    if (btn) {
+      btn.innerHTML = this.pageTrailerMuted ? '🔇' : '🔊';
+      btn.title = this.pageTrailerMuted ? 'Unmute Trailer' : 'Mute Trailer';
+    }
+  }
+
+  cleanupTrailers() {
     clearTimeout(this.modalTrailerTimeout);
+    clearTimeout(this.pageTrailerTimeout);
+    if (typeof HeroBanner !== 'undefined' && HeroBanner && HeroBanner.trailerTimeout) {
+      clearTimeout(HeroBanner.trailerTimeout);
+    }
+    const modalVideo = document.getElementById('modal-video-wrap');
+    if (modalVideo) modalVideo.innerHTML = '';
+    const pageVideo = document.getElementById('page-hero-video-wrap');
+    if (pageVideo) pageVideo.innerHTML = '';
+  }
+
+  closeDetails() {
+    this.cleanupTrailers();
     const modalContainer = document.getElementById('details-modal-container');
     if (modalContainer) modalContainer.innerHTML = '';
     document.body.style.overflow = '';

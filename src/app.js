@@ -614,15 +614,14 @@ class App {
 
       container.innerHTML = `
         <div class="nf-cat-page">
-          <!-- Category Hero -->
+          <!-- Compact Netflix Category Toolbar -->
           <div class="nf-cat-hero">
             <div class="nf-cat-header-content">
-              <div class="nf-cat-badge-wrap">
+              <div class="nf-cat-title-cluster">
                 <span class="nf-cat-icon">${cfg.icon}</span>
+                <h1 class="nf-cat-title">${cfg.title}</h1>
                 <span class="nf-cat-badge">${cfg.badge}</span>
               </div>
-              <h1 class="nf-cat-title">${cfg.title}</h1>
-              <p class="nf-cat-desc">${cfg.desc}</p>
 
               <!-- Filter Bar -->
               <div class="nf-filter-bar">
@@ -901,13 +900,14 @@ class App {
 
     container.innerHTML = `
       <div class="nf-year-archive-header">
-        <div class="nf-static-badge">Archive Catalog • 2000 to 2026</div>
-        <h1 style="font-size:clamp(1.8rem, 4vw, 2.5rem); font-weight:900; color:#fff; margin-bottom:8px;">
-          ${year} ${type === 'movie' ? 'Blockbuster Movies' : type === 'tv' ? 'Binge TV Series' : 'Anime Universes'}
-        </h1>
-        <p style="color:#888; font-size:0.95rem;">Stream top-rated releases and nostalgic classics from the year ${year}.</p>
+        <div class="nf-year-toolbar">
+          <div class="nf-year-title-wrap">
+            <h1 class="nf-year-title">
+              ${year} ${type === 'movie' ? 'Blockbuster Movies' : type === 'tv' ? 'Binge TV Series' : 'Anime Universes'}
+            </h1>
+            <span class="nf-cat-badge">2000–2026 Universe</span>
+          </div>
 
-        <div class="nf-year-filter-wrap">
           <!-- Type Toggle (Movies / TV Shows) -->
           <div class="nf-type-pills">
             <button class="nf-type-btn ${type === 'movie' ? 'active' : ''}" onclick="window.App.switchYearType('movie')">
@@ -917,19 +917,19 @@ class App {
               📺 TV Shows (${year})
             </button>
           </div>
+        </div>
 
-          <!-- Horizontal Scrollable Year Chips (2026 down to 2000) -->
-          <div class="nf-year-scroll-wrap" id="year-chips-bar">
-            ${yearsList.map(y => `
-              <button class="nf-year-chip ${y === Number(year) ? 'active' : ''}" onclick="window.App.switchYear(${y})">
-                ${y}
-              </button>
-            `).join('')}
-          </div>
+        <!-- Horizontal Scrollable Year Chips (2026 down to 2000) -->
+        <div class="nf-year-scroll-wrap" id="year-chips-bar">
+          ${yearsList.map(y => `
+            <button class="nf-year-chip ${y === Number(year) ? 'active' : ''}" onclick="window.App.switchYear(${y})">
+              ${y}
+            </button>
+          `).join('')}
         </div>
 
         <div id="year-results-grid" style="min-height:350px;">
-          <div style="color:#888; padding:40px 0; text-align:center;">Loading titles from ${year}...</div>
+          <div style="color:#888; padding:30px 0; text-align:center;">Loading titles from ${year}...</div>
         </div>
       </div>
     `;

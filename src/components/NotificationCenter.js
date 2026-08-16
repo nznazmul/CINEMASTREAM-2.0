@@ -388,20 +388,18 @@ export class NotificationCenter {
         <!-- Radar Hero Header -->
         <div class="nf-notif-page-hero">
           <div class="nf-notif-hero-content">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
-              <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(229,9,20,0.15); border:1px solid rgba(229,9,20,0.4); padding:4px 12px; border-radius:20px;">
-                <span class="nf-radar-beacon"></span>
-                <span style="color:#ff3b47; font-size:0.8rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">Live Release Radar</span>
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+              <div style="display:inline-flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(229,9,20,0.15); border:1px solid rgba(229,9,20,0.4); padding:3px 10px; border-radius:16px;">
+                  <span class="nf-radar-beacon"></span>
+                  <span style="color:#ff3b47; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">Live Release Radar</span>
+                </div>
+                <h1 class="nf-notif-hero-title" style="margin:0;">New Releases & Updates</h1>
               </div>
               <button onclick="window.NotificationCenter && window.NotificationCenter.markAllAsRead()" class="nf-notif-mark-all-page-btn">
                 ✓ Mark All as Read
               </button>
             </div>
-
-            <h1 class="nf-notif-hero-title">New Releases & Updates</h1>
-            <p class="nf-notif-hero-subtitle">
-              Instant alerts on brand new 4K movie premieres in theaters, fresh TV series episodes, and Japanese anime simulcasts.
-            </p>
 
             <!-- 🔔 Device Native Push Notification Permission Banner -->
             <div class="nf-push-permission-card ${permState === 'granted' ? 'granted' : (permState === 'denied' ? 'denied' : 'default')}">

@@ -259,11 +259,20 @@ export class NotificationCenter {
         timestamp: Date.now() - 1000 * 60 * 600
       }));
 
+      // Symmetrically interleave: Latest Movie -> Latest TV Episode -> Latest Anime Simulcast -> ...
+      const interleaved = [];
+      const maxLen = Math.max(npItems.length, tvItems.length, animeItems.length, trendItems.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (npItems[i]) interleaved.push(npItems[i]);
+        if (tvItems[i]) interleaved.push(tvItems[i]);
+        if (animeItems[i]) interleaved.push(animeItems[i]);
+        if (trendItems[i]) interleaved.push(trendItems[i]);
+      }
+
       // Universal multi-tier deduplication
-      const allRaw = [...npItems, ...tvItems, ...animeItems, ...trendItems];
       const seenNotif = new Set();
       const uniqueNotifs = [];
-      for (const n of allRaw) {
+      for (const n of interleaved) {
         const key = `${n.mediaType}_${n.mediaId}`;
         const titleKey = (n.title || '').toLowerCase().trim();
         if (seenNotif.has(key) || (titleKey && seenNotif.has(titleKey))) continue;

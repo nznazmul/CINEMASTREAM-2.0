@@ -104,14 +104,35 @@ export class ApiService {
 
   static async getHero() {
     try {
-      const data = await this.tmdb('/trending/all/week', { page: 1 });
-      const items = this.deduplicate((data.results || []).map(m => this.normalize(m))).slice(0, 10);
-      
-      // Fetch trailer keys for top hero items
-      const itemsWithTrailers = await Promise.all(items.map(async (item, idx) => {
-        if (idx < 6) {
+      const [nowPlaying, onAir, anime, trending] = await Promise.all([
+        this.getMovies('now_playing', null, 1).catch(() => ({ results: [] })),
+        this.getTVSeries('on_the_air', null, 1).catch(() => ({ results: [] })),
+        this.getAnime('popular', 1).catch(() => ({ results: [] })),
+        this.getTrending(1).catch(() => ({ results: [] }))
+      ]);
+
+      const np = (nowPlaying.results || []).slice(0, 4);
+      const tv = (onAir.results || []).slice(0, 4);
+      const ani = (anime.results || []).slice(0, 3);
+      const tr = (trending.results || []).slice(0, 3);
+
+      // Symmetrically interleave: Latest Movie -> Latest TV Show -> Latest Anime -> ...
+      const combined = [];
+      const maxLen = Math.max(np.length, tv.length, ani.length, tr.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (np[i]) combined.push(np[i]);
+        if (tv[i]) combined.push(tv[i]);
+        if (ani[i]) combined.push(ani[i]);
+        if (tr[i]) combined.push(tr[i]);
+      }
+
+      const deduplicated = this.deduplicate(combined).slice(0, 8);
+
+      // Fetch and preload trailer keys for top hero slider rotation
+      const itemsWithTrailers = await Promise.all(deduplicated.map(async (item, idx) => {
+        if (idx < 6 && !item.trailer_key) {
           try {
-            item.trailer_key = await this.getTrailerKey(item.id, item.media_type);
+            item.trailer_key = await this.getTrailerKey(item.id, item.media_type || (item.first_air_date ? 'tv' : 'movie'));
           } catch(e) {
             item.trailer_key = null;
           }

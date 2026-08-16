@@ -214,6 +214,7 @@ class App {
     if (hash === 'legal' || hash === 'dmca-legal') cleanRoute = 'dmca';
     if (hash === 'contact-us') cleanRoute = 'contact';
     if (hash === 'request-movie' || hash === 'request-show') cleanRoute = 'request';
+    if (hash === 'notifications' || hash === 'whatsnew' || hash === 'releases' || hash === 'radar') cleanRoute = 'notifications';
     if (hash === 'audio' || hash === 'multi-audio') cleanRoute = 'multiaudio';
     if (hash === 'speed-test') cleanRoute = 'speedtest';
 
@@ -298,7 +299,32 @@ class App {
         this.renderMultiAudioGuideView(mediaContainer);
       } else if (this.currentRoute === 'speedtest' || this.currentRoute === 'speed-test') {
         this.renderSpeedTestView(mediaContainer);
+      } else if (this.currentRoute === 'notifications' || this.currentRoute === 'whatsnew' || this.currentRoute === 'releases' || this.currentRoute === 'radar') {
+        await this.renderNotificationsView(mediaContainer);
       }
+    }
+  }
+
+  // ── 🔔 Dedicated Release Radar & Notifications Page View ────────
+  async renderNotificationsView(container, filter = 'all') {
+    this.currentRoute = 'notifications';
+    document.title = "🔔 New Releases & Real-Time Updates — CinemaStream";
+
+    const heroContainer = document.getElementById('hero-container');
+    const cw = document.getElementById('continue-watching-section');
+    const root = document.getElementById('main-content');
+    if (heroContainer) heroContainer.style.display = 'none';
+    if (cw) { cw.style.display = 'none'; cw.innerHTML = ''; }
+    if (root) {
+      root.classList.remove('home-active');
+      root.classList.add('non-hero-active');
+    }
+
+    window.history.replaceState(null, '', '/notifications');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (window.NotificationCenter && window.NotificationCenter.renderPage) {
+      await window.NotificationCenter.renderPage(container, filter);
     }
   }
 

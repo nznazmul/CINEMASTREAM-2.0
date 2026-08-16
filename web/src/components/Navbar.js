@@ -23,42 +23,12 @@ export class Navbar {
               onkeydown="if(event.key==='Escape') Navbar.closeSearch()">
           </div>
 
-          <!-- Notification Bell & Dynamic Center -->
+          <!-- Release Radar / Notifications Link -->
           <div class="nf-bell-wrap" id="nf-bell-wrap">
-            <button class="nf-bell-btn" id="nf-bell-trigger-btn" onclick="window.NotificationCenter && window.NotificationCenter.toggleDropdown(event)" title="Notifications (New Movies & Releases)">
+            <button class="nf-bell-btn" id="nf-bell-trigger-btn" onclick="window.Router.navigate('notifications')" title="Release Radar & New Releases">
               <span class="nf-bell-icon">🔔</span>
               <span class="nf-bell-badge" id="nf-bell-badge" style="display:none;">0</span>
             </button>
-
-            <!-- Non-Intrusive Floating Notification Dropdown Popover (Hidden by default) -->
-            <div class="nf-notifications-dropdown" id="nf-notifications-dropdown" style="display: none !important;">
-              <div class="nf-notif-caret"></div>
-
-              <div class="nf-notif-header">
-                <div class="nf-notif-header-title">
-                  <span style="font-size:0.95rem;">🔔</span>
-                  <h3>Notifications</h3>
-                  <span class="nf-notif-count-pill" id="nf-notif-unread-count">0 new</span>
-                </div>
-                <button class="nf-notif-mark-all-btn" onclick="window.NotificationCenter && window.NotificationCenter.markAllAsRead(event)">
-                  Mark all read
-                </button>
-              </div>
-
-              <!-- Filter Tabs (All / Unread) -->
-              <div class="nf-notif-tabs">
-                <button class="nf-notif-tab active" id="nf-notif-tab-all" onclick="window.NotificationCenter && window.NotificationCenter.setTab('all', event)">All</button>
-                <button class="nf-notif-tab" id="nf-notif-tab-unread" onclick="window.NotificationCenter && window.NotificationCenter.setTab('unread', event)">Unread Only</button>
-              </div>
-
-              <!-- Notifications Scrollable Feed -->
-              <div class="nf-notifications-list" id="nf-notifications-list">
-                <div class="nf-notif-loading">
-                  <div class="nf-notif-spinner"></div>
-                  <span>Loading new releases...</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div class="nf-avatar" onclick="window.App.openAuthModal()" title="Account">CS</div>

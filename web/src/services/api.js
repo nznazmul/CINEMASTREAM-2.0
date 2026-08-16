@@ -53,12 +53,30 @@ export class ApiService {
   static deduplicate(items) {
     if (!Array.isArray(items)) return [];
     const seenIds = new Set();
+    const seenTitles = new Set();
     const result = [];
+    
     for (const item of items) {
-      if (!item || !item.id) continue;
-      const key = String(item.id);
-      if (seenIds.has(key)) continue;
-      seenIds.add(key);
+      if (!item || (!item.id && !item.title && !item.name)) continue;
+      
+      const rawId = item.id ? String(item.id) : '';
+      const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+      const idKey = rawId ? `${mediaType}_${rawId}` : '';
+      
+      // Clean normalized title + release year signature
+      const rawTitle = (item.title || item.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const rawYear = String(item.release_date || item.first_air_date || '').substring(0, 4);
+      const titleKey = rawTitle ? `${mediaType}_${rawTitle}_${rawYear}` : '';
+      
+      // Check for duplicates
+      if (rawId && seenIds.has(rawId)) continue;
+      if (idKey && seenIds.has(idKey)) continue;
+      if (titleKey && seenTitles.has(titleKey)) continue;
+      
+      if (rawId) seenIds.add(rawId);
+      if (idKey) seenIds.add(idKey);
+      if (titleKey) seenTitles.add(titleKey);
+      
       result.push(item);
     }
     return result;

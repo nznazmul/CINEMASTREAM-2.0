@@ -89,7 +89,19 @@ export class NotificationCenter {
         timestamp: Date.now() - 1000 * 60 * 600
       }));
 
-      this.notifications = [...npItems, ...tvItems, ...animeItems, ...trendItems];
+      // Deduplicate notifications so no title appears twice
+      const allRaw = [...npItems, ...tvItems, ...animeItems, ...trendItems];
+      const seenNotif = new Set();
+      const uniqueNotifs = [];
+      for (const n of allRaw) {
+        const key = `${n.mediaType}_${n.mediaId}`;
+        const titleKey = (n.title || '').toLowerCase().trim();
+        if (seenNotif.has(key) || (titleKey && seenNotif.has(titleKey))) continue;
+        seenNotif.add(key);
+        if (titleKey) seenNotif.add(titleKey);
+        uniqueNotifs.push(n);
+      }
+      this.notifications = uniqueNotifs;
       this.updateBadge();
       this.renderDropdownContent();
     } catch (e) {

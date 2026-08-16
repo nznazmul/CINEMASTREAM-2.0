@@ -47,7 +47,21 @@ export class MediaGrid {
 
   static renderRow(title, items, rowId, categoryType, categoryEndpoint) {
     if (!items || items.length === 0) return '';
-    const cards = items.map((item, idx) => this.renderCard(item, idx, items.length)).join('');
+    
+    // Deduplicate items in row
+    const seen = new Set();
+    const uniqueItems = [];
+    for (const item of items) {
+      if (!item || !item.id) continue;
+      const key = `${item.media_type || 'media'}_${item.id}`;
+      if (seen.has(key) || seen.has(String(item.id))) continue;
+      seen.add(key);
+      seen.add(String(item.id));
+      uniqueItems.push(item);
+    }
+    if (uniqueItems.length === 0) return '';
+
+    const cards = uniqueItems.map((item, idx) => this.renderCard(item, idx, uniqueItems.length)).join('');
     const safeTitle = title.replace(/'/g, "\\'");
     return `
       <div class="nf-row">
@@ -88,6 +102,8 @@ export class MediaGrid {
 
     return `
       <div class="nf-card" style="transform-origin: ${transformOrigin};"
+           data-id="${type}_${item.id}"
+           data-raw-id="${item.id}"
            onclick="window.App.showDetails(${item.id}, '${type}')">
         <div class="nf-card-poster-wrap">
           <img class="nf-card-img" 
@@ -137,12 +153,27 @@ export class MediaGrid {
     if (!items || items.length === 0) {
       return '<div style="color:#888; padding:60px 0; text-align:center; font-size:1.1rem;">No titles found matching your search. Try another query.</div>';
     }
+    
+    // Deduplicate search results
+    const seen = new Set();
+    const unique = [];
+    for (const item of items) {
+      if (!item || !item.id) continue;
+      const key = `${item.media_type || 'media'}_${item.id}`;
+      if (seen.has(key) || seen.has(String(item.id))) continue;
+      seen.add(key);
+      seen.add(String(item.id));
+      unique.push(item);
+    }
+
     return `
       <div class="nf-search-grid">
-        ${items.map((item, i) => this.renderCard(item, i, items.length)).join('')}
+        ${unique.map((item, i) => this.renderCard(item, i, unique.length)).join('')}
       </div>
     `;
   }
 }
 
-window.MediaGrid = MediaGrid;
+if (typeof window !== 'undefined') {
+  window.MediaGrid = MediaGrid;
+}

@@ -678,9 +678,20 @@ class App {
             if (btn) btn.style.display = 'none';
             return;
           }
+          this._loadedCategoryIds = new Set(items.map(it => `${it.media_type || 'media'}_${it.id}`));
           grid.innerHTML = items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join('');
         } else {
-          grid.insertAdjacentHTML('beforeend', items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join(''));
+          if (!this._loadedCategoryIds) this._loadedCategoryIds = new Set();
+          const freshItems = items.filter(it => {
+            const key = `${it.media_type || 'media'}_${it.id}`;
+            if (this._loadedCategoryIds.has(key) || this._loadedCategoryIds.has(String(it.id))) return false;
+            this._loadedCategoryIds.add(key);
+            this._loadedCategoryIds.add(String(it.id));
+            return true;
+          });
+          if (freshItems.length > 0) {
+            grid.insertAdjacentHTML('beforeend', freshItems.map((item, idx) => MediaGrid.renderCard(item, idx, freshItems.length)).join(''));
+          }
         }
       }
 
@@ -945,7 +956,19 @@ class App {
       const items = res.results || [];
       const container = document.getElementById('year-cards-container');
       if (container && items.length > 0) {
-        container.insertAdjacentHTML('beforeend', items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join(''));
+        if (!this._loadedYearIds) {
+          this._loadedYearIds = new Set(Array.from(container.querySelectorAll('.nf-card')).map(c => c.getAttribute('data-id')).filter(Boolean));
+        }
+        const freshItems = items.filter(it => {
+          const key = `${it.media_type || this.selectedYearType || 'movie'}_${it.id}`;
+          if (this._loadedYearIds.has(key) || this._loadedYearIds.has(String(it.id))) return false;
+          this._loadedYearIds.add(key);
+          this._loadedYearIds.add(String(it.id));
+          return true;
+        });
+        if (freshItems.length > 0) {
+          container.insertAdjacentHTML('beforeend', freshItems.map((item, idx) => MediaGrid.renderCard(item, idx, freshItems.length)).join(''));
+        }
       }
       if (btn) {
         btn.disabled = false;
@@ -1020,6 +1043,7 @@ class App {
         return;
       }
 
+      this._loadedExploreIds = new Set(items.map(it => `${it.media_type || type || 'movie'}_${it.id}`));
       grid.innerHTML = `
         <div class="nf-search-grid" id="explore-cards-wrap">
           ${items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join('')}
@@ -1063,7 +1087,19 @@ class App {
       const items = res.results || res || [];
       const wrap = document.getElementById('explore-cards-wrap');
       if (wrap && items.length > 0) {
-        wrap.insertAdjacentHTML('beforeend', items.map((item, idx) => MediaGrid.renderCard(item, idx, items.length)).join(''));
+        if (!this._loadedExploreIds) {
+          this._loadedExploreIds = new Set(Array.from(wrap.querySelectorAll('.nf-card')).map(c => c.getAttribute('data-id')).filter(Boolean));
+        }
+        const freshItems = items.filter(it => {
+          const key = `${it.media_type || type || 'movie'}_${it.id}`;
+          if (this._loadedExploreIds.has(key) || this._loadedExploreIds.has(String(it.id))) return false;
+          this._loadedExploreIds.add(key);
+          this._loadedExploreIds.add(String(it.id));
+          return true;
+        });
+        if (freshItems.length > 0) {
+          wrap.insertAdjacentHTML('beforeend', freshItems.map((item, idx) => MediaGrid.renderCard(item, idx, freshItems.length)).join(''));
+        }
       }
       if (btn) {
         btn.disabled = false;

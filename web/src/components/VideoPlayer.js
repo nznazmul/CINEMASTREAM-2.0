@@ -206,18 +206,6 @@ export class VideoPlayer {
           ` : ''}
 
           <div class="yt-header-actions">
-            <!-- Server Switcher Dropdown -->
-            <div class="server-picker-wrap">
-              <span class="server-label">Server:</span>
-              <select class="yt-select-server" id="header-server-select" onchange="window.App.switchServer(this.value)">
-                ${this.streamData.allServers.map(s => `
-                  <option value="${s.id}" ${s.id === this.activeServerId ? 'selected' : ''}>
-                    ${s.name}
-                  </option>
-                `).join('')}
-              </select>
-            </div>
-
             <div class="ad-shield-badge">
               <span>🛡️ Ad-Shield</span>
             </div>

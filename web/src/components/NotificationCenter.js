@@ -23,6 +23,12 @@ export class NotificationCenter {
     } catch (e) {}
   }
 
+  static formatPoster(posterPath) {
+    if (!posterPath) return 'https://image.tmdb.org/t/p/w200/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
+    if (posterPath.startsWith('http')) return posterPath.replace('/w500/', '/w200/');
+    return `https://image.tmdb.org/t/p/w200${posterPath}`;
+  }
+
   static async loadNotifications(forceRefresh = false) {
     if (this.isLoading && !forceRefresh) return;
     this.isLoading = true;
@@ -41,8 +47,8 @@ export class NotificationCenter {
         mediaType: 'movie',
         typeLabel: '🎬 4K Movie',
         title: m.title || m.name || 'Blockbuster Movie',
-        desc: `Now streaming in 4K Ultra HD & Dolby Atmos 5.1 sound.`,
-        poster: m.poster_path,
+        desc: `Streaming in 4K Ultra HD & Dolby Atmos 5.1`,
+        poster: this.formatPoster(m.poster_path || m.poster),
         time: idx === 0 ? 'Just now' : `${(idx + 1) * 20}m ago`,
         timestamp: Date.now() - 1000 * 60 * (idx * 20 + 5)
       }));
@@ -53,8 +59,8 @@ export class NotificationCenter {
         mediaType: 'tv',
         typeLabel: '📺 New Episode',
         title: m.name || m.title || 'TV Series',
-        desc: `New season episode now available with multi-language subtitles.`,
-        poster: m.poster_path,
+        desc: `New episode with multi-language subs`,
+        poster: this.formatPoster(m.poster_path || m.poster),
         time: `${idx + 1}h ago`,
         timestamp: Date.now() - 1000 * 60 * 60 * (idx + 1)
       }));
@@ -65,8 +71,8 @@ export class NotificationCenter {
         mediaType: 'tv',
         typeLabel: '⛩️ Anime',
         title: m.name || m.title || 'Anime Series',
-        desc: `New simulcast episode streaming in Japanese & Multi-Dubs.`,
-        poster: m.poster_path,
+        desc: `Simulcast in Japanese & Multi-Dubs`,
+        poster: this.formatPoster(m.poster_path || m.poster),
         time: 'Today',
         timestamp: Date.now() - 1000 * 60 * 240
       }));
@@ -77,8 +83,8 @@ export class NotificationCenter {
         mediaType: m.media_type || 'movie',
         typeLabel: '🔥 Trending',
         title: m.title || m.name || 'Trending Hit',
-        desc: `Trending worldwide today with ${Math.round((m.vote_average || 7.8) * 10)}% match.`,
-        poster: m.poster_path,
+        desc: `Trending worldwide with ${Math.round((m.vote_average || 7.8) * 10)}% match`,
+        poster: this.formatPoster(m.poster_path || m.poster),
         time: 'Yesterday',
         timestamp: Date.now() - 1000 * 60 * 600
       }));
@@ -133,7 +139,7 @@ export class NotificationCenter {
         this.renderDropdownContent();
       }
 
-      // Smooth auto-dismiss when clicking outside (does not block clicks)
+      // Smooth auto-dismiss when clicking outside
       setTimeout(() => {
         if (window._closeNotificationsHandler) {
           window.removeEventListener('click', window._closeNotificationsHandler);
@@ -242,11 +248,11 @@ export class NotificationCenter {
 
     if (items.length === 0) {
       listContainer.innerHTML = `
-        <div class="nf-notif-empty">
-          <span style="font-size: 1.8rem; margin-bottom: 6px;">🎉</span>
-          <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">You're All Caught Up!</div>
-          <p style="color: #888; font-size: 0.78rem; margin-top: 4px; line-height: 1.3;">
-            ${this.activeTab === 'unread' ? 'No unread notifications right now.' : 'No recent updates at the moment.'}
+        <div class="nf-notif-empty" style="padding: 28px 16px; text-align: center;">
+          <span style="font-size: 1.6rem; margin-bottom: 4px; display:block;">🎉</span>
+          <div style="font-weight: 700; color: #fff; font-size: 0.88rem;">You're All Caught Up!</div>
+          <p style="color: #888; font-size: 0.75rem; margin-top: 2px; line-height: 1.3;">
+            ${this.activeTab === 'unread' ? 'No unread notifications.' : 'No recent updates.'}
           </p>
         </div>
       `;
@@ -255,29 +261,29 @@ export class NotificationCenter {
 
     listContainer.innerHTML = items.map(item => {
       const isRead = readIds.has(item.id);
-      const poster = item.poster || 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
+      const poster = item.poster || 'https://image.tmdb.org/t/p/w200/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
       return `
-        <div class="nf-notif-item ${isRead ? 'read' : 'unread'}" onclick="NotificationCenter.openMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
-          <div class="nf-notif-poster-wrap">
-            <img src="${poster}" alt="${item.title}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
-            ${!isRead ? '<span class="nf-notif-unread-dot" title="New release"></span>' : ''}
+        <div class="nf-notif-item ${isRead ? 'read' : 'unread'}" style="display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;" onclick="NotificationCenter.openMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
+          <div class="nf-notif-poster-wrap" style="width: 44px; min-width: 44px; max-width: 44px; height: 64px; min-height: 64px; max-height: 64px; flex-shrink: 0; position: relative; overflow: hidden; border-radius: 4px; background: #222;">
+            <img src="${poster}" alt="${item.title}" loading="lazy" style="width: 44px; min-width: 44px; max-width: 44px; height: 64px; min-height: 64px; max-height: 64px; object-fit: cover; display: block; border-radius: 4px;" onerror="this.src='https://image.tmdb.org/t/p/w200/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
+            ${!isRead ? '<span class="nf-notif-unread-dot" style="position:absolute; top:3px; left:3px; width:6px; height:6px; background:#E50914; border-radius:50%; box-shadow:0 0 5px #E50914;"></span>' : ''}
           </div>
-          <div class="nf-notif-info">
-            <div class="nf-notif-meta-line">
-              <span class="nf-notif-type-tag">${item.typeLabel}</span>
-              <span class="nf-notif-time">${item.time}</span>
+          <div class="nf-notif-info" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <div class="nf-notif-meta-line" style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="nf-notif-type-tag" style="font-size: 0.62rem; font-weight: 800; color: #00f0ff;">${item.typeLabel}</span>
+              <span class="nf-notif-time" style="font-size: 0.62rem; color: #888;">${item.time}</span>
             </div>
-            <h4 class="nf-notif-title" title="${item.title}">${item.title}</h4>
-            <p class="nf-notif-desc">${item.desc}</p>
-            <div class="nf-notif-actions">
-              <button class="nf-notif-btn-play" onclick="NotificationCenter.playMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
+            <h4 class="nf-notif-title" title="${item.title}" style="font-size: 0.8rem; font-weight: 700; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</h4>
+            <p class="nf-notif-desc" style="font-size: 0.7rem; color: #999; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.desc}</p>
+            <div class="nf-notif-actions" style="display: flex; gap: 6px; align-items: center; margin-top: 3px;">
+              <button class="nf-notif-btn-play" style="background:#E50914; color:#fff; border:none; border-radius:3px; padding:2px 8px; font-size:0.68rem; font-weight:700; cursor:pointer;" onclick="NotificationCenter.playMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
                 ▶ Play
               </button>
-              <button class="nf-notif-btn-info" onclick="NotificationCenter.openMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
+              <button class="nf-notif-btn-info" style="background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:3px; padding:2px 6px; font-size:0.68rem; font-weight:600; cursor:pointer;" onclick="NotificationCenter.openMedia('${item.id}', ${item.mediaId}, '${item.mediaType}', event)">
                 ℹ Info
               </button>
               ${!isRead ? `
-                <button class="nf-notif-btn-read" onclick="NotificationCenter.markAsRead('${item.id}', event)" title="Mark as read">
+                <button class="nf-notif-btn-read" style="background:transparent; border:1px solid rgba(255,255,255,0.2); color:#aaa; border-radius:3px; padding:2px 6px; font-size:0.65rem; cursor:pointer; margin-left:auto;" onclick="NotificationCenter.markAsRead('${item.id}', event)" title="Mark as read">
                   ✓
                 </button>
               ` : ''}

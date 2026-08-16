@@ -2524,4 +2524,231 @@ body {
   }
 }
 
+/* ==========================================================================
+   FAST.COM STYLE INTERNET SPEED TEST
+   ========================================================================== */
+.fast-speed-card {
+  background: #141414;
+  border: 1px solid #282828;
+  border-radius: 16px;
+  padding: 40px 24px;
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.fast-gauge-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fast-gauge-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.fast-gauge-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 8;
+}
+
+.fast-gauge-bar {
+  fill: none;
+  stroke: #E50914;
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: 552.9;
+  stroke-dashoffset: 552.9;
+  transition: stroke-dashoffset 0.1s linear;
+  filter: drop-shadow(0 0 8px rgba(229, 9, 20, 0.6));
+}
+
+.fast-gauge-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fast-speed-val-wrap {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.fast-speed-number {
+  font-size: 4.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  font-family: 'Inter', -apple-system, sans-serif;
+  letter-spacing: -2px;
+}
+
+.fast-speed-unit {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #E50914;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fast-status-pill {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+}
+
+.fast-status-pill.measuring {
+  background: rgba(229, 9, 20, 0.15);
+  color: #E50914;
+  border: 1px solid rgba(229, 9, 20, 0.4);
+  animation: fastPulse 1.2s infinite ease-in-out;
+}
+
+.fast-status-pill.complete {
+  background: rgba(70, 211, 105, 0.15);
+  color: #46d369;
+  border: 1px solid rgba(70, 211, 105, 0.4);
+}
+
+@keyframes fastPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.97); }
+}
+
+.fast-actions-bar {
+  margin-bottom: 24px;
+}
+
+.fast-btn-primary {
+  background: #E50914;
+  color: #ffffff;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(229, 9, 20, 0.4);
+}
+
+.fast-btn-primary:hover {
+  background: #f40612;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(229, 9, 20, 0.6);
+}
+
+.fast-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.fast-quality-card {
+  background: #1c1c1c;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  text-align: left;
+  border: 1px solid #2f2f2f;
+  animation: fadeIn 0.4s ease;
+}
+
+.fast-quality-card.tier-4k { border-color: rgba(70, 211, 105, 0.4); background: rgba(70, 211, 105, 0.05); }
+.fast-quality-card.tier-1080p { border-color: rgba(0, 240, 255, 0.4); background: rgba(0, 240, 255, 0.05); }
+.fast-quality-card.tier-720p { border-color: rgba(255, 170, 0, 0.4); background: rgba(255, 170, 0, 0.05); }
+
+.fast-quality-icon { font-size: 1.8rem; flex-shrink: 0; }
+.fast-quality-info h4 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 700; color: #fff; }
+.fast-quality-info p { margin: 0; font-size: 0.85rem; color: #aaa; line-height: 1.4; }
+
+.fast-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  text-align: left;
+  animation: fadeIn 0.4s ease;
+}
+
+@media (max-width: 500px) {
+  .fast-details-grid { grid-template-columns: 1fr; }
+}
+
+.fast-metric-box {
+  background: #1a1a1a;
+  border: 1px solid #282828;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fast-metric-label {
+  font-size: 0.76rem;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.fast-metric-val {
+  font-size: 1.05rem;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.fast-btn-watch {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 28px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.fast-btn-watch:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+
 

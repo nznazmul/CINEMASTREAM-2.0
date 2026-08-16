@@ -126,34 +126,50 @@ export class NotificationCenter {
     }
     if (typeof document === 'undefined') return;
 
-    this.isOpen = !this.isOpen;
     const dropdown = document.getElementById('nf-notifications-dropdown');
     if (!dropdown) return;
 
+    // If currently open, close it
     if (this.isOpen) {
-      dropdown.classList.add('active');
-      
-      if (this.notifications.length === 0) {
-        this.loadNotifications(true);
-      } else {
-        this.renderDropdownContent();
-      }
+      this.closeDropdown();
+      return;
+    }
 
-      // Smooth auto-dismiss when clicking outside
-      setTimeout(() => {
-        if (window._closeNotificationsHandler) {
-          window.removeEventListener('click', window._closeNotificationsHandler);
-        }
-        window._closeNotificationsHandler = (evt) => {
-          const wrap = document.getElementById('nf-bell-wrap');
-          if (wrap && !wrap.contains(evt.target)) {
-            NotificationCenter.closeDropdown();
-          }
-        };
-        window.addEventListener('click', window._closeNotificationsHandler, { passive: true });
-      }, 50);
+    // Open the dropdown
+    this.isOpen = true;
+    dropdown.classList.add('active');
+
+    // Always refresh content when opening
+    if (this.notifications.length === 0) {
+      this.loadNotifications(true);
     } else {
-      dropdown.classList.remove('active');
+      this.renderDropdownContent();
+    }
+
+    // Close when clicking anywhere outside the bell wrap
+    setTimeout(() => {
+      // Remove any previous handler first
+      if (window._closeNotificationsHandler) {
+        window.removeEventListener('click', window._closeNotificationsHandler);
+        window._closeNotificationsHandler = null;
+      }
+      window._closeNotificationsHandler = (evt) => {
+        const wrap = document.getElementById('nf-bell-wrap');
+        if (wrap && !wrap.contains(evt.target)) {
+          NotificationCenter.closeDropdown();
+        }
+      };
+      window.addEventListener('click', window._closeNotificationsHandler, { passive: true });
+    }, 50);
+
+    // Close on Escape key
+    if (!window._closeNotificationsEscHandler) {
+      window._closeNotificationsEscHandler = (evt) => {
+        if (evt.key === 'Escape') {
+          NotificationCenter.closeDropdown();
+        }
+      };
+      window.addEventListener('keydown', window._closeNotificationsEscHandler, { passive: true });
     }
   }
 
@@ -162,9 +178,19 @@ export class NotificationCenter {
     if (typeof document === 'undefined') return;
     const dropdown = document.getElementById('nf-notifications-dropdown');
     if (dropdown) dropdown.classList.remove('active');
+    // Clean up outside-click handler
     if (typeof window !== 'undefined' && window._closeNotificationsHandler) {
       window.removeEventListener('click', window._closeNotificationsHandler);
+      window._closeNotificationsHandler = null;
     }
+  }
+
+  // Auto-refresh notifications every 5 minutes in background
+  static startAutoRefresh() {
+    if (this._refreshInterval) return;
+    this._refreshInterval = setInterval(() => {
+      this.loadNotifications(true);
+    }, 5 * 60 * 1000);
   }
 
   static setTab(tab, e) {

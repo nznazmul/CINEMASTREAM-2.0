@@ -98,6 +98,7 @@ export class Navbar {
     // Initialize notification center
     if (NotificationCenter && NotificationCenter.loadNotifications) {
       NotificationCenter.loadNotifications();
+      NotificationCenter.startAutoRefresh();
     }
   }
 

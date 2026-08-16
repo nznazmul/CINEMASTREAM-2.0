@@ -288,7 +288,7 @@ export class ApiService {
     norm.duration = m.runtime ? (Math.floor(m.runtime / 60) + 'h ' + (m.runtime % 60) + 'm') : (m.episode_run_time && m.episode_run_time[0] ? m.episode_run_time[0] + 'm' : (actualType === 'tv' ? `${norm.seasons_count} Season${norm.seasons_count > 1 ? 's' : ''}` : '2h 15m'));
     norm.quality = (m.vote_average || 0) >= 7 ? '4K Ultra HD' : '1080p HD';
     norm.similar = this.deduplicate(((m.similar && m.similar.results) || []).map(s => this.normalize(s, actualType)));
-    return { success: true, data: norm };
+    return Object.assign({ success: true, data: norm }, norm);
   }
 
   static async getEpisodes(tvId, season) {

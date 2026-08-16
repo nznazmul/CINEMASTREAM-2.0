@@ -392,7 +392,15 @@ class App {
   }
 
   // ── Unified Dedicated Category Hub Engine ────────────────────────
-  async renderCategoryHub(catKey, subFilter = 'all', page = 1, append = false) {
+  async renderCategoryHub(rawCatKey = 'movies', subFilter = 'all', page = 1, append = false) {
+    let catKey = rawCatKey || 'movies';
+    if (catKey === 'movie' || catKey === 'movies') catKey = 'movies';
+    if (catKey === 'tv' || catKey === 'tv-shows' || catKey === 'tv-show' || catKey === 'tvseries' || catKey === 'series') catKey = 'tv';
+    if (catKey === 'animemovie' || catKey === 'anime-movie' || catKey === 'anime-movies') catKey = 'animemovie';
+    if (catKey === 'asian_drama' || catKey === 'asian-drama' || catKey === 'asiandrama') catKey = 'asian_drama';
+    if (catKey === 'kdrama' || catKey === 'kdramas') catKey = 'kdrama';
+    if (catKey === 'indian' || catKey === 'bollywood') catKey = 'indian';
+
     this.currentCategory = { key: catKey, filter: subFilter, page: page };
     const container = document.getElementById('media-sections-container');
     const heroContainer = document.getElementById('hero-container');
@@ -405,7 +413,7 @@ class App {
       root.classList.add('non-hero-active');
     }
 
-    Navbar.render(document.getElementById('navbar-container'), catKey);
+    Navbar.render(document.getElementById('navbar-container'), catKey === 'tv' ? 'tv-shows' : (catKey === 'movies' ? 'movie' : catKey));
 
     const catConfigs = {
       movies: {
@@ -547,12 +555,17 @@ class App {
       }
     };
 
+    catConfigs['movie'] = catConfigs['movies'];
+    catConfigs['tv-shows'] = catConfigs['tv'];
+    catConfigs['tv-show'] = catConfigs['tv'];
+    catConfigs['tvseries'] = catConfigs['tv'];
+    catConfigs['series'] = catConfigs['tv'];
     catConfigs['asian-drama'] = catConfigs['asian_drama'];
+    catConfigs['asiandrama'] = catConfigs['asian_drama'];
     catConfigs['anime-movies'] = catConfigs['animemovie'];
     catConfigs['anime-movie'] = catConfigs['animemovie'];
     catConfigs['bollywood'] = catConfigs['indian'];
-    catConfigs['movie'] = catConfigs['movies'];
-    catConfigs['tvseries'] = catConfigs['tv'];
+    catConfigs['kdramas'] = catConfigs['kdrama'];
 
     const cfg = catConfigs[catKey] || catConfigs['movies'];
 
@@ -563,7 +576,8 @@ class App {
       if (catKey === 'genre') {
         window.history.replaceState(null, '', `/genre/${subFilter}`);
       } else {
-        window.history.replaceState(null, '', `/${catKey === 'movies' ? 'movie' : catKey}${subFilter !== 'all' ? `?filter=${subFilter}` : ''}`);
+        const canonicalSlug = catKey === 'movies' ? 'movie' : (catKey === 'tv' ? 'tv-shows' : catKey);
+        window.history.replaceState(null, '', `/${canonicalSlug}${subFilter !== 'all' ? `?filter=${subFilter}` : ''}`);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -615,7 +629,7 @@ class App {
       if (catKey === 'movies' || catKey === 'movie') {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'now_playing', 'upcoming'].includes(subFilter) ? subFilter : 'popular');
         res = await ApiService.getMovies(endpoint, genreId, page);
-      } else if (catKey === 'tv' || catKey === 'tvseries') {
+      } else if (catKey === 'tv' || catKey === 'tv-shows' || catKey === 'tv-show' || catKey === 'tvseries' || catKey === 'series') {
         const endpoint = subFilter === 'all' ? 'popular' : (['popular', 'top_rated', 'on_the_air', 'airing_today'].includes(subFilter) ? subFilter : 'popular');
         res = await ApiService.getTVSeries(endpoint, genreId, page);
       } else if (catKey === 'animemovie' || catKey === 'anime-movies' || catKey === 'anime-movie') {
@@ -2446,19 +2460,44 @@ class App {
     this.player.switchServer && this.player.switchServer(serverId);
   }
 
+  switchPlayerSeason(season) {
+    this.player.switchSeason && this.player.switchSeason(season);
+  }
+
+  closePlayer() {
+    this.player.close && this.player.close();
+  }
+
+  async switchCategoryFilter(catKey, subFilter) {
+    this.currentCategory = { key: catKey, filter: subFilter, page: 1 };
+    await this.renderCategoryHub(catKey, subFilter, 1, false);
+  }
+
+  async loadMoreCategoryTitles() {
+    if (!this.currentCategory) return;
+    this.currentCategory.page = (this.currentCategory.page || 1) + 1;
+    const btn = document.getElementById('cat-load-more-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Loading More Titles...';
+    }
+    await this.renderCategoryHub(this.currentCategory.key, this.currentCategory.filter, this.currentCategory.page, true);
+  }
+
   // ── Audio & Subtitles Selector (Netflix-Style) ────────────────
   openAudioModal() {
     const modalContainer = document.getElementById('details-modal-container');
     document.body.style.overflow = 'hidden';
 
     const audioTracks = [
-      { id: 'en', name: 'English [Original]', badge: 'Dolby 5.1', serverId: 'vidplay' },
-      { id: 'hi', name: 'Hindi (हिन्दी Dubbed)', badge: 'Multi-Audio HD', serverId: 'autoembed' },
-      { id: 'ta', name: 'Tamil (தமிழ் Dubbed)', badge: 'Regional Dubs', serverId: 'multiembed' },
-      { id: 'te', name: 'Telugu (తెలుగు Dubbed)', badge: 'Regional Dubs', serverId: 'multiembed' },
-      { id: 'es', name: 'Spanish (Español)', badge: 'Dual Audio', serverId: 'smashy' },
-      { id: 'fr', name: 'French (Français)', badge: 'Dual Audio', serverId: 'smashy' },
-      { id: 'ja', name: 'Japanese (日本語)', badge: 'Original Audio', serverId: 'autoembed' }
+      { id: 'en', name: 'English [Original / 5.1]', badge: 'Server 1 (VidSrc 4K)', serverId: 'vidsrc' },
+      { id: 'hi', name: 'Hindi (हिन्दी Dubbed)', badge: 'Server 2 (SuperStream Multi-Dubs)', serverId: 'superstream' },
+      { id: 'ta', name: 'Tamil (தமிழ் Dubbed)', badge: 'Server 2 (SuperStream Multi-Dubs)', serverId: 'superstream' },
+      { id: 'te', name: 'Telugu (తెలుగు Dubbed)', badge: 'Server 2 (SuperStream Multi-Dubs)', serverId: 'superstream' },
+      { id: 'es', name: 'Spanish (Español)', badge: 'Server 4 (SmashyStream HD)', serverId: 'smashy' },
+      { id: 'fr', name: 'French (Français)', badge: 'Server 4 (SmashyStream HD)', serverId: 'smashy' },
+      { id: 'ja', name: 'Japanese (日本語 Original)', badge: 'Server 6 (AutoEmbed CC)', serverId: 'autoembed' },
+      { id: 'ko', name: 'Korean (한국어 Original)', badge: 'Server 9 (NontonGo FastCDN)', serverId: 'nontongo' }
     ];
 
     const subtitleTracks = [
@@ -2467,6 +2506,8 @@ class App {
       { id: 'es', name: 'Spanish [Español]' },
       { id: 'fr', name: 'French [Français]' },
       { id: 'ar', name: 'Arabic [العربية]' },
+      { id: 'de', name: 'German [Deutsch]' },
+      { id: 'id', name: 'Indonesian [Bahasa]' },
       { id: 'off', name: 'Subtitles Off' }
     ];
 

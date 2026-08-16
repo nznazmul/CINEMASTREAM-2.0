@@ -206,27 +206,78 @@ export class ApiService {
   }
 
   static async getDetails(id, type) {
-    type = type || 'movie';
+    let actualType = type === 'tv' ? 'tv' : 'movie';
+    let m = null;
     try {
-      const path = type === 'tv' ? '/tv/' + id : '/movie/' + id;
-      const m = await this.tmdb(path, { append_to_response: 'videos,credits,similar' });
-      const norm = this.normalize(m, type);
-      norm.genres = (m.genres || []).map(g => g.name);
-      norm.cast = ((m.credits && m.credits.cast) || []).slice(0, 10).map(c => ({ name: c.name, character: c.character }));
-      const videos = (m.videos && m.videos.results) || [];
-      norm.trailer_key = (videos.find(v => v.type === 'Trailer' && v.site === 'YouTube') || {}).key || null;
-      norm.seasons = m.seasons || [];
-      norm.similar = this.deduplicate(((m.similar && m.similar.results) || []).map(s => this.normalize(s, type)));
-      return { success: true, data: norm };
-    } catch (e) { return { success: false, data: null }; }
+      m = await this.tmdb((actualType === 'tv' ? '/tv/' : '/movie/') + id, { append_to_response: 'videos,credits,similar,external_ids' });
+    } catch (e1) {
+      // Crossover fallback (try alternative media type if initial failed)
+      try {
+        actualType = actualType === 'tv' ? 'movie' : 'tv';
+        m = await this.tmdb((actualType === 'tv' ? '/tv/' : '/movie/') + id, { append_to_response: 'videos,credits,similar,external_ids' });
+      } catch (e2) {
+        return { success: false, data: null };
+      }
+    }
+
+    const norm = this.normalize(m, actualType);
+    norm.media_type = actualType;
+    norm.genres = (m.genres || []).map(g => (typeof g === 'string' ? g : g.name));
+    norm.cast = ((m.credits && m.credits.cast) || []).slice(0, 10).map(c => ({
+      name: c.name,
+      character: c.character,
+      profile_path: c.profile_path ? (IMG_BASE + '/w185' + c.profile_path) : null
+    }));
+    const videos = (m.videos && m.videos.results) || [];
+    const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube') ||
+                    videos.find(v => v.type === 'Teaser' && v.site === 'YouTube') ||
+                    videos.find(v => v.site === 'YouTube') || {};
+    norm.trailer_key = trailer.key || null;
+
+    if (actualType === 'tv') {
+      const rawSeasons = m.seasons || [];
+      norm.seasons = rawSeasons
+        .filter(s => s.season_number > 0 || (rawSeasons.length === 1 && s.episode_count > 0))
+        .map(s => ({
+          id: s.id,
+          season_number: s.season_number,
+          name: s.name || `Season ${s.season_number}`,
+          episode_count: s.episode_count || 0,
+          poster_path: s.poster_path ? (IMG_BASE + '/w300' + s.poster_path) : norm.poster_path,
+          air_date: s.air_date || '',
+          overview: s.overview || ''
+        }));
+      norm.seasons_count = norm.seasons.length || m.number_of_seasons || 1;
+    } else {
+      norm.seasons = [];
+      norm.seasons_count = 0;
+    }
+
+    norm.duration = m.runtime ? (Math.floor(m.runtime / 60) + 'h ' + (m.runtime % 60) + 'm') : (m.episode_run_time && m.episode_run_time[0] ? m.episode_run_time[0] + 'm' : (actualType === 'tv' ? `${norm.seasons_count} Season${norm.seasons_count > 1 ? 's' : ''}` : '2h 15m'));
+    norm.quality = (m.vote_average || 0) >= 7 ? '4K Ultra HD' : '1080p HD';
+    norm.similar = this.deduplicate(((m.similar && m.similar.results) || []).map(s => this.normalize(s, actualType)));
+    return { success: true, data: norm };
   }
 
   static async getEpisodes(tvId, season) {
-    season = season || 1;
+    season = parseInt(season) || 1;
     try {
       const data = await this.tmdb('/tv/' + tvId + '/season/' + season);
-      return { success: true, episodes: data.episodes || [] };
-    } catch (e) { return { success: false, episodes: [] }; }
+      const eps = (data.episodes || []).map(ep => ({
+        id: ep.id,
+        episode_number: ep.episode_number,
+        season_number: ep.season_number || season,
+        name: ep.name || `Episode ${ep.episode_number}`,
+        overview: ep.overview || '',
+        still_path: ep.still_path ? (IMG_BASE + '/w500' + ep.still_path) : null,
+        vote_average: ep.vote_average ? Number(ep.vote_average).toFixed(1) : '8.0',
+        runtime: ep.runtime ? (ep.runtime >= 60 ? `${Math.floor(ep.runtime / 60)}h ${ep.runtime % 60}m` : `${ep.runtime}m`) : '50m',
+        air_date: ep.air_date || ''
+      }));
+      return { success: true, results: eps, episodes: eps };
+    } catch (e) {
+      return { success: false, results: [], episodes: [] };
+    }
   }
 
   static async search(query, page) {

@@ -6,7 +6,7 @@ export class VideoPlayer {
     this.hls = null;
     this.currentMedia = null;
     this.streamData = null;
-    this.activeServerId = 'vidplay';
+    this.activeServerId = 'vidsrc';
     this.activeSource = null;
     this.suggestions = [];
     this.episodes = [];
@@ -31,7 +31,7 @@ export class VideoPlayer {
       // 1. Fetch Media Details
       const detailsRes = await ApiService.getDetails(mediaId, type);
       this.currentMedia = detailsRes.data || detailsRes;
-      this.currentMedia.mediaType = type || (this.currentMedia.name ? 'tv' : 'movie');
+      this.currentMedia.mediaType = (type === 'tv' || this.currentMedia.media_type === 'tv') ? 'tv' : 'movie';
       this.currentMedia.currentSeason = Number(season) || 1;
       this.currentMedia.currentEpisode = Number(episode) || 1;
 
@@ -67,7 +67,7 @@ export class VideoPlayer {
             ApiService.getEpisodes(mediaId, this.currentMedia.currentSeason),
             ApiService.getTVSeries('popular', null, 1)
           ]);
-          this.episodes = epRes.results || [];
+          this.episodes = epRes.results || epRes.episodes || (Array.isArray(epRes) ? epRes : []);
           this.suggestions = (sugRes.results || []).filter(item => Number(item.id) !== Number(mediaId)).slice(0, 8);
         } else {
           const sugRes = await ApiService.getMovies('popular', null, 1);
@@ -79,7 +79,7 @@ export class VideoPlayer {
         this.suggestions = [];
       }
 
-      // 4. Render YouTube-Style Cinema Watch View
+      // 4. Render YouTube / Netflix Cinema Watch View
       document.body.style.overflow = 'hidden';
       document.body.classList.add('player-active');
       this.render();
@@ -99,22 +99,81 @@ export class VideoPlayer {
     }
   }
 
+  async switchSeason(seasonNumber) {
+    const sNum = parseInt(seasonNumber) || 1;
+    if (!this.currentMedia || this.currentMedia.mediaType !== 'tv') return;
+
+    this.currentMedia.currentSeason = sNum;
+    const epListContainer = document.getElementById('player-episodes-list');
+    const badge = document.getElementById('player-ep-count-badge');
+    const dropdown = document.getElementById('player-season-dropdown');
+    if (dropdown) dropdown.value = sNum;
+
+    if (epListContainer) {
+      epListContainer.innerHTML = `<div style="color:#888; padding:24px 10px; text-align:center;">Loading Season ${sNum} episodes...</div>`;
+    }
+
+    try {
+      const epRes = await ApiService.getEpisodes(this.currentMedia.id, sNum);
+      this.episodes = epRes.results || epRes.episodes || (Array.isArray(epRes) ? epRes : []);
+      if (badge) badge.textContent = `${this.episodes.length} Episodes`;
+      if (epListContainer) {
+        epListContainer.innerHTML = this.renderEpisodesListHtml(sNum, this.currentMedia.currentEpisode);
+      }
+      window.App.showToast(`Switched to Season ${sNum} 📺`);
+    } catch (e) {
+      if (epListContainer) {
+        epListContainer.innerHTML = '<div style="color:#888; padding:16px 10px;">Unable to load episodes for this season.</div>';
+      }
+    }
+  }
+
+  renderEpisodesListHtml(currentSeason, currentEpisode) {
+    if (!this.episodes || this.episodes.length === 0) {
+      return '<div style="color:#888; padding:16px 10px;">No episodes available for this season.</div>';
+    }
+    return this.episodes.map(ep => {
+      const isPlaying = Number(currentSeason) === Number(this.currentMedia.currentSeason) && Number(ep.episode_number) === Number(this.currentMedia.currentEpisode);
+      const still = ep.still_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg';
+      return `
+        <div class="yt-ep-item ${isPlaying ? 'playing' : ''}" onclick="window.App.playMedia(${this.currentMedia.id}, 'tv', ${currentSeason}, ${ep.episode_number})">
+          <div class="yt-ep-thumb-wrap">
+            <img src="${still}" alt="Ep ${ep.episode_number}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+            ${isPlaying ? '<div class="ep-playing-pill">PLAYING</div>' : `<span class="ep-num-tag">EP ${ep.episode_number}</span>`}
+          </div>
+          <div class="yt-ep-details">
+            <h5>${ep.episode_number}. ${ep.name || 'Episode ' + ep.episode_number}</h5>
+            <span class="yt-ep-sub">${ep.runtime || '50m'} • ⭐ ${ep.vote_average || '8.0'}</span>
+            ${ep.overview ? `<p class="yt-ep-overview">${ep.overview}</p>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   render() {
     const container = this.getContainer();
     const isTv = this.currentMedia.mediaType === 'tv';
     const title = this.currentMedia.title || this.currentMedia.name || 'Untitled';
     const year = (this.currentMedia.release_date || this.currentMedia.first_air_date || '2024').substring(0, 4);
-    const rating = this.currentMedia.vote_average || '8.5';
+    const rating = this.currentMedia.vote_average ? Number(this.currentMedia.vote_average).toFixed(1) : '8.5';
     const quality = this.currentMedia.quality || '4K Ultra HD';
-    const genres = Array.isArray(this.currentMedia.genres) ? this.currentMedia.genres.join(' • ') : 'Action • Sci-Fi';
+    const genres = Array.isArray(this.currentMedia.genres) ? this.currentMedia.genres.join(' • ') : 'Action • Drama';
     const currentSeason = this.currentMedia.currentSeason || 1;
     const currentEpisode = this.currentMedia.currentEpisode || 1;
+
+    // Multi-Season list calculation
+    const seasonsList = (this.currentMedia.seasons && this.currentMedia.seasons.length > 0)
+      ? this.currentMedia.seasons
+      : Array.from({ length: this.currentMedia.seasons_count || 1 }, (_, i) => ({
+          season_number: i + 1,
+          name: `Season ${i + 1}`,
+          episode_count: 0
+        }));
 
     // Calculate Next Episode
     const nextEpisodeNum = currentEpisode + 1;
     const nextEpisodeObj = this.episodes.find(e => e.episode_number === nextEpisodeNum);
-    const relYear = parseInt((this.currentMedia.release_date || this.currentMedia.first_air_date || '2024').substring(0, 4));
-    const isUpcoming = relYear >= 2026 && Boolean(this.currentMedia.trailer_key);
 
     container.innerHTML = `
       <div class="yt-watch-view" id="player-backdrop">
@@ -127,8 +186,24 @@ export class VideoPlayer {
 
           <div class="yt-header-meta">
             <span class="yt-now-playing-badge">🔴 NOW STREAMING</span>
-            <span class="yt-header-title">${title} ${isTv ? `(S${currentSeason} : E${currentEpisode})` : `(${year})`}</span>
+            <span class="yt-header-title">${title} ${isTv ? `(Season ${currentSeason} : Episode ${currentEpisode})` : `(${year})`}</span>
           </div>
+
+          <!-- Quick Episode Next / Prev in Header for TV -->
+          ${isTv ? `
+            <div class="yt-header-ep-nav">
+              ${currentEpisode > 1 ? `
+                <button class="btn-ep-nav" onclick="window.App.playMedia(${this.currentMedia.id}, 'tv', ${currentSeason}, ${currentEpisode - 1})" title="Previous Episode">
+                  ⏮ Ep ${currentEpisode - 1}
+                </button>
+              ` : ''}
+              ${nextEpisodeObj ? `
+                <button class="btn-ep-nav next" onclick="window.App.playMedia(${this.currentMedia.id}, 'tv', ${currentSeason}, ${nextEpisodeNum})" title="Next Episode">
+                  Ep ${nextEpisodeNum} ⏭
+                </button>
+              ` : ''}
+            </div>
+          ` : ''}
 
           <div class="yt-header-actions">
             <!-- Server Switcher Dropdown -->
@@ -151,7 +226,7 @@ export class VideoPlayer {
           </div>
         </div>
 
-        <!-- Two-Column YouTube Cinema Layout -->
+        <!-- Two-Column Cinema Layout -->
         <div class="yt-watch-container">
           
           <!-- LEFT COLUMN: Cinema Player & Video Details (72%) -->
@@ -171,14 +246,14 @@ export class VideoPlayer {
             <!-- Quick Server Selector Pills -->
             <div class="yt-server-pills-bar">
               <span class="server-pills-label">⚡ Fast Mirrors:</span>
-              ${this.streamData.allServers.map((s, idx) => `
+              ${this.streamData.allServers.map((s) => `
                 <button class="btn-server-pill ${s.id === this.activeServerId ? 'active' : ''}" onclick="window.App.switchServer('${s.id}')">
                   ${s.name.replace(/Server \d+ \((.*?)\)/, '$1')}
                 </button>
               `).join('')}
             </div>
 
-            <!-- YouTube-Style Video Title & Actions Bar -->
+            <!-- Video Title & Actions Bar -->
             <div class="yt-video-info-bar">
               <div class="yt-title-group">
                 <h1 class="yt-title">${title}</h1>
@@ -187,6 +262,7 @@ export class VideoPlayer {
                   <span class="badge-tag rating">⭐ ${rating}</span>
                   <span class="badge-tag type">${isTv ? `Season ${currentSeason} • Episode ${currentEpisode}` : 'Full Feature Movie'}</span>
                   <span class="badge-tag audio">Dolby Atmos 5.1</span>
+                  ${isTv ? `<span class="badge-tag" style="background:rgba(229,9,20,0.15); color:#E50914; border:1px solid #E50914;">${seasonsList.length} Seasons</span>` : ''}
                 </div>
               </div>
 
@@ -206,10 +282,10 @@ export class VideoPlayer {
               </div>
             </div>
 
-            <!-- YouTube-Style Expandable Description Box -->
+            <!-- Expandable Description Box -->
             <div class="yt-description-box">
               <div class="yt-desc-header">
-                <span><strong>Release:</strong> ${this.currentMedia.release_date || '2024'}</span>
+                <span><strong>Release:</strong> ${this.currentMedia.release_date || this.currentMedia.first_air_date || '2024'}</span>
                 <span><strong>Genres:</strong> ${genres}</span>
                 <span><strong>Audio Tracks:</strong> English [Original], Hindi (हिन्दी Dubbed), Tamil (தமிழ்), Telugu (తెలుగు)</span>
                 <span><strong>Subtitles:</strong> English [CC], Hindi, Spanish, French, Arabic</span>
@@ -223,19 +299,33 @@ export class VideoPlayer {
           <div class="yt-sidebar-column">
             
             ${isTv ? `
-              <!-- TV Episodes Drawer & Next Episode -->
+              <!-- TV Episodes Drawer & Season Switcher -->
               <div class="yt-sidebar-section">
-                <div class="yt-sidebar-header">
-                  <h3>📑 Season ${currentSeason} Episodes</h3>
-                  <span class="ep-count-badge">${this.episodes.length} Episodes</span>
+                <div class="yt-sidebar-header" style="flex-direction:column; align-items:flex-start; gap:10px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <h3>📺 Episodes & Seasons</h3>
+                    <span class="ep-count-badge" id="player-ep-count-badge">${this.episodes.length} Episodes</span>
+                  </div>
+
+                  <!-- Netflix-Style In-Player Season Selector -->
+                  <div class="yt-season-picker-bar">
+                    <label for="player-season-dropdown" class="yt-season-picker-label">Season:</label>
+                    <select id="player-season-dropdown" class="yt-season-dropdown" onchange="window.App.switchPlayerSeason(this.value)">
+                      ${seasonsList.map(s => `
+                        <option value="${s.season_number}" ${s.season_number === currentSeason ? 'selected' : ''}>
+                          ${s.name} ${s.episode_count ? `(${s.episode_count} eps)` : ''}
+                        </option>
+                      `).join('')}
+                    </select>
+                  </div>
                 </div>
 
                 <!-- Up Next Card (Next Episode Quick Play) -->
                 ${nextEpisodeObj ? `
                   <div class="yt-up-next-card" onclick="window.App.playMedia(${this.currentMedia.id}, 'tv', ${currentSeason}, ${nextEpisodeNum})">
-                    <div class="up-next-badge">⚡ UP NEXT</div>
+                    <div class="up-next-badge">⚡ UP NEXT (EP ${nextEpisodeNum})</div>
                     <div class="up-next-content">
-                      <img src="${nextEpisodeObj.still_path}" alt="Ep ${nextEpisodeNum}">
+                      <img src="${nextEpisodeObj.still_path || 'https://image.tmdb.org/t/p/w300' + (this.currentMedia.backdrop_path || '')}" alt="Ep ${nextEpisodeNum}" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
                       <div class="up-next-info">
                         <h4>Episode ${nextEpisodeNum}: ${nextEpisodeObj.name}</h4>
                         <span>${nextEpisodeObj.runtime || '50m'} • Click to Play ▶</span>
@@ -244,23 +334,9 @@ export class VideoPlayer {
                   </div>
                 ` : ''}
 
-                <!-- Complete Episode List -->
-                <div class="yt-episodes-list">
-                  ${this.episodes.map(ep => {
-                    const isPlaying = ep.episode_number === currentEpisode;
-                    return `
-                      <div class="yt-ep-item ${isPlaying ? 'playing' : ''}" onclick="window.App.playMedia(${this.currentMedia.id}, 'tv', ${currentSeason}, ${ep.episode_number})">
-                        <div class="yt-ep-thumb-wrap">
-                          <img src="${ep.still_path}" alt="Ep ${ep.episode_number}" loading="lazy">
-                          ${isPlaying ? '<div class="ep-playing-pill">PLAYING</div>' : `<span class="ep-num-tag">EP ${ep.episode_number}</span>`}
-                        </div>
-                        <div class="yt-ep-details">
-                          <h5>${ep.episode_number}. ${ep.name}</h5>
-                          <span class="yt-ep-sub">${ep.runtime || '52m'} • ⭐ ${ep.vote_average || '8.4'}</span>
-                        </div>
-                      </div>
-                    `;
-                  }).join('')}
+                <!-- Complete Episode List for selected season -->
+                <div class="yt-episodes-list" id="player-episodes-list">
+                  ${this.renderEpisodesListHtml(currentSeason, currentEpisode)}
                 </div>
               </div>
             ` : ''}
@@ -276,12 +352,12 @@ export class VideoPlayer {
                 ${this.suggestions.map(s => `
                   <div class="yt-suggestion-card" onclick="window.App.playMedia(${s.id}, '${s.media_type || (isTv ? 'tv' : 'movie')}')">
                     <div class="yt-sug-thumb-wrap">
-                      <img src="${s.poster_path}" alt="${s.title || s.name}" loading="lazy">
+                      <img src="${s.poster_path}" alt="${s.title || s.name}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
                       <span class="sug-quality-tag">${s.quality || '4K'}</span>
                     </div>
                     <div class="yt-sug-info">
                       <h4>${s.title || s.name}</h4>
-                      <span class="yt-sug-meta">${(s.release_date || s.first_air_date || '2024').substring(0, 4)} • ⭐ ${s.vote_average || '8.2'}</span>
+                      <span class="yt-sug-meta">${(s.release_date || s.first_air_date || '2024').substring(0, 4)} • ⭐ ${s.vote_average ? Number(s.vote_average).toFixed(1) : '8.2'}</span>
                       <span class="yt-sug-genre">${Array.isArray(s.genres) ? s.genres.slice(0, 2).join(', ') : 'Trending'}</span>
                     </div>
                   </div>
@@ -586,7 +662,7 @@ export class VideoPlayer {
       history = history.filter(h => Number(h.id) !== Number(item.id));
       history.unshift(item);
       localStorage.setItem('cinemastream_continue_watching', JSON.stringify(history.slice(0, 18)));
-    } catch(err) {}
+    } catch (err) {}
 
     ApiService.saveProgress({
       mediaId: item.id,

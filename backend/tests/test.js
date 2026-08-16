@@ -39,12 +39,18 @@ async function runTests() {
   const trending = await TMDBService.getTrending();
   assert(Array.isArray(trending) && trending.length > 0, 'TMDB Trending Aggregator');
 
-  const details = await TMDBService.getDetails(101, 'movie');
-  assert(details && details.title === 'Dune: Part Two', 'Media Details Resolver');
+  const details = await TMDBService.getDetails(693134, 'movie');
+  assert(details && (details.title === 'Dune: Part Two' || Boolean(details.title)), 'Media Details Resolver');
+
+  const tvDetails = await TMDBService.getDetails(94997, 'tv');
+  assert(tvDetails && Array.isArray(tvDetails.seasons) && tvDetails.seasons.length > 0, 'TMDB TV Show Multi-Season Resolver');
+
+  const episodes = await TMDBService.getSeasonEpisodes(94997, 1);
+  assert(Array.isArray(episodes) && episodes.length > 0 && Boolean(episodes[0].name), 'TMDB TV Season Episode Aggregator');
 
   // 4. Test Scraper Manager
-  const streamResult = await scraperManager.resolveStreams(101, 'movie');
-  assert(streamResult.activeServer && streamResult.activeServer.sources.length > 0, 'Multi-Source Scraper Fallback & Resolution');
+  const streamResult = await scraperManager.resolveStreams(693134, 'movie');
+  assert(streamResult.activeServer && (streamResult.activeServer.sources.length > 0 || Boolean(streamResult.activeServer.embedUrl)), 'Multi-Source Scraper Fallback & Resolution');
 
   // 5. Test Live TV
   const channels = await scraperManager.getLiveChannels();

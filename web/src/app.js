@@ -1498,16 +1498,44 @@ class App {
               <button class="nf-server-btn" onclick="window.App.playMedia(${item.id}, '${type}', ${season}, ${episode}, 'vidsrcvip')">💎 Server 12 (VidSrc VIP)</button>
             </div>
 
-            <!-- TV Seasons & Episodes Accordion (If TV Series/Anime) -->
+            <!-- TV Seasons & Episodes Section (Netflix Style) -->
             ${isTv && seasons.length > 0 ? `
-              <div style="margin-bottom:40px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                  <h2 style="font-size:1.4rem; font-weight:800;">📺 Seasons & Episodes</h2>
-                  <select class="nf-season-select" id="page-season-select" onchange="window.App.loadPageSeasonEpisodes(${item.id}, this.value)" style="padding:8px 14px; background:#222; color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:6px; font-family:inherit;">
-                    ${seasons.map(s => `<option value="${s.season_number}">${s.name} (${s.episode_count} eps)</option>`).join('')}
-                  </select>
+              <div class="nf-netflix-seasons-section">
+                <div class="nf-netflix-seasons-header">
+                  <div class="nf-season-header-left">
+                    <h2 class="nf-season-heading">Episodes</h2>
+                    <span class="nf-season-count-tag" id="page-season-info-tag">Season 1 (${seasons[0].episode_count || seasons.length} Episodes available in 4K)</span>
+                  </div>
+
+                  <div class="nf-season-header-controls">
+                    <!-- Netflix Season Selector Dropdown -->
+                    <div class="nf-custom-select-wrap">
+                      <select class="nf-netflix-season-select" id="page-season-select" onchange="window.App.loadPageSeasonEpisodes(${item.id}, this.value)">
+                        ${seasons.map(s => `
+                          <option value="${s.season_number}" ${s.season_number === Number(season) ? 'selected' : ''}>
+                            ${s.name} ${s.episode_count ? `(${s.episode_count} eps)` : ''}
+                          </option>
+                        `).join('')}
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                <div id="page-episodes-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px;"></div>
+
+                <!-- Netflix Season Tabs Bar for 1-Click Jumping -->
+                <div class="nf-season-tabs-bar" id="page-season-tabs">
+                  ${seasons.map(s => `
+                    <button class="nf-season-tab-pill ${s.season_number === Number(season) ? 'active' : ''}" 
+                            id="season-tab-btn-${s.season_number}"
+                            onclick="window.App.loadPageSeasonEpisodes(${item.id}, ${s.season_number})">
+                      ${s.name}
+                    </button>
+                  `).join('')}
+                </div>
+
+                <!-- Netflix Episode Cards Grid -->
+                <div id="page-episodes-grid" class="nf-netflix-episodes-grid">
+                  <div style="color:#888; grid-column:1/-1; padding:40px 0; text-align:center;">Loading episodes...</div>
+                </div>
               </div>
             ` : ''}
 
@@ -1541,7 +1569,7 @@ class App {
       `;
 
       if (isTv && seasons.length > 0) {
-        this.loadPageSeasonEpisodes(item.id, seasons[0].season_number);
+        this.loadPageSeasonEpisodes(item.id, season || seasons[0].season_number);
       }
 
       if (autoPlay) {
@@ -1554,41 +1582,80 @@ class App {
   }
 
   async loadPageSeasonEpisodes(tvId, seasonNumber) {
+    seasonNumber = parseInt(seasonNumber) || 1;
     const grid = document.getElementById('page-episodes-grid');
+    const select = document.getElementById('page-season-select');
+    const infoTag = document.getElementById('page-season-info-tag');
+
+    if (select && select.value !== String(seasonNumber)) {
+      select.value = seasonNumber;
+    }
+
+    // Update active state on season tabs
+    document.querySelectorAll('.nf-season-tab-pill').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    const activeTab = document.getElementById(`season-tab-btn-${seasonNumber}`);
+    if (activeTab) activeTab.classList.add('active');
+
     if (!grid) return;
-    grid.innerHTML = '<div style="color:#888; grid-column:1/-1;">Loading episodes...</div>';
+    grid.innerHTML = `<div style="color:#888; grid-column:1/-1; padding:40px 0; text-align:center;">Loading Season ${seasonNumber} episodes...</div>`;
 
     try {
       const res = await ApiService.getEpisodes(tvId, seasonNumber);
-      const eps = res.results || res.episodes || [];
+      const eps = res.results || res.episodes || (Array.isArray(res) ? res : []);
+      if (infoTag) {
+        infoTag.textContent = `Season ${seasonNumber} (${eps.length} Episodes available in 4K)`;
+      }
+
       if (eps.length === 0) {
-        grid.innerHTML = '<div style="color:#888; grid-column:1/-1;">No episodes available for this season.</div>';
+        grid.innerHTML = `<div style="color:#888; grid-column:1/-1; padding:50px 0; text-align:center;">No episodes found for Season ${seasonNumber}.</div>`;
         return;
       }
 
-      grid.innerHTML = eps.map(ep => {
-        const still = ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg';
+      grid.innerHTML = eps.map((ep) => {
+        const still = ep.still_path ? (ep.still_path.startsWith('http') ? ep.still_path : `https://image.tmdb.org/t/p/w500${ep.still_path}`) : 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg';
+        const epTitle = ep.name || `Episode ${ep.episode_number}`;
+        const dur = ep.runtime || '52m';
+        const rating = ep.vote_average || '8.2';
+        const airDate = ep.air_date ? ep.air_date.substring(0, 4) : '';
+
         return `
-          <div style="background:#1c1c1c; border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); cursor:pointer; transition:transform 0.2s, border-color 0.2s;" 
-               onmouseover="this.style.borderColor='#e50914'; this.style.transform='scale(1.02)';" 
-               onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='scale(1)';"
+          <div class="nf-netflix-ep-card" 
                onclick="window.App.playMedia(${tvId}, 'tv', ${seasonNumber}, ${ep.episode_number})">
-            <div style="position:relative; width:100%; height:140px;">
-              <img src="${still}" alt="${ep.name}" style="width:100%; height:100%; object-fit:cover; display:block;">
-              <div style="position:absolute; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center;">
-                <span style="background:rgba(229,9,20,0.9); width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.9rem;">▶</span>
+            
+            <div class="nf-ep-card-left">
+              <!-- Bold Netflix Episode Number -->
+              <div class="nf-ep-num">${ep.episode_number}</div>
+
+              <!-- 16:9 Thumbnail with Duration and Play Hover Overlay -->
+              <div class="nf-ep-thumb-wrap">
+                <img src="${still}" alt="Episode ${ep.episode_number}: ${epTitle}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+                <div class="nf-ep-play-overlay">
+                  <div class="nf-ep-play-btn">▶</div>
+                </div>
+                <div class="nf-ep-duration-badge">${dur}</div>
               </div>
-              <span style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.8); padding:2px 6px; border-radius:3px; font-size:0.75rem; color:#fff;">E${ep.episode_number}</span>
             </div>
-            <div style="padding:10px 12px;">
-              <div style="font-weight:700; font-size:0.9rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ep.episode_number}. ${ep.name || 'Episode ' + ep.episode_number}</div>
-              <div style="font-size:0.78rem; color:#888; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:4px;">${ep.overview || 'Watch this episode in Full HD 1080p.'}</div>
+
+            <!-- Episode Details & Synopsis -->
+            <div class="nf-ep-info">
+              <div class="nf-ep-title-row">
+                <h4 class="nf-ep-title">${ep.episode_number}. ${epTitle}</h4>
+                <div class="nf-ep-meta-tags">
+                  <span class="nf-ep-badge">4K Ultra HD</span>
+                  <span class="nf-ep-badge rating">★ ${rating}</span>
+                  ${airDate ? `<span class="nf-ep-year">${airDate}</span>` : ''}
+                </div>
+              </div>
+              <p class="nf-ep-desc">${ep.overview || 'Stream this full episode online free in 4K Ultra HD with multi-language dubbed audio and zero buffering.'}</p>
             </div>
+
           </div>
         `;
       }).join('');
     } catch(e) {
-      grid.innerHTML = '<div style="color:#888; grid-column:1/-1;">Unable to load episodes.</div>';
+      grid.innerHTML = `<div style="color:#888; grid-column:1/-1; padding:40px 0; text-align:center;">Unable to load episodes for Season ${seasonNumber}.</div>`;
     }
   }
 
@@ -1606,7 +1673,7 @@ class App {
     const backdrop = item.backdrop_path || item.poster_path || '';
     const castNames = (item.cast || []).slice(0, 6).map(c => c.name).join(', ');
     const genreNames = (item.genres || []).slice(0, 4).join(', ');
-    const isTv = type === 'tv';
+    const isTv = type === 'tv' || item.media_type === 'tv';
     const seasons = item.seasons || [];
     const trailerKey = item.trailer_key;
 
@@ -1673,7 +1740,7 @@ class App {
                 <span class="nf-modal-match">${score}% Match</span>
                 <span class="nf-modal-year">${year}</span>
                 <span class="nf-modal-hd">${isTv ? 'TV-MA' : 'PG-13'}</span>
-                ${isTv && item.seasons_count ? '<span class="nf-modal-runtime">' + item.seasons_count + ' Season' + (item.seasons_count > 1 ? 's' : '') + '</span>' : (item.duration ? '<span class="nf-modal-runtime">' + item.duration + '</span>' : '')}
+                ${isTv && (item.seasons_count || seasons.length) ? '<span class="nf-modal-runtime">' + (item.seasons_count || seasons.length) + ' Season' + ((item.seasons_count || seasons.length) > 1 ? 's' : '') + '</span>' : (item.duration ? '<span class="nf-modal-runtime">' + item.duration + '</span>' : '')}
                 <span class="nf-modal-hd">Ultra HD 4K</span>
               </div>
               <p class="nf-modal-desc">${item.overview || 'Experience this cinematic story in high-definition streaming.'}</p>
@@ -1690,10 +1757,10 @@ class App {
             <div class="nf-seasons-header">
               <span class="nf-seasons-title">Episodes</span>
               <select class="nf-season-select" id="season-select" onchange="window.App.loadSeasonEpisodes(${item.id}, this.value)">
-                ${seasons.map(s => `<option value="${s.season_number}">${s.name} (${s.episode_count} eps)</option>`).join('')}
+                ${seasons.map(s => `<option value="${s.season_number}">${s.name} (${s.episode_count || 0} eps)</option>`).join('')}
               </select>
             </div>
-            <div id="episodes-list" style="color:#888; font-size:0.9rem;">Select a season to view episodes.</div>
+            <div id="episodes-list" class="nf-modal-episodes-list" style="color:#888; font-size:0.9rem;">Loading episodes...</div>
           </div>
           ` : ''}
 
@@ -1740,33 +1807,35 @@ class App {
   async loadSeasonEpisodes(tvId, seasonNum) {
     const episodesList = document.getElementById('episodes-list');
     if (!episodesList) return;
-    episodesList.innerHTML = '<div style="color:#888; padding:12px 0;">Loading episodes...</div>';
+    episodesList.innerHTML = '<div style="color:#888; padding:16px 0; text-align:center;">Loading episodes...</div>';
     try {
       const res = await ApiService.getEpisodes(tvId, seasonNum);
-      const episodes = res.results || res || [];
+      const episodes = res.results || res.episodes || (Array.isArray(res) ? res : []);
       if (episodes.length === 0) {
-        episodesList.innerHTML = '<div style="color:#888; padding:10px 0;">No episodes indexed for this season.</div>';
+        episodesList.innerHTML = '<div style="color:#888; padding:16px 0;">No episodes indexed for this season.</div>';
         return;
       }
       episodesList.innerHTML = episodes.map(ep => `
-        <div style="display:flex; gap:14px; padding:14px 10px; border-bottom:1px solid #282828; cursor:pointer; border-radius:4px; transition:background 0.2s;"
-             onclick="window.App.closeDetails(); window.App.playMedia(${tvId}, 'tv', ${ep.season_number || seasonNum}, ${ep.episode_number || 1})"
-             onmouseenter="this.style.background='#282828'" onmouseleave="this.style.background='transparent'">
-          <img src="${ep.still_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}" 
-               alt="Ep ${ep.episode_number || 1}" loading="lazy"
-               style="width:130px; flex-shrink:0; aspect-ratio:16/9; object-fit:cover; border-radius:4px; background:#333;"
-               onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+        <div class="nf-modal-ep-item"
+             onclick="window.App.closeDetails(); window.App.playMedia(${tvId}, 'tv', ${ep.season_number || seasonNum}, ${ep.episode_number || 1})">
+          <div class="nf-modal-ep-thumb-wrap">
+            <img src="${ep.still_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}" 
+                 alt="Ep ${ep.episode_number || 1}" loading="lazy"
+                 onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+            <div class="nf-modal-ep-play-icon">▶</div>
+            <span class="nf-modal-ep-dur">${ep.runtime || '50m'}</span>
+          </div>
           <div style="flex:1;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <strong style="color:#fff; font-size:0.92rem;">${ep.episode_number || 1}. ${ep.name || 'Episode ' + (ep.episode_number || 1)}</strong>
-              <span style="color:#888; font-size:0.8rem;">${ep.runtime || '45m'}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <strong style="color:#fff; font-size:0.95rem;">${ep.episode_number || 1}. ${ep.name || 'Episode ' + (ep.episode_number || 1)}</strong>
+              <span style="color:#46d369; font-size:0.8rem; font-weight:700;">★ ${ep.vote_average || '8.0'}</span>
             </div>
-            <p style="font-size:0.83rem; color:#aaa; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${ep.overview || 'Stream this episode in full Ultra HD.'}</p>
+            <p style="font-size:0.84rem; color:#aaa; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${ep.overview || 'Stream this episode in full Ultra HD.'}</p>
           </div>
         </div>
       `).join('');
     } catch(e) {
-      episodesList.innerHTML = '<div style="color:#888; padding:10px 0;">Season details ready for playback.</div>';
+      episodesList.innerHTML = '<div style="color:#888; padding:16px 0;">Season details ready for playback.</div>';
     }
   }
 
@@ -1817,9 +1886,15 @@ class App {
   }
 
   // ── Player Controls ───────────────────────────────────────────
-  async playMedia(id, type, season = 1, episode = 1) {
+  async playMedia(id, type, season = 1, episode = 1, server = null) {
     this.closeDetails();
-    await this.player.open(id, type || 'movie', null, season, episode);
+    await this.player.open(id, type || 'movie', server, season, episode);
+  }
+
+  switchPlayerSeason(seasonNum) {
+    if (this.player && this.player.switchSeason) {
+      this.player.switchSeason(seasonNum);
+    }
   }
 
   closePlayer() {

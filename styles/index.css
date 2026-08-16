@@ -306,7 +306,121 @@ body {
   color: #bbb;
   max-width: 720px;
   line-height: 1.6;
-  margin: 0 0 24px 0;
+  margin: 0 0 20px 0;
+}
+
+/* 🔔 Native Push Notification Permission Banner */
+.nf-push-permission-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 22px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.nf-push-permission-card.default {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.08) 0%, rgba(20, 20, 20, 0.8) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.1);
+}
+
+.nf-push-permission-card.granted {
+  background: linear-gradient(135deg, rgba(70, 211, 105, 0.08) 0%, rgba(20, 20, 20, 0.8) 100%);
+  border: 1px solid rgba(70, 211, 105, 0.35);
+  box-shadow: 0 4px 20px rgba(70, 211, 105, 0.1);
+}
+
+.nf-push-permission-card.denied {
+  background: linear-gradient(135deg, rgba(255, 75, 75, 0.08) 0%, rgba(20, 20, 20, 0.8) 100%);
+  border: 1px solid rgba(255, 75, 75, 0.3);
+}
+
+.nf-push-perm-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.nf-push-perm-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.nf-push-perm-text h4 {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.nf-push-perm-text p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #aaa;
+  line-height: 1.45;
+}
+
+.nf-push-perm-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nf-push-btn-enable {
+  background: #E50914;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.15s, background 0.15s;
+  box-shadow: 0 4px 14px rgba(229, 9, 20, 0.5);
+  font-family: inherit;
+}
+
+.nf-push-btn-enable:hover {
+  background: #f40612;
+  transform: translateY(-1px);
+}
+
+.nf-push-btn-test {
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: #00f0ff;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.nf-push-btn-test:hover {
+  background: rgba(0, 240, 255, 0.25);
+  border-color: #00f0ff;
+}
+
+.nf-push-badge-denied {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #bbb;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .nf-notif-filter-bar {

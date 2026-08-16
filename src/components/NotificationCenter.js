@@ -4,6 +4,7 @@ export class NotificationCenter {
   static notifications = [];
   static activeFilter = 'all'; // 'all' | 'movie' | 'tv' | 'anime' | 'trending' | 'unread'
   static storageKey = 'cs_read_notifications';
+  static sentAlertsKey = 'cs_sent_device_alerts';
   static isLoading = false;
   static _refreshInterval = null;
 
@@ -23,12 +24,165 @@ export class NotificationCenter {
     } catch (e) {}
   }
 
+  static getSentAlertIds() {
+    try {
+      if (typeof localStorage === 'undefined') return [];
+      return JSON.parse(localStorage.getItem(this.sentAlertsKey) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static saveSentAlertIds(ids) {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.setItem(this.sentAlertsKey, JSON.stringify(ids));
+    } catch (e) {}
+  }
+
   static formatPoster(posterPath) {
     if (!posterPath) return 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
     if (posterPath.startsWith('http')) return posterPath;
     return `https://image.tmdb.org/t/p/w500${posterPath}`;
   }
 
+  // ── 🔔 Browser Native Permission & Push Alert Engine ────────────────────────
+  static getPermissionState() {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      return 'unsupported';
+    }
+    return Notification.permission; // 'granted' | 'denied' | 'default'
+  }
+
+  static async requestDevicePermission() {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      if (window.App) window.App.showToast('Your browser does not support native push notifications.', 'warning');
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      
+      if (permission === 'granted') {
+        if (window.App) window.App.showToast('Device push alerts enabled! 🔔', 'info');
+        
+        // Dispatch instant welcome confirmation to user's device lockscreen/tray
+        this.sendDeviceNotification('🎬 CinemaStream 4K Alerts Activated!', {
+          body: 'You will now receive automatic lockscreen updates whenever new blockbuster movies and TV episodes drop.',
+          icon: 'https://image.tmdb.org/t/p/w200/qeQJx07rK2xm8SD2sJxFKhE7gs0.jpg',
+          url: '/notifications'
+        });
+      } else if (permission === 'denied') {
+        if (window.App) window.App.showToast('Notifications were disallowed. No alerts will be sent to your device.', 'warning');
+      }
+
+      // Re-render page if user is currently on the notifications page
+      const container = document.getElementById('media-sections-container');
+      if (container && window.App && window.App.currentRoute === 'notifications') {
+        this.renderPage(container, this.activeFilter);
+      }
+    } catch(err) {
+      console.warn('Error requesting notification permission:', err);
+    }
+  }
+
+  static sendDeviceNotification(title, options = {}) {
+    // Strict Guard: ONLY send if user explicitly ALLOWED permission
+    if (typeof window === 'undefined' || !('Notification' in window)) return false;
+    if (Notification.permission !== 'granted') return false;
+
+    const payload = {
+      body: options.body || 'New 4K title is now available to stream.',
+      icon: options.icon || 'https://image.tmdb.org/t/p/w200/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
+      badge: 'https://image.tmdb.org/t/p/w200/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
+      vibrate: [200, 100, 200],
+      tag: options.tag || 'cinemastream-alert',
+      data: {
+        url: options.url || '/notifications'
+      }
+    };
+
+    // 1. Try Service Worker showNotification (Best for Android / Mobile / Chrome background)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.showNotification(title, payload).catch(() => {
+          this.fallbackWindowNotification(title, payload);
+        });
+      }).catch(() => {
+        this.fallbackWindowNotification(title, payload);
+      });
+    } else {
+      this.fallbackWindowNotification(title, payload);
+    }
+
+    return true;
+  }
+
+  static fallbackWindowNotification(title, payload) {
+    try {
+      const notif = new Notification(title, payload);
+      notif.onclick = function(event) {
+        event.preventDefault();
+        window.focus();
+        if (payload.data && payload.data.url) {
+          window.location.href = payload.data.url;
+        }
+        notif.close();
+      };
+    } catch(e) {
+      console.warn('Fallback notification failed:', e);
+    }
+  }
+
+  static testDeviceNotification() {
+    const state = this.getPermissionState();
+    if (state !== 'granted') {
+      this.requestDevicePermission();
+      return;
+    }
+
+    const firstItem = this.notifications[0];
+    const testTitle = firstItem ? `🎬 New Premiere: ${firstItem.title}` : '🎬 Spider-Man: Brand New Day (2026)';
+    const testBody = firstItem ? `${firstItem.desc} Tap to watch now!` : 'Now streaming free in 4K Ultra HD & Dolby Atmos 5.1.';
+    const testIcon = firstItem ? firstItem.poster : 'https://image.tmdb.org/t/p/w200/qeQJx07rK2xm8SD2sJxFKhE7gs0.jpg';
+    const testUrl = firstItem ? `/${firstItem.mediaType}/${firstItem.mediaId}` : '/movie/969681';
+
+    const sent = this.sendDeviceNotification(testTitle, {
+      body: testBody,
+      icon: testIcon,
+      url: testUrl
+    });
+
+    if (sent && window.App) {
+      window.App.showToast('Test notification sent to your device tray! 📲');
+    }
+  }
+
+  static checkAndNotifyNewReleases() {
+    // Only proceed if user has granted permission
+    if (this.getPermissionState() !== 'granted') return;
+    if (!this.notifications || this.notifications.length === 0) return;
+
+    const sentIds = new Set(this.getSentAlertIds());
+    const newItems = this.notifications.filter(n => !sentIds.has(n.id));
+
+    if (newItems.length > 0) {
+      // Send device alert for the newest release
+      const latest = newItems[0];
+      this.sendDeviceNotification(`${latest.typeLabel}: ${latest.title} (${latest.year})`, {
+        body: `${latest.desc} Now streaming in 4K Ultra HD. Tap to play!`,
+        icon: latest.poster,
+        tag: latest.id,
+        url: `/${latest.mediaType}/${latest.mediaId}`
+      });
+
+      // Mark all current items as alerted
+      const updatedSentIds = Array.from(new Set([...sentIds, ...this.notifications.map(n => n.id)]));
+      this.saveSentAlertIds(updatedSentIds);
+    }
+  }
+
+  // ── 📦 Load & Deduplicate Live Content ──────────────────────────────────────
   static async loadNotifications(forceRefresh = false) {
     if (this.isLoading && !forceRefresh) return;
     this.isLoading = true;
@@ -119,6 +273,9 @@ export class NotificationCenter {
       }
       this.notifications = uniqueNotifs;
       this.updateBadge();
+
+      // Check if any fresh releases should be pushed to user device
+      this.checkAndNotifyNewReleases();
     } catch (e) {
       console.warn('Could not load notifications:', e);
     } finally {
@@ -211,6 +368,7 @@ export class NotificationCenter {
     const readIds = new Set(this.getReadIds());
     const unreadCount = this.getUnreadCount();
     const totalCount = this.notifications.length;
+    const permState = this.getPermissionState();
 
     const movieCount = this.notifications.filter(n => n.category === 'movie').length;
     const tvCount = this.notifications.filter(n => n.category === 'tv').length;
@@ -244,6 +402,30 @@ export class NotificationCenter {
             <p class="nf-notif-hero-subtitle">
               Instant alerts on brand new 4K movie premieres in theaters, fresh TV series episodes, and Japanese anime simulcasts.
             </p>
+
+            <!-- 🔔 Device Native Push Notification Permission Banner -->
+            <div class="nf-push-permission-card ${permState === 'granted' ? 'granted' : (permState === 'denied' ? 'denied' : 'default')}">
+              <div class="nf-push-perm-left">
+                <span class="nf-push-perm-icon">${permState === 'granted' ? '✅' : (permState === 'denied' ? '🔕' : '🔔')}</span>
+                <div class="nf-push-perm-text">
+                  <h4>${permState === 'granted' ? 'Device Push Alerts Active' : (permState === 'denied' ? 'Device Notifications Blocked' : 'Enable Device Push Notifications')}</h4>
+                  <p>${permState === 'granted' ? 'Your device will automatically receive alerts whenever new 4K movies and episodes air.' : (permState === 'denied' ? 'You disallowed alerts in browser settings. No notifications will be sent to your device. To re-enable, click the 🔒 icon in your browser address bar.' : 'Receive instant lockscreen alerts on your mobile phone or PC when new titles are added.')}</p>
+                </div>
+              </div>
+              <div class="nf-push-perm-right">
+                ${permState === 'granted' ? `
+                  <button onclick="window.NotificationCenter && window.NotificationCenter.testDeviceNotification()" class="nf-push-btn-test" title="Send a test alert to your device tray">
+                    ⚡ Send Test Alert
+                  </button>
+                ` : (permState === 'denied' ? `
+                  <span class="nf-push-badge-denied">Disallowed in Browser</span>
+                ` : `
+                  <button onclick="window.NotificationCenter && window.NotificationCenter.requestDevicePermission()" class="nf-push-btn-enable">
+                    🔔 Allow Device Alerts
+                  </button>
+                `)}
+              </div>
+            </div>
 
             <!-- Interactive Category Filter Bar -->
             <div class="nf-notif-filter-bar">

@@ -45,9 +45,14 @@ class App {
       window.addEventListener('popstate', () => this.handleHashRoute());
       await this.handleHashRoute();
 
-      // 5. Service Worker Registration
+      // 5. Service Worker Registration & Notification Center Auto-Sync
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+      if (window.NotificationCenter) {
+        window.NotificationCenter.loadNotifications().then(() => {
+          window.NotificationCenter.startAutoRefresh();
+        }).catch(() => {});
       }
     } catch(err) {
       console.error('App initialization error:', err);

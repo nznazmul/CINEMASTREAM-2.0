@@ -1,3 +1,5 @@
+import { NotificationCenter } from './NotificationCenter.js';
+
 export class Navbar {
   static searchOpen = false;
   static searchTimeout = null;
@@ -20,7 +22,39 @@ export class Navbar {
               oninput="Navbar.handleSearch(this.value)"
               onkeydown="if(event.key==='Escape') Navbar.closeSearch()">
           </div>
-          <span class="nf-bell" title="Notifications">🔔</span>
+
+          <!-- Notification Bell & Dynamic Center -->
+          <div class="nf-bell-wrap" id="nf-bell-wrap">
+            <button class="nf-bell-btn" onclick="window.NotificationCenter && window.NotificationCenter.toggleDropdown(event)" title="Notifications (New Movies & Releases)">
+              <span class="nf-bell-icon">🔔</span>
+              <span class="nf-bell-badge" id="nf-bell-badge" style="display:none;">0</span>
+            </button>
+
+            <!-- Notifications Dropdown Panel -->
+            <div class="nf-notifications-dropdown" id="nf-notifications-dropdown">
+              <div class="nf-notif-header">
+                <div class="nf-notif-header-title">
+                  <h3>🔔 Notifications</h3>
+                  <span class="nf-notif-count-pill" id="nf-notif-unread-count">0 unread</span>
+                </div>
+                <button class="nf-notif-mark-all-btn" onclick="window.NotificationCenter && window.NotificationCenter.markAllAsRead(event)">
+                  Mark all as read
+                </button>
+              </div>
+
+              <!-- Filter Tabs (All / Unread) -->
+              <div class="nf-notif-tabs">
+                <button class="nf-notif-tab active" id="nf-notif-tab-all" onclick="window.NotificationCenter && window.NotificationCenter.setTab('all', event)">All</button>
+                <button class="nf-notif-tab" id="nf-notif-tab-unread" onclick="window.NotificationCenter && window.NotificationCenter.setTab('unread', event)">Unread</button>
+              </div>
+
+              <!-- Notifications Scrollable Feed -->
+              <div class="nf-notifications-list" id="nf-notifications-list">
+                <div class="nf-notif-loading">Loading new releases...</div>
+              </div>
+            </div>
+          </div>
+
           <div class="nf-avatar" onclick="window.App.openAuthModal()" title="Account">CS</div>
         </div>
       </nav>
@@ -54,9 +88,15 @@ export class Navbar {
       </nav>
     `;
     this.setupScrollEffect();
+
+    // Initialize notification center
+    if (NotificationCenter && NotificationCenter.loadNotifications) {
+      NotificationCenter.loadNotifications();
+    }
   }
 
   static setupScrollEffect() {
+    if (typeof document === 'undefined') return;
     const nav = document.getElementById('nf-nav');
     if (!nav) return;
     const onScroll = () => {
@@ -102,4 +142,6 @@ export class Navbar {
   }
 }
 
-window.Navbar = Navbar;
+if (typeof window !== 'undefined') {
+  window.Navbar = Navbar;
+}

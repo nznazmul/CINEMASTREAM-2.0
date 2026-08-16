@@ -277,8 +277,6 @@ class App {
         this.renderMultiAudioGuideView(mediaContainer);
       } else if (this.currentRoute === 'speedtest' || this.currentRoute === 'speed-test') {
         this.renderSpeedTestView(mediaContainer);
-      } else if (this.currentRoute === 'status' || this.currentRoute === 'serverstatus' || this.currentRoute === 'server-status') {
-        this.renderServerStatusView(mediaContainer);
       }
     }
   }
@@ -1508,129 +1506,6 @@ class App {
         </div>
       </section>
     `;
-  }
-
-  // ── SEO Page: Live Server & Mirror Status ─────────────────────────
-  renderServerStatusView(container) {
-    document.title = "Live Streaming Server & Mirror Status — CinemaStream Network";
-    const servers = [
-      { id: 1, name: 'Server 1 (VidSrc 4K Ultra)', region: 'Global Edge / US East', type: '4K Ultra HD • Dolby 5.1', ping: '14ms', status: 'Operational' },
-      { id: 2, name: 'Server 2 (SuperStream Multi-Dubs)', region: 'Asia-Pacific / Singapore', type: 'Multi-Audio (Hindi, Tamil, Telugu)', ping: '18ms', status: 'Operational' },
-      { id: 3, name: 'Server 3 (2Embed VIP Pro)', region: 'Europe / Frankfurt', type: 'Zero-Buffer Fast CDN', ping: '22ms', status: 'Operational' },
-      { id: 4, name: 'Server 4 (SmashyStream HD)', region: 'Global Anycast', type: 'Anime & Dubs Optimized', ping: '19ms', status: 'Operational' },
-      { id: 5, name: 'Server 5 (VidSrc ME Mirror)', region: 'Middle East & Asia', type: 'Direct HLS Multi-Bitrate', ping: '16ms', status: 'Operational' },
-      { id: 6, name: 'Server 6 (AutoEmbed CC)', region: 'North America / Cloudflare', type: 'Multi-Subtitles (50+ Languages)', ping: '15ms', status: 'Operational' },
-      { id: 7, name: 'Server 7 (VidSrc XYZ Global)', region: 'Americas & Europe', type: 'High-Bitrate 1080p Full HD', ping: '24ms', status: 'Operational' },
-      { id: 8, name: 'Server 8 (VidLink 4K Pro)', region: 'Tokyo / Japan Edge', type: 'Ultra Low-Latency Mirror', ping: '17ms', status: 'Operational' },
-      { id: 9, name: 'Server 9 (NontonGo FastCDN)', region: 'Southeast Asia Edge', type: 'K-Drama & Asian Series', ping: '26ms', status: 'Operational' },
-      { id: 10, name: 'Server 10 (Frembed Cinema)', region: 'London / UK Edge', type: 'European Mirror Cluster', ping: '21ms', status: 'Operational' },
-      { id: 11, name: 'Server 11 (AutoEmbed TO Multi)', region: 'Global CDN Mesh', type: 'Multi-Resolution 4K/1080p/720p', ping: '18ms', status: 'Operational' },
-      { id: 12, name: 'Server 12 (VidSrc VIP Server)', region: 'Global Fast Cluster', type: 'Dedicated VIP Node', ping: '15ms', status: 'Operational' }
-    ];
-
-    container.innerHTML = `
-      <section class="nf-static-page">
-        <header class="nf-static-header" style="margin-bottom:28px;">
-          <span class="nf-static-badge" style="background:rgba(70,211,105,0.15); color:#46d369; border-color:rgba(70,211,105,0.4);">🟢 All Systems 100% Operational</span>
-          <h1 class="nf-static-title">Live Server & Mirror Status</h1>
-          <p class="nf-static-subtitle">Real-time health, latency, and uptime diagnostics across CinemaStream's 12 distributed global streaming clusters.</p>
-        </header>
-
-        <!-- Summary Metric Cards -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:28px;">
-          <div style="background:#181818; border:1px solid #282828; border-radius:8px; padding:20px; text-align:center;">
-            <div style="font-size:0.8rem; color:#888; text-transform:uppercase; font-weight:700; margin-bottom:6px;">Network Uptime</div>
-            <div style="font-size:1.8rem; font-weight:900; color:#46d369;">99.98%</div>
-            <div style="font-size:0.75rem; color:#666; margin-top:4px;">Past 90 Days Average</div>
-          </div>
-          <div style="background:#181818; border:1px solid #282828; border-radius:8px; padding:20px; text-align:center;">
-            <div style="font-size:0.8rem; color:#888; text-transform:uppercase; font-weight:700; margin-bottom:6px;">Active Mirror Nodes</div>
-            <div style="font-size:1.8rem; font-weight:900; color:#fff;">12 / 12</div>
-            <div style="font-size:0.75rem; color:#46d369; margin-top:4px;">All Clusters Online</div>
-          </div>
-          <div style="background:#181818; border:1px solid #282828; border-radius:8px; padding:20px; text-align:center;">
-            <div style="font-size:0.8rem; color:#888; text-transform:uppercase; font-weight:700; margin-bottom:6px;">Avg CDN Latency</div>
-            <div style="font-size:1.8rem; font-weight:900; color:#00f0ff;" id="server-avg-latency">18 ms</div>
-            <div style="font-size:0.75rem; color:#666; margin-top:4px;">Ultra Fast Global Anycast</div>
-          </div>
-          <div style="background:#181818; border:1px solid #282828; border-radius:8px; padding:20px; text-align:center;">
-            <div style="font-size:0.8rem; color:#888; text-transform:uppercase; font-weight:700; margin-bottom:6px;">4K Stream Bitrate</div>
-            <div style="font-size:1.8rem; font-weight:900; color:#E50914;">Unthrottled</div>
-            <div style="font-size:0.75rem; color:#666; margin-top:4px;">Dolby Atmos Ready</div>
-          </div>
-        </div>
-
-        <!-- Live Server Health Matrix -->
-        <div style="background:#141414; border:1px solid #282828; border-radius:12px; padding:24px; margin-bottom:28px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #282828;">
-            <div>
-              <h2 style="font-size:1.3rem; color:#fff; margin:0 0 4px;">Streaming Mirror Clusters</h2>
-              <p style="color:#888; font-size:0.85rem; margin:0;">Live health status and real-time response times</p>
-            </div>
-            <button onclick="window.App.refreshServerPings()" id="btn-refresh-servers" style="background:#222; color:#fff; border:1px solid rgba(255,255,255,0.2); padding:8px 18px; border-radius:6px; font-size:0.85rem; font-weight:700; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:6px;">
-              <span>🔄</span> Refresh Server Pings
-            </button>
-          </div>
-
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
-            ${servers.map(s => `
-              <div style="background:#1c1c1c; border:1px solid #2a2a2a; border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <strong style="color:#fff; font-size:0.95rem;">${s.name}</strong>
-                  <span style="background:rgba(70,211,105,0.15); color:#46d369; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:12px;">🟢 ONLINE</span>
-                </div>
-                <div style="font-size:0.8rem; color:#888;">📍 ${s.region}</div>
-                <div style="font-size:0.78rem; color:#aaa;">✨ ${s.type}</div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding-top:8px; border-top:1px solid #262626;">
-                  <span style="color:#777; font-size:0.78rem;">Response Time</span>
-                  <span style="color:#46d369; font-weight:700; font-size:0.85rem;" id="server-ping-${s.id}">${s.ping}</span>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- 90-Day Incident History Log -->
-        <div class="nf-legal-section" style="margin-top:0;">
-          <h2><span>🛡️</span> Incident History & SLA Uptime Log</h2>
-          <p>CinemaStream maintains 12 independent mirror clusters to ensure seamless fallback redundancy. If any individual third-party mirror experiences latency or maintenance, our video player dynamically switches to the next fastest server with zero interruption.</p>
-          <div style="margin-top:12px; background:#181818; padding:16px; border-radius:6px; border-left:4px solid #46d369; font-size:0.85rem; color:#ccc;">
-            <strong style="color:#fff;">✅ 100% Operational Uptime (Last 90 Days):</strong> No major service interruptions reported. All clusters functioning at peak performance.
-          </div>
-        </div>
-      </section>
-    `;
-  }
-
-  async refreshServerPings() {
-    const btn = document.getElementById('btn-refresh-servers');
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<span>⏳</span> Pinging Clusters...';
-    }
-    const startTime = performance.now();
-    try {
-      await fetch(`/api/v1/health?t=${Date.now()}`, { cache: 'no-store' });
-      const basePing = Math.max(10, Math.round(performance.now() - startTime));
-      for (let i = 1; i <= 12; i++) {
-        const el = document.getElementById(`server-ping-${i}`);
-        if (el) {
-          const jitter = Math.floor(Math.random() * 8) - 3;
-          const ping = Math.max(8, basePing + jitter + (i % 3) * 2);
-          el.textContent = `${ping}ms`;
-        }
-      }
-      const avgEl = document.getElementById('server-avg-latency');
-      if (avgEl) avgEl.textContent = `${basePing} ms`;
-      this.showToast('Server pings refreshed successfully! All 12 clusters optimal. 🟢', 'info');
-    } catch (e) {
-      this.showToast('All 12 server mirrors operational.', 'info');
-    } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<span>🔄</span> Refresh Server Pings';
-      }
-    }
   }
 
   // ── SEO Page: Speed Test (Fast.com Engine) ──────────────────────

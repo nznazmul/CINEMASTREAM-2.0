@@ -1,11 +1,16 @@
-const CACHE_NAME = 'cinemastream-v2.6';
+const CACHE_NAME = 'cinemastream-v2.7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/styles/index.css',
   '/styles/player.css',
-  '/src/app.js'
+  '/styles/tv.css',
+  '/src/app.js',
+  '/src/services/adShield.js'
 ];
+
+// uBlock Origin Lite-Inspired Network Request Blocklist
+const AD_BLOCKLIST_REGEX = /(adsterra|propellerads|popads|popcash|monetag|adnxs|exoclick|hilltopads|trafficjunky|tsyndicate|onclickmega|vlitag|clickadu|yllix|adtrue|juicyads|bet365|1xbet|melbet|mostbet|doubleclick|googlesyndication|revcontent|taboola|outbrain|mgid|admaven|cpmstar|adcash|richpush|adxcore|trafficstars|clouddelivery|directrev|deloton|in-page-push|trackvoluum|stags|bidgear|zeroredirect|serving-sys)\./i;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -28,10 +33,24 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('/api/')) {
+  const url = event.request.url;
+
+  // 1. 🛡️ In-App uBlock Network Filter: Drop matching ad/tracker requests with 204 No Content
+  if (AD_BLOCKLIST_REGEX.test(url)) {
+    event.respondWith(
+      new Response('', {
+        status: 204,
+        statusText: 'Blocked by CinemaStream AdShield'
+      })
+    );
+    return;
+  }
+
+  if (url.includes('/api/')) {
     // Network first for dynamic API calls
     return;
   }
+  
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );

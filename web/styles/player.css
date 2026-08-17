@@ -121,13 +121,27 @@ body.player-active .nf-mobile-nav {
 }
 
 .ad-shield-badge {
-  background: rgba(70,211,105,0.15);
-  border: 1px solid rgba(70,211,105,0.3);
-  color: #46d369;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(46, 213, 115, 0.12);
+  border: 1px solid rgba(46, 213, 115, 0.35);
+  color: #2ed573;
   font-size: 0.72rem;
   padding: 4px 10px;
-  border-radius: 4px;
-  font-weight: 600;
+  border-radius: 20px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 0 10px rgba(46, 213, 115, 0.15);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.ad-shield-badge.pulse {
+  transform: scale(1.06);
+  background: rgba(46, 213, 115, 0.25);
+  border-color: #2ed573;
+  box-shadow: 0 0 16px rgba(46, 213, 115, 0.6);
 }
 
 .btn-close-yt {

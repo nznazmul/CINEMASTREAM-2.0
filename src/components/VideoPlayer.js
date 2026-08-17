@@ -207,8 +207,8 @@ export class VideoPlayer {
           ` : ''}
 
           <div class="yt-header-actions">
-            <div class="ad-shield-badge">
-              <span>🛡️ Ad-Shield</span>
+            <div class="ad-shield-badge" id="ad-shield-badge" title="uBlock Origin-Grade Ad & Popup Blocker Active">
+              <span>🛡️ AdShield: ${AdShield.blockedCount > 0 ? `${AdShield.blockedCount} Blocked` : 'Active'}</span>
             </div>
 
             <button class="btn-close-yt" onclick="window.App.closePlayer()" title="Close Player">✕</button>

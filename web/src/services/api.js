@@ -439,45 +439,45 @@ export class ApiService {
   }
 
   static async resolveStream(id, type, server, season, episode) {
-    type = type || 'movie'; server = server || 'vidsrc';
+    type = type || 'movie'; server = server || 'vidlink';
     const isTv = type === 'tv';
     const s = season || 1;
     const ep = episode || 1;
     const embedMap = {
-      vidsrc:      isTv ? 'https://vidsrc.to/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.to/embed/movie/' + id,
+      vidlink:     isTv ? 'https://vidlink.pro/tv/' + id + '/' + s + '/' + ep : 'https://vidlink.pro/movie/' + id,
+      autoembed:   isTv ? 'https://player.autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep : 'https://player.autoembed.cc/embed/movie/' + id,
+      frembed:     isTv ? 'https://frembed.live/api/serie.php?id=' + id + '&sa=' + s + '&epi=' + ep : 'https://frembed.live/api/film.php?id=' + id,
       superstream: isTv ? 'https://multiembed.mov/?video_id=' + id + '&tmdb=1&s=' + s + '&e=' + ep : 'https://multiembed.mov/?video_id=' + id + '&tmdb=1',
-      twoembed:    isTv ? 'https://www.2embed.cc/embedtv/' + id + '&s=' + s + '&e=' + ep : 'https://www.2embed.cc/embed/' + id,
       smashy:      isTv ? 'https://embed.smashystream.com/playere.php?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://embed.smashystream.com/playere.php?tmdb=' + id,
       vidplay:     isTv ? 'https://vidsrc.me/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://vidsrc.me/embed/movie?tmdb=' + id,
-      autoembed:   isTv ? 'https://player.autoembed.cc/embed/tv/' + id + '/' + s + '/' + ep : 'https://player.autoembed.cc/embed/movie/' + id,
-      vidsrcxyz:   isTv ? 'https://vidsrc.xyz/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://vidsrc.xyz/embed/movie?tmdb=' + id,
-      vidlink:     isTv ? 'https://vidlink.pro/tv/' + id + '/' + s + '/' + ep : 'https://vidlink.pro/movie/' + id,
-      nontongo:    isTv ? 'https://www.NontonGo.win/embed/tv/' + id + '/' + s + '/' + ep : 'https://www.NontonGo.win/embed/movie/' + id,
-      frembed:     isTv ? 'https://frembed.live/api/serie.php?id=' + id + '&sa=' + s + '&epi=' + ep : 'https://frembed.live/api/film.php?id=' + id,
+      twoembed:    isTv ? 'https://www.2embed.cc/embedtv/' + id + '&s=' + s + '&e=' + ep : 'https://www.2embed.cc/embed/' + id,
+      vidsrc:      isTv ? 'https://vidsrc.to/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.to/embed/movie/' + id,
       autoembedto: isTv ? 'https://autoembed.to/tv/tmdb/' + id + '-' + s + '-' + ep : 'https://autoembed.to/movie/tmdb/' + id,
+      vidsrcxyz:   isTv ? 'https://vidsrc.xyz/embed/tv?tmdb=' + id + '&season=' + s + '&episode=' + ep : 'https://vidsrc.xyz/embed/movie?tmdb=' + id,
+      nontongo:    isTv ? 'https://www.NontonGo.win/embed/tv/' + id + '/' + s + '/' + ep : 'https://www.NontonGo.win/embed/movie/' + id,
       vidsrcvip:   isTv ? 'https://vidsrc.vip/embed/tv/' + id + '/' + s + '/' + ep : 'https://vidsrc.vip/embed/movie/' + id
     };
     const allServers = [
-      { id: 'vidsrc',      name: 'Server 1 (VidSrc 4K Ultra)',        status: 'online', embedUrl: embedMap.vidsrc },
-      { id: 'superstream', name: 'Server 2 (SuperStream Multi-Dubs)', status: 'online', embedUrl: embedMap.superstream },
-      { id: 'twoembed',    name: 'Server 3 (2Embed VIP Pro)',          status: 'online', embedUrl: embedMap.twoembed },
-      { id: 'smashy',      name: 'Server 4 (SmashyStream HD)',         status: 'online', embedUrl: embedMap.smashy },
-      { id: 'vidplay',     name: 'Server 5 (VidSrc ME Mirror)',        status: 'online', embedUrl: embedMap.vidplay },
-      { id: 'autoembed',   name: 'Server 6 (AutoEmbed CC)',            status: 'online', embedUrl: embedMap.autoembed },
-      { id: 'vidsrcxyz',   name: 'Server 7 (VidSrc XYZ Global)',       status: 'online', embedUrl: embedMap.vidsrcxyz },
-      { id: 'vidlink',     name: 'Server 8 (VidLink 4K Pro)',          status: 'online', embedUrl: embedMap.vidlink },
-      { id: 'nontongo',    name: 'Server 9 (NontonGo FastCDN)',        status: 'online', embedUrl: embedMap.nontongo },
-      { id: 'frembed',     name: 'Server 10 (Frembed Cinema)',         status: 'online', embedUrl: embedMap.frembed },
-      { id: 'autoembedto', name: 'Server 11 (AutoEmbed TO Multi)',     status: 'online', embedUrl: embedMap.autoembedto },
+      { id: 'vidlink',     name: 'Server 1 (VidLink 4K Pro — Clean)',  status: 'online', embedUrl: embedMap.vidlink },
+      { id: 'autoembed',   name: 'Server 2 (AutoEmbed Cinema — Clean)',status: 'online', embedUrl: embedMap.autoembed },
+      { id: 'frembed',     name: 'Server 3 (Frembed Ultra HD)',        status: 'online', embedUrl: embedMap.frembed },
+      { id: 'superstream', name: 'Server 4 (SuperStream Multi-Dubs)', status: 'online', embedUrl: embedMap.superstream },
+      { id: 'smashy',      name: 'Server 5 (SmashyStream HD)',         status: 'online', embedUrl: embedMap.smashy },
+      { id: 'vidplay',     name: 'Server 6 (VidSrc ME Mirror)',        status: 'online', embedUrl: embedMap.vidplay },
+      { id: 'twoembed',    name: 'Server 7 (2Embed VIP Pro)',          status: 'online', embedUrl: embedMap.twoembed },
+      { id: 'vidsrc',      name: 'Server 8 (VidSrc 4K Backup)',        status: 'online', embedUrl: embedMap.vidsrc },
+      { id: 'autoembedto', name: 'Server 9 (AutoEmbed TO Multi)',      status: 'online', embedUrl: embedMap.autoembedto },
+      { id: 'vidsrcxyz',   name: 'Server 10 (VidSrc XYZ Global)',      status: 'online', embedUrl: embedMap.vidsrcxyz },
+      { id: 'nontongo',    name: 'Server 11 (NontonGo FastCDN)',       status: 'online', embedUrl: embedMap.nontongo },
       { id: 'vidsrcvip',   name: 'Server 12 (VidSrc VIP Server)',      status: 'online', embedUrl: embedMap.vidsrcvip }
     ];
-    const activeUrl = embedMap[server] || embedMap['vidsrc'];
+    const activeUrl = embedMap[server] || embedMap['vidlink'];
     return {
       success: true,
       data: {
         activeServer: {
-          id: server || 'vidsrc',
-          name: (allServers.find(x => x.id === server) || {}).name || 'VidSrc 4K Ultra',
+          id: server || 'vidlink',
+          name: (allServers.find(x => x.id === server) || {}).name || 'VidLink 4K Pro — Clean',
           embedUrl: activeUrl,
           sources: [{ url: activeUrl, type: 'hls', quality: '1080p', isIframe: true }],
           subtitles: [

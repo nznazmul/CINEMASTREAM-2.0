@@ -666,3 +666,167 @@ body.player-active .nf-mobile-nav {
   margin: 4px 0 0;
 }
 
+/* uBlock Origin In-App Protection Modal */
+.ublock-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: ubFadeIn 0.2s ease-out;
+}
+
+@keyframes ubFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ublock-card {
+  background: #141414;
+  border: 1px solid rgba(46, 213, 115, 0.35);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(46, 213, 115, 0.2);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  animation: ubPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ubPopIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.ublock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ublock-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ublock-icon {
+  font-size: 1.6rem;
+}
+
+.ublock-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ublock-ver {
+  font-size: 0.72rem;
+  color: #2ed573;
+  font-weight: 600;
+}
+
+.ublock-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.ublock-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.ublock-body {
+  padding: 20px;
+}
+
+.ublock-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.ublock-stat-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.ublock-stat-box.highlighted {
+  background: rgba(46, 213, 115, 0.08);
+  border-color: rgba(46, 213, 115, 0.3);
+}
+
+.ublock-stat-val {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.ublock-stat-box.highlighted .ublock-stat-val {
+  color: #2ed573;
+}
+
+.ublock-stat-lbl {
+  display: block;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ublock-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ublock-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+
+.ublock-check {
+  color: #2ed573;
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.ublock-feature-item strong {
+  display: block;
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.ublock-feature-item p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+

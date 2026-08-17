@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinemastream-v2.7';
+const CACHE_NAME = 'cinemastream-v2.8';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -6,11 +6,12 @@ const STATIC_ASSETS = [
   '/styles/player.css',
   '/styles/tv.css',
   '/src/app.js',
-  '/src/services/adShield.js'
+  '/src/services/adShield.js',
+  '/src/services/ublockRules.js'
 ];
 
-// uBlock Origin Lite-Inspired Network Request Blocklist
-const AD_BLOCKLIST_REGEX = /(adsterra|propellerads|popads|popcash|monetag|adnxs|exoclick|hilltopads|trafficjunky|tsyndicate|onclickmega|vlitag|clickadu|yllix|adtrue|juicyads|bet365|1xbet|melbet|mostbet|doubleclick|googlesyndication|revcontent|taboola|outbrain|mgid|admaven|cpmstar|adcash|richpush|adxcore|trafficstars|clouddelivery|directrev|deloton|in-page-push|trackvoluum|stags|bidgear|zeroredirect|serving-sys)\./i;
+// gorhill/uBlock Origin Comprehensive Streaming Filter Regex
+const UBLOCK_EASYLIST_REGEX = /(adsterra|propellerads|popads|popcash|monetag|adnxs|exoclick|hilltopads|trafficjunky|tsyndicate|onclickmega|vlitag|clickadu|yllix|adtrue|juicyads|admaven|cpmstar|adcash|richpush|adxcore|trafficstars|clouddelivery|directrev|deloton|in-page-push|trackvoluum|stags|bidgear|zeroredirect|serving-sys|ad-score|adf\.ly|adbtc|adflex|adform|adk2x|adlane|admixer|adop|adpushup|adriver|adroll|adsafeprotected|adskeeper|adrecover|adreactor|adblade|adzerk|bidvertiser|cootlogu|creativecdn|ezoic|gumgum|media\.net|mgid|openx|outbrain|pubmatic|revcontent|rubiconproject|smartadserver|sovrn|taboola|yieldmo|zedo|bet365|1xbet|melbet|mostbet|parimatch|linebet|1win|betwinner|dafabet|stake|vulkanvegas|spinamba|slottica|doubleclick|googlesyndication|google-analytics|scorecardresearch|hotjar|clarity\.ms)\./i;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -35,12 +36,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
-  // 1. 🛡️ In-App uBlock Network Filter: Drop matching ad/tracker requests with 204 No Content
-  if (AD_BLOCKLIST_REGEX.test(url)) {
+  // 1. 🛡️ In-App gorhill/uBlock Network Interceptor: Return 204 No Content for ad/tracker domains
+  if (UBLOCK_EASYLIST_REGEX.test(url)) {
     event.respondWith(
       new Response('', {
         status: 204,
-        statusText: 'Blocked by CinemaStream AdShield'
+        statusText: 'Blocked by CinemaStream uBlock Engine'
       })
     );
     return;

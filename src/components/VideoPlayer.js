@@ -207,7 +207,7 @@ export class VideoPlayer {
           ` : ''}
 
           <div class="yt-header-actions">
-            <div class="ad-shield-badge" id="ad-shield-badge" title="uBlock Origin-Grade Ad & Popup Blocker Active">
+            <div class="ad-shield-badge" id="ad-shield-badge" onclick="window.AdShield && window.AdShield.showStatsModal()" style="cursor:pointer;" title="Click to view uBlock Origin Protection stats">
               <span>🛡️ AdShield: ${AdShield.blockedCount > 0 ? `${AdShield.blockedCount} Blocked` : 'Active'}</span>
             </div>
 

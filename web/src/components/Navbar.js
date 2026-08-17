@@ -1,10 +1,23 @@
 import { NotificationCenter } from './NotificationCenter.js';
+import { AuthService } from '../services/auth.js';
 
 export class Navbar {
   static searchOpen = false;
   static searchTimeout = null;
 
   static render(container, route) {
+    const user = AuthService ? AuthService.getUser() : null;
+    const avatarHtml = user ? `
+      <div class="nf-avatar nf-avatar-logged-in" id="nf-nav-avatar" onclick="window.App.openAuthModal()" title="${user.name} • VIP Active">
+        <img src="${user.picture}" alt="${user.name}" class="nf-nav-avatar-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=E50914&color=fff'">
+        <span class="nf-nav-vip-dot" title="VIP Active"></span>
+      </div>
+    ` : `
+      <div class="nf-avatar nf-avatar-guest" id="nf-nav-avatar" onclick="window.App.openAuthModal()" title="Sign in with Google">
+        <span class="nf-avatar-signin-btn">Sign In</span>
+      </div>
+    `;
+
     container.innerHTML = `
       <nav class="nf-navbar" id="nf-nav">
         <span class="nf-logo" onclick="window.Router.navigate('home')">CINEMASTREAM</span>
@@ -31,7 +44,7 @@ export class Navbar {
             </button>
           </div>
 
-          <div class="nf-avatar" onclick="window.App.openAuthModal()" title="Account">CS</div>
+          ${avatarHtml}
         </div>
       </nav>
 

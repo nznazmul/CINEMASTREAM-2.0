@@ -133,5 +133,14 @@
     "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop",
     "role": "user",
     "createdAt": "2026-08-14T07:11:49.190Z"
+  },
+  {
+    "id": "usr_tbhftjojmsww914a",
+    "username": "Sam Cinema",
+    "email": "testuser.cinema@gmail.com",
+    "passwordHash": "google_oauth_managed",
+    "avatar": "https://lh3.googleusercontent.com/a/sample-avatar=s96-c",
+    "role": "user",
+    "createdAt": "2026-08-17T07:10:02.218Z"
   }
 ]

@@ -3,6 +3,8 @@ import { HeroBanner } from './components/HeroBanner.js';
 import { MediaGrid } from './components/MediaGrid.js';
 import { VideoPlayer } from './components/VideoPlayer.js';
 import { ApiService } from './services/api.js';
+import { AuthService } from './services/auth.js';
+import { AuthModal } from './components/AuthModal.js';
 
 class App {
   constructor() {
@@ -24,8 +26,12 @@ class App {
 
   async init() {
     try {
-      // 1. Render Navbar
+      // 1. Render Navbar and initialize Auth
+      AuthService.init();
       Navbar.render(document.getElementById('navbar-container'), this.currentRoute);
+      window.addEventListener('cs-auth-changed', () => {
+        Navbar.render(document.getElementById('navbar-container'), this.currentRoute);
+      });
       
       // 2. Global Escape key handler
       window.addEventListener('keydown', (e) => {
@@ -2769,7 +2775,7 @@ class App {
   }
 
   openAuthModal() {
-    this.showToast('CinemaStream VIP • Free Access Active', 'info');
+    AuthModal.open();
   }
 
   showToast(message, type) {

@@ -67,6 +67,65 @@ export class UserController {
   }
 
   /**
+   * Google Identity Services OAuth 2.0 Auth
+   */
+  static async googleAuth(req, res) {
+    try {
+      const { credential, email, name, picture, sub } = req.body;
+      let userData = { email, name, picture, sub };
+
+      if (credential) {
+        try {
+          const base64Url = credential.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
+          userData = {
+            email: payload.email,
+            name: payload.name || payload.given_name || payload.email.split('@')[0],
+            picture: payload.picture,
+            sub: payload.sub
+          };
+        } catch (e) {
+          console.warn('Backend JWT parse fallback to body:', e);
+        }
+      }
+
+      if (!userData.email) {
+        return res.status(400).json({ error: 'Valid Google credential or email is required' });
+      }
+
+      let user = db.findUserByEmail(userData.email);
+      if (!user) {
+        user = db.createUser({
+          username: userData.name || userData.email.split('@')[0],
+          email: userData.email,
+          googleId: userData.sub || `g_${Date.now()}`,
+          avatar: userData.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || 'User')}&background=E50914&color=fff`,
+          authProvider: 'google',
+          passwordHash: 'google_oauth_managed'
+        });
+      }
+
+      const token = SecurityService.generateAuthToken(user);
+      res.json({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          name: user.username,
+          email: user.email,
+          avatar: user.avatar,
+          picture: user.avatar,
+          authProvider: 'google'
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  /**
    * Get Current User Profile
    */
   static async getMe(req, res) {

@@ -37,6 +37,7 @@ router.get('/health', StreamController.getHealth);
 // Auth & User State Routes
 router.post('/auth/register', UserController.register);
 router.post('/auth/login', UserController.login);
+router.post('/auth/google', UserController.googleAuth);
 router.get('/auth/me', authenticateUser, UserController.getMe);
 router.get('/user/history', optionalAuth, UserController.getHistory);
 router.post('/user/progress', optionalAuth, UserController.saveProgress);

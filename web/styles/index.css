@@ -3526,5 +3526,440 @@ body {
   border-color: rgba(255, 255, 255, 0.4);
 }
 
+/* ==========================================================================
+   GOOGLE AUTHENTICATION & VIP PROFILE MODAL
+   ========================================================================== */
+.nf-avatar {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+
+.nf-avatar:hover {
+  transform: scale(1.08);
+}
+
+.nf-avatar-guest {
+  background: rgba(229, 9, 20, 0.9);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 10px rgba(229, 9, 20, 0.4);
+  padding: 0 4px;
+}
+
+.nf-avatar-signin-btn {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nf-avatar-logged-in {
+  background: transparent;
+  border: 2px solid #E50914;
+  box-shadow: 0 0 12px rgba(229, 9, 20, 0.5);
+}
+
+.nf-nav-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.nf-nav-vip-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 11px;
+  height: 11px;
+  background: #46d369;
+  border: 2px solid #141414;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #46d369;
+}
+
+/* Auth Modal Backdrop */
+.nf-auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: nfAuthFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes nfAuthFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.nf-auth-modal-card {
+  background: #181818;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  max-width: 460px;
+  width: 100%;
+  padding: 36px 30px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 40px rgba(229, 9, 20, 0.15);
+  position: relative;
+  color: #ffffff;
+}
+
+.nf-auth-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.nf-auth-close-btn:hover {
+  background: rgba(229, 9, 20, 0.8);
+  transform: rotate(90deg);
+}
+
+.nf-auth-brand-badge {
+  display: inline-block;
+  background: rgba(229, 9, 20, 0.15);
+  color: #E50914;
+  border: 1px solid rgba(229, 9, 20, 0.4);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.nf-auth-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.nf-auth-subtitle {
+  font-size: 0.88rem;
+  color: #aaa;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.nf-google-btn-slot {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.nf-custom-google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 20px;
+  background: #ffffff;
+  color: #1f1f1f;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 28px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  font-family: inherit;
+}
+
+.nf-custom-google-btn:hover {
+  background: #f1f1f1;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255,255,255,0.25);
+}
+
+.nf-auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 16px 0;
+  color: #555;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.nf-auth-divider::before,
+.nf-auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nf-auth-divider span {
+  padding: 0 12px;
+}
+
+.nf-btn-instant-vip {
+  width: 100%;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.nf-btn-instant-vip:hover {
+  background: rgba(229, 9, 20, 0.25);
+  border-color: rgba(229, 9, 20, 0.6);
+  color: #ffffff;
+}
+
+.nf-auth-benefits-card {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.nf-benefit-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #ffb800;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.nf-benefit-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nf-benefit-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #bbb;
+  margin-bottom: 7px;
+  line-height: 1.4;
+}
+
+.nf-benefit-list li:last-child {
+  margin-bottom: 0;
+}
+
+.nf-benefit-list .check {
+  color: #46d369;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+/* Logged In Profile Card */
+.nf-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.nf-profile-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.nf-profile-avatar-large {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #E50914;
+  box-shadow: 0 4px 18px rgba(229, 9, 20, 0.4);
+}
+
+.nf-vip-crown {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 1.1rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+}
+
+.nf-profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.nf-profile-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.nf-google-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(66, 133, 244, 0.15);
+  border: 1px solid rgba(66, 133, 244, 0.3);
+  color: #4285F4;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 12px;
+}
+
+.nf-profile-email {
+  font-size: 0.82rem;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.nf-profile-tier-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, rgba(229,9,20,0.3), rgba(255,184,0,0.2));
+  border: 1px solid rgba(229,9,20,0.5);
+  color: #ffb800;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.nf-profile-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.nf-stat-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nf-stat-box:hover {
+  background: rgba(229, 9, 20, 0.15);
+  border-color: rgba(229, 9, 20, 0.4);
+  transform: translateY(-2px);
+}
+
+.nf-stat-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.nf-stat-label {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+.nf-profile-perks {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+}
+
+.nf-perk-item {
+  font-size: 0.8rem;
+  color: #46d369;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.nf-perk-item:last-child {
+  margin-bottom: 0;
+}
+
+.nf-profile-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.nf-profile-actions .nf-btn-primary {
+  flex: 2;
+  background: #E50914;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 18px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.nf-profile-actions .nf-btn-primary:hover {
+  background: #f40612;
+}
+
+.nf-profile-actions .nf-btn-secondary {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.nf-profile-actions .nf-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 
 

@@ -1110,6 +1110,7 @@ body {
 
 .nf-slider {
   display: flex;
+  align-items: stretch;
   gap: 8px;
   overflow-x: auto;
   overflow-y: hidden;
@@ -1152,6 +1153,9 @@ body {
    ========================================================================== */
 .nf-card {
   flex: 0 0 190px;
+  width: 190px;
+  min-width: 190px;
+  max-width: 190px;
   position: relative;
   border-radius: var(--card-radius);
   cursor: pointer;
@@ -1173,16 +1177,18 @@ body {
 .nf-card-poster-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 2/3;
+  aspect-ratio: 2 / 3;
   border-radius: var(--card-radius);
   overflow: hidden;
   background: var(--netflix-dark-gray);
   box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  flex-shrink: 0;
 }
 
 .nf-card-img {
   width: 100%;
   height: 100%;
+  aspect-ratio: 2 / 3;
   object-fit: cover;
   display: block;
 }
@@ -1218,6 +1224,11 @@ body {
 
 .nf-card-info {
   padding: 8px 4px 2px;
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  flex-grow: 1;
 }
 
 .nf-card-title {
@@ -2249,7 +2260,7 @@ body {
   /* Rows on Tablets & Phones */
   .nf-row { padding: 0 18px; margin-bottom: 26px; }
   .nf-row-title { font-size: 1.15rem; margin-bottom: 6px; }
-  .nf-card { flex: 0 0 140px; }
+  .nf-card { flex: 0 0 140px; width: 140px; min-width: 140px; max-width: 140px; }
   .nf-cw-card { flex: 0 0 210px; }
   .nf-scroll-btn { display: none; } /* Native touch momentum swipe */
   .nf-slider { padding: 8px 0 14px 0; margin: -8px 0 -4px 0; gap: 8px; -webkit-overflow-scrolling: touch; }
@@ -2275,7 +2286,7 @@ body {
   .nf-navbar { padding: 0 14px; height: 52px; }
   .nf-logo { font-size: 1.35rem; }
   .nf-search-wrap.open .nf-search-input { width: 155px; font-size: 0.8rem; }
-  .nf-card { flex: 0 0 120px; }
+  .nf-card { flex: 0 0 120px; width: 120px; min-width: 120px; max-width: 120px; }
   .nf-cw-card { flex: 0 0 185px; }
   .nf-hero-title { font-size: 1.65rem; }
   .nf-search-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }

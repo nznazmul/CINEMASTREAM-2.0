@@ -200,8 +200,13 @@ export class ApiService {
   static async getAnime(category, page) {
     category = category || 'popular'; page = page || 1;
     try {
-      const params = { page: page, with_genres: 16, with_original_language: 'ja', sort_by: 'popularity.desc' };
-      if (category === 'top_rated') { params.sort_by = 'vote_average.desc'; params['vote_count.gte'] = 250; }
+      const params = {
+        page: page,
+        with_genres: 16,
+        with_original_language: 'ja',
+        sort_by: category === 'top_rated' ? 'vote_average.desc' : 'popularity.desc',
+        'vote_count.gte': category === 'top_rated' ? 250 : 80
+      };
       const data = await this.tmdb('/discover/tv', params);
       return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'tv'))) };
     } catch (e) { return { success: false, results: [] }; }
@@ -210,8 +215,13 @@ export class ApiService {
   static async getAnimeMovies(category, page, genre) {
     category = category || 'popular'; page = page || 1;
     try {
-      const params = { page: page, with_genres: genre ? `16,${genre}` : 16, with_original_language: 'ja', sort_by: 'popularity.desc' };
-      if (category === 'top_rated') { params.sort_by = 'vote_average.desc'; params['vote_count.gte'] = 200; }
+      const params = {
+        page: page,
+        with_genres: genre ? `16,${genre}` : 16,
+        with_original_language: 'ja',
+        sort_by: category === 'top_rated' ? 'vote_average.desc' : 'popularity.desc',
+        'vote_count.gte': category === 'top_rated' ? 200 : 60
+      };
       const data = await this.tmdb('/discover/movie', params);
       return { success: true, results: this.deduplicate((data.results || []).map(m => this.normalize(m, 'movie'))) };
     } catch (e) { return { success: false, results: [] }; }

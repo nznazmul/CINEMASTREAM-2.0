@@ -132,13 +132,14 @@ export class VideoPlayer {
     if (!this.episodes || this.episodes.length === 0) {
       return '<div style="color:#888; padding:16px 10px;">No episodes available for this season.</div>';
     }
+    const defaultBackdrop = this.currentMedia?.backdrop_path || this.currentMedia?.poster_path || 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
     return this.episodes.map(ep => {
       const isPlaying = Number(currentSeason) === Number(this.currentMedia.currentSeason) && Number(ep.episode_number) === Number(this.currentMedia.currentEpisode);
-      const still = ep.still_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg';
+      const still = ep.still_path || defaultBackdrop;
       return `
         <div class="yt-ep-item ${isPlaying ? 'playing' : ''}" onclick="window.App.playMedia(${this.currentMedia.id}, 'tv', ${currentSeason}, ${ep.episode_number})">
           <div class="yt-ep-thumb-wrap">
-            <img src="${still}" alt="Ep ${ep.episode_number}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+            <img src="${still}" alt="Ep ${ep.episode_number}" loading="lazy" onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
             ${isPlaying ? '<div class="ep-playing-pill">PLAYING</div>' : `<span class="ep-num-tag">EP ${ep.episode_number}</span>`}
           </div>
           <div class="yt-ep-details">
@@ -313,7 +314,7 @@ export class VideoPlayer {
                   <div class="yt-up-next-card" onclick="window.App.playMedia(${this.currentMedia.id}, 'tv', ${currentSeason}, ${nextEpisodeNum})">
                     <div class="up-next-badge">⚡ UP NEXT (EP ${nextEpisodeNum})</div>
                     <div class="up-next-content">
-                      <img src="${nextEpisodeObj.still_path || 'https://image.tmdb.org/t/p/w300' + (this.currentMedia.backdrop_path || '')}" alt="Ep ${nextEpisodeNum}" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+                      <img src="${nextEpisodeObj.still_path || this.currentMedia.backdrop_path || this.currentMedia.poster_path || 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'}" alt="Ep ${nextEpisodeNum}" onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
                       <div class="up-next-info">
                         <h4>Episode ${nextEpisodeNum}: ${nextEpisodeObj.name}</h4>
                         <span>${nextEpisodeObj.runtime || '50m'} • Click to Play ▶</span>
@@ -340,7 +341,7 @@ export class VideoPlayer {
                 ${this.suggestions.map(s => `
                   <div class="yt-suggestion-card" onclick="window.App.playMedia(${s.id}, '${s.media_type || (isTv ? 'tv' : 'movie')}')">
                     <div class="yt-sug-thumb-wrap">
-                      <img src="${s.poster_path}" alt="${s.title || s.name}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
+                      <img src="${s.poster_path}" alt="${s.title || s.name}" loading="lazy" onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
                       <span class="sug-quality-tag">${s.quality || '4K'}</span>
                     </div>
                     <div class="yt-sug-info">

@@ -134,6 +134,23 @@ export class NotificationCenter {
     }
   }
 
+  static formatRelativeTime(dateStr) {
+    if (!dateStr) return 'Recently';
+    const now = Date.now();
+    const d = new Date(dateStr).getTime();
+    if (isNaN(d)) return 'Recently';
+    const diffMs = now - d;
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    if (diffMs < -24 * 60 * 60 * 1000) return 'Premieres Soon';
+    if (diffHours <= 12) return 'Just now';
+    if (diffHours <= 24) return 'Today';
+    if (diffHours <= 48) return 'Yesterday';
+    const diffDays = Math.round(diffHours / 24);
+    if (diffDays <= 7) return `${diffDays}d ago`;
+    if (diffDays <= 30) return `${Math.round(diffDays / 7)}w ago`;
+    return dateStr;
+  }
+
   static testDeviceNotification() {
     const state = this.getPermissionState();
     if (state !== 'granted') {
@@ -141,11 +158,11 @@ export class NotificationCenter {
       return;
     }
 
-    const firstItem = this.notifications[0];
-    const testTitle = firstItem ? `🎬 New Premiere: ${firstItem.title}` : '🎬 Spider-Man: Brand New Day (2026)';
+    const firstItem = (this.notifications && this.notifications.length > 0) ? this.notifications[0] : null;
+    const testTitle = firstItem ? `${firstItem.typeLabel}: ${firstItem.title}` : '🎬 New 4K Release Available';
     const testBody = firstItem ? `${firstItem.desc} Tap to watch now!` : 'Now streaming free in 4K Ultra HD & Dolby Atmos 5.1.';
-    const testIcon = firstItem ? firstItem.poster : 'https://image.tmdb.org/t/p/w200/qeQJx07rK2xm8SD2sJxFKhE7gs0.jpg';
-    const testUrl = firstItem ? `/${firstItem.mediaType}/${firstItem.mediaId}` : '/movie/969681';
+    const testIcon = firstItem ? firstItem.poster : 'https://image.tmdb.org/t/p/w200/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
+    const testUrl = firstItem ? `/${firstItem.mediaType}/${firstItem.mediaId}` : '/movie';
 
     const sent = this.sendDeviceNotification(testTitle, {
       body: testBody,
@@ -159,22 +176,28 @@ export class NotificationCenter {
   }
 
   static checkAndNotifyNewReleases() {
-    // Only proceed if user has granted permission
-    if (this.getPermissionState() !== 'granted') return;
     if (!this.notifications || this.notifications.length === 0) return;
 
     const sentIds = new Set(this.getSentAlertIds());
     const newItems = this.notifications.filter(n => !sentIds.has(n.id));
 
     if (newItems.length > 0) {
-      // Send device alert for the newest release
       const latest = newItems[0];
-      this.sendDeviceNotification(`${latest.typeLabel}: ${latest.title} (${latest.year})`, {
-        body: `${latest.desc} Now streaming in 4K Ultra HD. Tap to play!`,
-        icon: latest.poster,
-        tag: latest.id,
-        url: `/${latest.mediaType}/${latest.mediaId}`
-      });
+      
+      // If user has enabled native device push notifications, dispatch device push alert
+      if (this.getPermissionState() === 'granted') {
+        this.sendDeviceNotification(`${latest.typeLabel}: ${latest.title} (${latest.year})`, {
+          body: `${latest.desc} Now streaming in 4K Ultra HD. Tap to play!`,
+          icon: latest.poster,
+          tag: latest.id,
+          url: `/${latest.mediaType}/${latest.mediaId}`
+        });
+      }
+
+      // Show in-app banner toast if user has open session
+      if (typeof window !== 'undefined' && window.App && sentIds.size > 0) {
+        window.App.showToast(`🎬 New Premiere Dropped: ${latest.title} (${latest.year})!`, 'info');
+      }
 
       // Mark all current items as alerted
       const updatedSentIds = Array.from(new Set([...sentIds, ...this.notifications.map(n => n.id)]));
@@ -182,97 +205,132 @@ export class NotificationCenter {
     }
   }
 
-  // ── 📦 Load & Deduplicate Live Content ──────────────────────────────────────
+  // ── 📦 Load & Deduplicate Live Content (Freshest Releases First) ─────────────
   static async loadNotifications(forceRefresh = false) {
     if (this.isLoading && !forceRefresh) return;
     this.isLoading = true;
 
     try {
-      const [nowPlaying, onAir, trending, anime] = await Promise.all([
+      const [nowPlaying, upcoming, onAir, trending, anime] = await Promise.all([
         ApiService.getMovies('now_playing', null, 1).catch(() => ({ results: [] })),
+        ApiService.getMovies('upcoming', null, 1).catch(() => ({ results: [] })),
         ApiService.getTVSeries('on_the_air', null, 1).catch(() => ({ results: [] })),
         ApiService.getTrending(1).catch(() => ({ results: [] })),
         ApiService.getAnime('popular', 1).catch(() => ({ results: [] }))
       ]);
 
-      const npItems = (nowPlaying.results || []).slice(0, 4).map((m, idx) => ({
-        id: `movie_${m.id}`,
-        mediaId: m.id,
-        mediaType: 'movie',
-        category: 'movie',
-        typeLabel: '🎬 4K Premiere',
-        title: m.title || m.name || 'Blockbuster Movie',
-        year: (m.release_date || '2026').substring(0, 4),
-        rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '7.8',
-        score: Math.round((m.vote_average || 7.8) * 10),
-        desc: m.overview || 'Now streaming in 4K Ultra HD & Dolby Atmos 5.1 with multi-audio dubbed tracks.',
-        poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
-        time: idx === 0 ? 'Just now' : `${(idx + 1) * 20}m ago`,
-        timestamp: Date.now() - 1000 * 60 * (idx * 20 + 5)
-      }));
+      const npItems = (nowPlaying.results || []).map((m) => {
+        const rawDate = m.release_date || '';
+        const timestamp = rawDate ? new Date(rawDate).getTime() : (Date.now() - 1000 * 60 * 60 * 24);
+        return {
+          id: `movie_${m.id}`,
+          mediaId: m.id,
+          mediaType: 'movie',
+          category: 'movie',
+          typeLabel: '🎬 4K Premiere',
+          title: m.title || m.name || 'Blockbuster Movie',
+          year: (rawDate || '2026').substring(0, 4),
+          release_date: rawDate,
+          rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '7.8',
+          score: Math.round((m.vote_average || 7.8) * 10),
+          desc: m.overview || 'Now streaming in 4K Ultra HD & Dolby Atmos 5.1 with multi-audio dubbed tracks.',
+          poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
+          time: this.formatRelativeTime(rawDate),
+          timestamp: timestamp
+        };
+      });
 
-      const tvItems = (onAir.results || []).slice(0, 4).map((m, idx) => ({
-        id: `tv_${m.id}`,
-        mediaId: m.id,
-        mediaType: 'tv',
-        category: 'tv',
-        typeLabel: '📺 New Episode Airing',
-        title: m.name || m.title || 'TV Series',
-        year: (m.first_air_date || '2024').substring(0, 4),
-        rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '8.2',
-        score: Math.round((m.vote_average || 8.2) * 10),
-        desc: m.overview || 'Fresh episode broadcast today with multi-language subtitle tracks and high-bitrate streaming.',
-        poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
-        time: `${idx + 1}h ago`,
-        timestamp: Date.now() - 1000 * 60 * 60 * (idx + 1)
-      }));
+      const upcomingItems = (upcoming.results || []).slice(0, 5).map((m) => {
+        const rawDate = m.release_date || '';
+        const timestamp = rawDate ? new Date(rawDate).getTime() : Date.now();
+        return {
+          id: `movie_${m.id}`,
+          mediaId: m.id,
+          mediaType: 'movie',
+          category: 'movie',
+          typeLabel: '🚀 Upcoming Premiere',
+          title: m.title || m.name || 'Upcoming Movie',
+          year: (rawDate || '2026').substring(0, 4),
+          release_date: rawDate,
+          rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '7.5',
+          score: Math.round((m.vote_average || 7.5) * 10),
+          desc: m.overview || 'Arriving soon on CinemaStream in 4K Ultra HD.',
+          poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
+          time: this.formatRelativeTime(rawDate),
+          timestamp: timestamp
+        };
+      });
 
-      const animeItems = (anime.results || []).slice(0, 3).map((m) => ({
-        id: `anime_${m.id}`,
-        mediaId: m.id,
-        mediaType: 'tv',
-        category: 'anime',
-        typeLabel: '⛩️ Anime Simulcast',
-        title: m.name || m.title || 'Anime Series',
-        year: (m.first_air_date || '2024').substring(0, 4),
-        rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '8.5',
-        score: Math.round((m.vote_average || 8.5) * 10),
-        desc: m.overview || 'Simulcast release with original Japanese audio and multi-language dubs.',
-        poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
-        time: 'Today',
-        timestamp: Date.now() - 1000 * 60 * 240
-      }));
+      const tvItems = (onAir.results || []).map((m) => {
+        const rawDate = m.first_air_date || '';
+        const timestamp = rawDate ? new Date(rawDate).getTime() : (Date.now() - 1000 * 60 * 60 * 12);
+        return {
+          id: `tv_${m.id}`,
+          mediaId: m.id,
+          mediaType: 'tv',
+          category: 'tv',
+          typeLabel: '📺 New Episode Airing',
+          title: m.name || m.title || 'TV Series',
+          year: (rawDate || '2026').substring(0, 4),
+          release_date: rawDate,
+          rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '8.2',
+          score: Math.round((m.vote_average || 8.2) * 10),
+          desc: m.overview || 'Fresh episode broadcast today with multi-language subtitle tracks and high-bitrate streaming.',
+          poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
+          time: this.formatRelativeTime(rawDate),
+          timestamp: timestamp
+        };
+      });
 
-      const trendItems = (trending.results || []).slice(0, 3).map((m) => ({
-        id: `trend_${m.id}`,
-        mediaId: m.id,
-        mediaType: m.media_type || 'movie',
-        category: 'trending',
-        typeLabel: '🔥 Trending Worldwide',
-        title: m.title || m.name || 'Trending Hit',
-        year: (m.release_date || m.first_air_date || '2024').substring(0, 4),
-        rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '7.9',
-        score: Math.round((m.vote_average || 7.9) * 10),
-        desc: m.overview || `Trending across global charts with ${Math.round((m.vote_average || 7.9) * 10)}% positive audience score.`,
-        poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
-        time: 'Yesterday',
-        timestamp: Date.now() - 1000 * 60 * 600
-      }));
+      const animeItems = (anime.results || []).map((m) => {
+        const rawDate = m.first_air_date || '';
+        const timestamp = rawDate ? new Date(rawDate).getTime() : (Date.now() - 1000 * 60 * 60 * 48);
+        return {
+          id: `anime_${m.id}`,
+          mediaId: m.id,
+          mediaType: 'tv',
+          category: 'anime',
+          typeLabel: '⛩️ Anime Simulcast',
+          title: m.name || m.title || 'Anime Series',
+          year: (rawDate || '2026').substring(0, 4),
+          release_date: rawDate,
+          rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '8.5',
+          score: Math.round((m.vote_average || 8.5) * 10),
+          desc: m.overview || 'Simulcast release with original Japanese audio and multi-language dubs.',
+          poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
+          time: this.formatRelativeTime(rawDate),
+          timestamp: timestamp
+        };
+      });
 
-      // Symmetrically interleave: Latest Movie -> Latest TV Episode -> Latest Anime Simulcast -> ...
-      const interleaved = [];
-      const maxLen = Math.max(npItems.length, tvItems.length, animeItems.length, trendItems.length);
-      for (let i = 0; i < maxLen; i++) {
-        if (npItems[i]) interleaved.push(npItems[i]);
-        if (tvItems[i]) interleaved.push(tvItems[i]);
-        if (animeItems[i]) interleaved.push(animeItems[i]);
-        if (trendItems[i]) interleaved.push(trendItems[i]);
-      }
+      const trendItems = (trending.results || []).map((m) => {
+        const rawDate = m.release_date || m.first_air_date || '';
+        const timestamp = rawDate ? new Date(rawDate).getTime() : (Date.now() - 1000 * 60 * 60 * 24);
+        return {
+          id: `trend_${m.id}`,
+          mediaId: m.id,
+          mediaType: m.media_type || 'movie',
+          category: 'trending',
+          typeLabel: '🔥 Trending Worldwide',
+          title: m.title || m.name || 'Trending Hit',
+          year: (rawDate || '2026').substring(0, 4),
+          release_date: rawDate,
+          rating: m.vote_average ? Number(m.vote_average).toFixed(1) : '7.9',
+          score: Math.round((m.vote_average || 7.9) * 10),
+          desc: m.overview || `Trending across global charts with ${Math.round((m.vote_average || 7.9) * 10)}% positive audience score.`,
+          poster: this.formatPoster(m.poster_path || m.poster || m.backdrop_path),
+          time: this.formatRelativeTime(rawDate),
+          timestamp: timestamp
+        };
+      });
+
+      // Combine all content candidates
+      const allNotifs = [...npItems, ...upcomingItems, ...tvItems, ...animeItems, ...trendItems];
 
       // Universal multi-tier deduplication
       const seenNotif = new Set();
       const uniqueNotifs = [];
-      for (const n of interleaved) {
+      for (const n of allNotifs) {
         const key = `${n.mediaType}_${n.mediaId}`;
         const titleKey = (n.title || '').toLowerCase().trim();
         if (seenNotif.has(key) || (titleKey && seenNotif.has(titleKey))) continue;
@@ -280,6 +338,10 @@ export class NotificationCenter {
         if (titleKey) seenNotif.add(titleKey);
         uniqueNotifs.push(n);
       }
+
+      // Sort strictly by true release timestamp descending (Freshest Releases First!)
+      uniqueNotifs.sort((a, b) => b.timestamp - a.timestamp);
+
       this.notifications = uniqueNotifs;
       this.updateBadge();
 

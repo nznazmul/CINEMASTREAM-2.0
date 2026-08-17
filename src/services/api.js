@@ -104,32 +104,47 @@ export class ApiService {
 
   static async getHero() {
     try {
-      const [nowPlaying, onAir, anime, trending] = await Promise.all([
+      const [nowPlaying, upcoming, trendingDay, onAir, anime, discover] = await Promise.all([
         this.getMovies('now_playing', null, 1).catch(() => ({ results: [] })),
+        this.getMovies('upcoming', null, 1).catch(() => ({ results: [] })),
+        this.getTrending(1).catch(() => ({ results: [] })),
         this.getTVSeries('on_the_air', null, 1).catch(() => ({ results: [] })),
         this.getAnime('popular', 1).catch(() => ({ results: [] })),
-        this.getTrending(1).catch(() => ({ results: [] }))
+        this.tmdb('/discover/movie', { sort_by: 'primary_release_date.desc', 'vote_count.gte': 5, with_original_language: 'en' }).catch(() => ({ results: [] }))
       ]);
 
-      const np = (nowPlaying.results || []).slice(0, 4);
-      const tv = (onAir.results || []).slice(0, 4);
-      const ani = (anime.results || []).slice(0, 3);
-      const tr = (trending.results || []).slice(0, 3);
+      const rawCandidates = [
+        ...(discover.results || []).map(m => this.normalize(m, 'movie')),
+        ...(nowPlaying.results || []).map(m => this.normalize(m, 'movie')),
+        ...(upcoming.results || []).map(m => this.normalize(m, 'movie')),
+        ...(trendingDay.results || []).map(m => this.normalize(m)),
+        ...(onAir.results || []).map(m => this.normalize(m, 'tv')),
+        ...(anime.results || []).map(m => this.normalize(m, 'tv'))
+      ];
 
-      // Symmetrically interleave: Latest Movie -> Latest TV Show -> Latest Anime -> ...
-      const combined = [];
-      const maxLen = Math.max(np.length, tv.length, ani.length, tr.length);
-      for (let i = 0; i < maxLen; i++) {
-        if (np[i]) combined.push(np[i]);
-        if (tv[i]) combined.push(tv[i]);
-        if (ani[i]) combined.push(ani[i]);
-        if (tr[i]) combined.push(tr[i]);
-      }
+      // Filter for premium hero quality (must have backdrop, title, and rich synopsis)
+      const valid = rawCandidates.filter(item => 
+        item &&
+        item.backdrop_path && 
+        (item.title || item.name) && 
+        item.overview &&
+        item.overview.trim().length > 20
+      );
 
-      const deduplicated = this.deduplicate(combined).slice(0, 8);
+      const deduplicated = this.deduplicate(valid);
+
+      // Dynamic Freshness Sorter:
+      // Sort so that the newest released / premiered titles are strictly at the top of the slider
+      deduplicated.sort((a, b) => {
+        const dateA = a.release_date ? new Date(a.release_date).getTime() : 0;
+        const dateB = b.release_date ? new Date(b.release_date).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      const topHeroItems = deduplicated.slice(0, 8);
 
       // Fetch and preload trailer keys for top hero slider rotation
-      const itemsWithTrailers = await Promise.all(deduplicated.map(async (item, idx) => {
+      const itemsWithTrailers = await Promise.all(topHeroItems.map(async (item, idx) => {
         if (idx < 6 && !item.trailer_key) {
           try {
             item.trailer_key = await this.getTrailerKey(item.id, item.media_type || (item.first_air_date ? 'tv' : 'movie'));

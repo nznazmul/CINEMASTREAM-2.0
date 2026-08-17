@@ -31,7 +31,7 @@ export class HeroBanner {
     const year = (item.release_date || item.first_air_date || '2024').substring(0, 4);
     const score = Math.round((item.vote_average || 7.5) * 10);
     const desc = item.overview || '';
-    const backdrop = item.backdrop_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg';
+    const backdrop = item.backdrop_path || 'https://image.tmdb.org/t/p/original/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg';
     const isTv = item.media_type === 'tv';
     const genreText = (item.genres || []).slice(0, 3).join(' • ');
     let trailerKey = item.trailer_key;

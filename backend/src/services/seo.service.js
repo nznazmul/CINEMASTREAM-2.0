@@ -84,7 +84,7 @@ export class SEOService {
       xml += `    <changefreq>weekly</changefreq>\n`;
       xml += `    <priority>0.85</priority>\n`;
       xml += `    <video:video>\n`;
-      xml += `      <video:thumbnail_loc>${item.backdrop_path || item.poster_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}</video:thumbnail_loc>\n`;
+      xml += `      <video:thumbnail_loc>${item.backdrop_path || item.poster_path || 'https://image.tmdb.org/t/p/original/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'}</video:thumbnail_loc>\n`;
       xml += `      <video:title>${title} (${year}) Watch Online Free 4K</video:title>\n`;
       xml += `      <video:description>${desc}</video:description>\n`;
       xml += `      <video:player_loc>${baseUrl}/#watch?id=${item.id}&amp;type=${type}</video:player_loc>\n`;

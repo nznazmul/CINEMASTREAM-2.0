@@ -1801,7 +1801,7 @@ class App {
 
     // 2. Real Parallel Multi-Stream Download Test
     const testEndpoints = [
-      'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg',
+      'https://image.tmdb.org/t/p/original/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
       'https://image.tmdb.org/t/p/original/oBIQ16Vh54gO18l3f6s8p0y1R3x.jpg',
       'https://image.tmdb.org/t/p/original/7gKI9hpEMcZUwY7ijU0w80Qc60A.jpg',
       'https://image.tmdb.org/t/p/w780/kEl2t3OhXc3799gIfagvejRo6al.jpg',
@@ -2223,7 +2223,7 @@ class App {
       }
 
       grid.innerHTML = eps.map((ep) => {
-        const still = ep.still_path ? (ep.still_path.startsWith('http') ? ep.still_path : `https://image.tmdb.org/t/p/w500${ep.still_path}`) : 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg';
+        const still = ep.still_path ? (ep.still_path.startsWith('http') ? ep.still_path : `https://image.tmdb.org/t/p/w500${ep.still_path}`) : 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pvr3i.jpg';
         const epTitle = ep.name || `Episode ${ep.episode_number}`;
         const dur = ep.runtime || '52m';
         const rating = ep.vote_average || '8.2';
@@ -2239,7 +2239,7 @@ class App {
 
               <!-- 16:9 Thumbnail with Duration and Play Hover Overlay -->
               <div class="nf-ep-thumb-wrap">
-                <img src="${still}" alt="Episode ${ep.episode_number}: ${epTitle}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+                <img src="${still}" alt="Episode ${ep.episode_number}: ${epTitle}" loading="lazy" onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pvr3i.jpg'">
                 <div class="nf-ep-play-overlay">
                   <div class="nf-ep-play-btn">▶</div>
                 </div>
@@ -2317,7 +2317,7 @@ class App {
           <button class="nf-modal-close" onclick="window.App.closeDetails()" title="Close (Esc)">✕</button>
           
           <div class="nf-modal-backdrop">
-            <img src="${backdrop}" alt="${title}" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+            <img src="${backdrop}" alt="${title}" onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pvr3i.jpg'">
             <div class="nf-modal-video-wrap" id="modal-video-wrap"></div>
             
             <div class="nf-modal-title-wrap">
@@ -2406,7 +2406,7 @@ class App {
                      onmouseenter="this.style.transform='scale(1.03)'" onmouseleave="this.style.transform='scale(1)'">
                   <img src="${s.backdrop_path || s.poster_path || ''}" alt="${s.title || s.name || ''}" 
                        style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block; background:#333;" 
-                       loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
+                       loading="lazy" onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pvr3i.jpg'">
                   <div style="padding:10px 12px;">
                     <div style="font-size:0.88rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title || s.name || ''}</div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
@@ -2460,9 +2460,9 @@ class App {
         <div class="nf-modal-ep-item"
              onclick="window.App.closeDetails(); window.App.playMedia(${tvId}, 'tv', ${ep.season_number || seasonNum}, ${ep.episode_number || 1})">
           <div class="nf-modal-ep-thumb-wrap">
-            <img src="${ep.still_path || 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'}" 
+            <img src="${ep.still_path || 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pvr3i.jpg'}" 
                  alt="Ep ${ep.episode_number || 1}" loading="lazy"
-                 onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+                 onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pvr3i.jpg'">
             <div class="nf-modal-ep-play-icon">▶</div>
             <span class="nf-modal-ep-dur">${ep.runtime || '50m'}</span>
           </div>

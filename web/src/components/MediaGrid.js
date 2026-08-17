@@ -12,7 +12,7 @@ export class MediaGrid {
       return `
         <div class="nf-cw-card" onclick="window.App.playMedia(${item.id}, '${item.media_type || item.mediaType || 'movie'}', ${s}, ${e})">
           <div class="nf-cw-img-wrap">
-            <img class="nf-cw-img" src="${poster}" alt="${title}" loading="lazy" onerror="this.src='https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg'">
+            <img class="nf-cw-img" src="${poster}" alt="${title}" loading="lazy" onerror="this.onerror=null; this.src='https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg'">
             <div class="nf-cw-play-overlay">
               <span class="nf-cw-play-icon">▶</span>
             </div>

@@ -48,7 +48,7 @@ function normalizeItem(m) {
     name: m.name || m.title || 'Untitled',
     overview: m.overview || '',
     poster_path: m.poster_path ? (IMG_BASE + '/w500' + m.poster_path) : 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
-    backdrop_path: m.backdrop_path ? (IMG_BASE + '/original' + m.backdrop_path) : 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s520DRq.jpg',
+    backdrop_path: m.backdrop_path ? (IMG_BASE + '/original' + m.backdrop_path) : 'https://image.tmdb.org/t/p/original/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
     release_date: m.release_date || m.first_air_date || '2024-01-01',
     first_air_date: m.first_air_date || m.release_date || '2024-01-01',
     vote_average: parseFloat((m.vote_average || 7.5).toFixed(1)),
@@ -87,12 +87,43 @@ export class TMDBService {
 
   static async getHeroMedia() {
     return cached('hero', async () => {
-      const data = await tmdb('/trending/all/week');
-      const items = (data.results || []).slice(0, 8);
-      return Promise.all(items.map(async item => {
-        const n = normalizeItem(item);
-        n.trailer_key = await fetchTrailer(item.id, n.media_type);
-        return n;
+      const [nowPlaying, upcoming, trendingDay, onAir, discover] = await Promise.all([
+        tmdb('/movie/now_playing').catch(() => ({ results: [] })),
+        tmdb('/movie/upcoming').catch(() => ({ results: [] })),
+        tmdb('/trending/all/day').catch(() => ({ results: [] })),
+        tmdb('/tv/on_the_air').catch(() => ({ results: [] })),
+        tmdb('/discover/movie', { sort_by: 'primary_release_date.desc', 'vote_count.gte': 5, with_original_language: 'en' }).catch(() => ({ results: [] }))
+      ]);
+
+      const raw = [
+        ...(discover.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'movie' })),
+        ...(nowPlaying.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'movie' })),
+        ...(upcoming.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'movie' })),
+        ...(trendingDay.results || []).map(m => normalizeItem(m)),
+        ...(onAir.results || []).map(m => Object.assign(normalizeItem(m), { media_type: 'tv' }))
+      ];
+
+      const valid = raw.filter(item => item && item.backdrop_path && (item.title || item.name) && item.overview);
+      const seen = new Set();
+      const deduped = [];
+      for (const item of valid) {
+        const key = `${item.media_type}_${item.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        deduped.push(item);
+      }
+
+      // Sort by newest release date first
+      deduped.sort((a, b) => {
+        const dateA = a.release_date ? new Date(a.release_date).getTime() : 0;
+        const dateB = b.release_date ? new Date(b.release_date).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      const top = deduped.slice(0, 8);
+      return Promise.all(top.map(async item => {
+        item.trailer_key = await fetchTrailer(item.id, item.media_type);
+        return item;
       }));
     });
   }

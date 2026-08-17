@@ -399,33 +399,45 @@ body.player-active .nf-mobile-nav {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 300px;
+  max-height: 380px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
 }
 
 .yt-ep-item {
   display: flex;
-  gap: 10px;
-  align-items: center;
+  gap: 12px;
+  align-items: flex-start;
   padding: 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.02);
+  transition: background 0.15s ease, border-color 0.15s ease;
+  contain: content;
 }
-.yt-ep-item:hover, .yt-ep-item.playing { background: rgba(255,255,255,0.06); }
+.yt-ep-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+.yt-ep-item.playing { background: rgba(229,9,20,0.15); border-color: #e50914; }
 
 .yt-ep-thumb-wrap {
   position: relative;
   flex-shrink: 0;
-  width: 80px;
+  width: 86px;
+  aspect-ratio: 16 / 9;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1c1c1c;
 }
 
 .yt-ep-thumb-wrap img {
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 100%;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: 3px;
-  background: #2d2d2d;
+  border-radius: 4px;
+  background: #1c1c1c;
+  display: block;
 }
 
 .ep-playing-pill {

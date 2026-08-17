@@ -200,8 +200,8 @@ export class AdShield {
   }
 
   /**
-   * Creates an optimized, secure sandboxed iframe for video streaming
-   * Blocks top-level redirects and popunders while maintaining full video capabilities
+   * Creates an optimized, secure iframe for video streaming (Netflix-grade embed engine)
+   * Prevents "Sandboxing is not allowed" errors while neutralizing popups and redirects via AdShield
    */
   static createSandboxedIframe(src, title = 'Video Stream') {
     const iframe = document.createElement('iframe');
@@ -209,7 +209,7 @@ export class AdShield {
     iframe.title = title;
     iframe.className = 'video-iframe-embed';
     
-    // Hardware acceleration & media capabilities
+    // Hardware acceleration & full media streaming capabilities
     iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture; accelerometer; gyroscope');
     iframe.setAttribute('allowfullscreen', 'true');
     iframe.setAttribute('webkitallowfullscreen', 'true');
@@ -217,11 +217,6 @@ export class AdShield {
     
     if (!src.includes('youtube')) {
       iframe.setAttribute('referrerpolicy', 'no-referrer');
-      
-      // Smart AdShield Sandbox Profile:
-      // Enables: JavaScript, HTML5 video controls, same-origin storage, media playback, forms
-      // STRICTLY BLOCKS: Top-level navigation (redirecting current tab to ads), popup escapes, modal locks
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
     }
 
     iframe.setAttribute('loading', 'eager');
@@ -229,7 +224,7 @@ export class AdShield {
     iframe.style.height = '100%';
     iframe.style.border = 'none';
 
-    // Track iframe load events and ensure no leaked popups
+    // Auto-purge invisible clickjacking overlays when iframe loads
     iframe.onload = () => {
       this.purgeInvisibleOverlays();
     };

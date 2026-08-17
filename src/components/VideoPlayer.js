@@ -523,10 +523,16 @@ export class VideoPlayer {
   }
 
   shareCurrent() {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href).catch(() => {});
+    if (window.App && window.App.shareCurrent) {
+      window.App.shareCurrent();
+    } else {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href).catch(() => {});
+      }
+      if (window.App?.showToast) {
+        window.App.showToast('Link copied to clipboard! 🔗');
+      }
     }
-    window.App.showToast('Link copied to clipboard! 🔗');
   }
 
   startProgressTracker() {

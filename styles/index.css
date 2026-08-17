@@ -771,35 +771,61 @@ body {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 56px;
-  background: rgba(18,18,18,0.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255,255,255,0.12);
-  z-index: 1000;
+  height: 58px;
+  background: rgba(15, 15, 15, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.7);
+  z-index: 99999;
   justify-content: space-around;
   align-items: center;
   padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .nf-mobile-nav-item {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 6px;
-  gap: 3px;
-  color: #888;
+  padding: 6px 2px;
+  gap: 2px;
+  color: #888888;
   text-decoration: none;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, transform 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
-.nf-mobile-nav-item.active { color: #fff; }
-.nf-mobile-nav-item span.icon { font-size: 1.15rem; }
+.nf-mobile-nav-item:active {
+  transform: scale(0.92);
+  color: #E50914;
+}
+
+.nf-mobile-nav-item.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.nf-mobile-nav-item.active span.icon {
+  filter: drop-shadow(0 0 8px rgba(229, 9, 20, 0.8));
+}
+
+.nf-mobile-nav-item span.icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  display: block;
+}
 
 /* ==========================================================================
    HERO BANNER

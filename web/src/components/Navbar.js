@@ -49,28 +49,28 @@ export class Navbar {
       </nav>
 
       <!-- Mobile Bottom Navigation Bar -->
-      <nav class="nf-mobile-nav">
-        <a class="nf-mobile-nav-item ${route === 'home' ? 'active' : ''}" onclick="window.Router.navigate('home')">
+      <nav class="nf-mobile-nav" id="nf-mobile-nav" aria-label="Mobile Navigation">
+        <a href="/home" class="nf-mobile-nav-item ${route === 'home' ? 'active' : ''}" onclick="event.preventDefault(); window.App ? window.App.navigate('home') : window.Router.navigate('home')">
           <span class="icon">🏠</span>
           <span>Home</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'movie' || route === 'movies' ? 'active' : ''}" onclick="window.Router.navigate('movie')">
+        <a href="/movie" class="nf-mobile-nav-item ${route === 'movie' || route === 'movies' ? 'active' : ''}" onclick="event.preventDefault(); window.App ? window.App.navigate('movie') : window.Router.navigate('movie')">
           <span class="icon">🎬</span>
           <span>Movies</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'tv-shows' || route === 'tv-show' || route === 'tv' || route === 'tvseries' ? 'active' : ''}" onclick="window.Router.navigate('tv-shows')">
+        <a href="/tv-shows" class="nf-mobile-nav-item ${route === 'tv-shows' || route === 'tv-show' || route === 'tv' || route === 'tvseries' ? 'active' : ''}" onclick="event.preventDefault(); window.App ? window.App.navigate('tv-shows') : window.Router.navigate('tv-shows')">
           <span class="icon">📺</span>
-          <span>TV</span>
+          <span>TV Shows</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'anime' || route === 'animemovie' ? 'active' : ''}" onclick="window.Router.navigate('anime')">
+        <a href="/anime" class="nf-mobile-nav-item ${route === 'anime' || route === 'animemovie' ? 'active' : ''}" onclick="event.preventDefault(); window.App ? window.App.navigate('anime') : window.Router.navigate('anime')">
           <span class="icon">⛩️</span>
           <span>Anime</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'years' || route === 'year' ? 'active' : ''}" onclick="window.Router.navigate('years')">
+        <a href="/years" class="nf-mobile-nav-item ${route === 'years' || route === 'year' ? 'active' : ''}" onclick="event.preventDefault(); window.App ? window.App.navigate('years') : window.Router.navigate('years')">
           <span class="icon">📅</span>
-          <span>2000–2026</span>
+          <span>Years</span>
         </a>
-        <a class="nf-mobile-nav-item ${route === 'mylist' || route === 'bookmarks' || route === 'saved' ? 'active' : ''}" onclick="window.Router.navigate('mylist')">
+        <a href="/mylist" class="nf-mobile-nav-item ${route === 'mylist' || route === 'bookmarks' || route === 'saved' ? 'active' : ''}" onclick="event.preventDefault(); window.App ? window.App.navigate('mylist') : window.Router.navigate('mylist')">
           <span class="icon">❤️</span>
           <span>Saved</span>
         </a>

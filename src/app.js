@@ -68,27 +68,82 @@ class App {
   }
 
   async handleHashRoute() {
-    let hash = window.location.hash.replace(/^#\/?/, '');
-    const pathname = window.location.pathname.replace(/^\/+|\/+$/g, '');
+    // Strip all leading #, #!, and slashes
+    let hash = (window.location.hash || '').replace(/^[#!/\\]+/, '').trim();
+    const pathname = (window.location.pathname || '').replace(/^\/+|\/+$/g, '').trim();
+    const searchStr = window.location.search || '';
+    const search = searchStr ? new URLSearchParams(searchStr) : null;
 
-    // Support direct clean URLs like /movies, /tv, /anime, /kdrama, /indian, /trending, /serverstatus, /speedtest
+    // 1. Check URL Query Parameters First (?media=movie_550, ?id=550&type=movie, ?watch=550, ?details=550)
+    if (search) {
+      const mediaParam = search.get('media') || search.get('item') || search.get('share');
+      if (mediaParam && mediaParam.includes('_')) {
+        const [mType, mId] = mediaParam.split('_');
+        const parsedId = parseInt(mId);
+        if (parsedId) {
+          const s = parseInt(search.get('s') || search.get('season')) || 1;
+          const e = parseInt(search.get('e') || search.get('episode')) || 1;
+          const autoPlay = search.has('play') || search.has('watch') || search.has('stream');
+          await this.renderDedicatedMediaPage(parsedId, mType === 'anime' ? 'tv' : mType, s, e, autoPlay);
+          return;
+        }
+      }
+      const directId = parseInt(search.get('id') || search.get('watch') || search.get('details') || search.get('movie') || search.get('tv'));
+      if (directId) {
+        const directType = search.get('type') || (search.has('tv') ? 'tv' : 'movie');
+        const s = parseInt(search.get('s') || search.get('season')) || 1;
+        const e = parseInt(search.get('e') || search.get('episode')) || 1;
+        const autoPlay = search.has('play') || search.has('watch') || search.has('stream');
+        await this.renderDedicatedMediaPage(directId, directType === 'anime' ? 'tv' : directType, s, e, autoPlay);
+        return;
+      }
+    }
+
+    // 2. Fall back to pathname if hash is empty
     if (!hash && pathname) {
       hash = pathname;
     }
+
+    // Clean leading slashes again if any
+    hash = hash.replace(/^\/+/, '');
 
     if (!hash || hash === '/' || hash === 'home') {
       await this.navigate('home', false);
       return;
     }
 
-    // Individual Movie / TV / Anime deep link: /movie/533535 or /tv/94997 or /anime/124159
-    if (hash.startsWith('movie/') || hash.startsWith('tv/') || hash.startsWith('anime/')) {
-      const parts = hash.split('/');
-      const type = parts[0] === 'anime' ? 'tv' : parts[0];
-      const idPart = parts[1] || '';
-      const id = parseInt(idPart.split('-')[0]);
+    // 3. Universal Shared Media Deep-Link Parser
+    // Matches:
+    // - movie/550, movie/550-fight-club, tv/1399, tv/1399-game-of-thrones, anime/124159
+    // - details/movie/550, details/tv/1399, details/550, details-movie-550
+    // - watch/movie/550, watch/tv/1399/1/1, watch/550, watch/550/movie, watch-movie-550
+    const mediaMatch = hash.match(/^(?:details\/|watch\/)?(movie|tv|anime)\/(\d+)(?:-[\w-]+)?(?:\/(\d+)(?:\/(\d+))?)?/i)
+      || hash.match(/^(?:details\/|watch\/)(\d+)(?:\/(movie|tv|anime))?(?:\/(\d+)(?:\/(\d+))?)?/i)
+      || hash.match(/^(movie|tv|anime)-(\d+)/i)
+      || hash.match(/^details-(\d+)/i);
+
+    if (mediaMatch) {
+      let type = 'movie';
+      let id = null;
+      let season = 1;
+      let episode = 1;
+
+      if (['movie', 'tv', 'anime'].includes(mediaMatch[1]?.toLowerCase())) {
+        type = mediaMatch[1].toLowerCase() === 'anime' ? 'tv' : mediaMatch[1].toLowerCase();
+        id = parseInt(mediaMatch[2]);
+        if (mediaMatch[3]) season = parseInt(mediaMatch[3]) || 1;
+        if (mediaMatch[4]) episode = parseInt(mediaMatch[4]) || 1;
+      } else if (parseInt(mediaMatch[1])) {
+        id = parseInt(mediaMatch[1]);
+        type = (mediaMatch[2] || 'movie').toLowerCase();
+        if (type === 'anime') type = 'tv';
+        if (mediaMatch[3]) season = parseInt(mediaMatch[3]) || 1;
+        if (mediaMatch[4]) episode = parseInt(mediaMatch[4]) || 1;
+      }
+
       if (id) {
-        await this.renderDedicatedMediaPage(id, type);
+        const isWatch = hash.startsWith('watch') || hash.includes('play=true');
+        await this.renderDedicatedMediaPage(id, type, season, episode, isWatch);
         return;
       }
     }
@@ -2587,7 +2642,17 @@ class App {
   // ── Player Controls ───────────────────────────────────────────
   async playMedia(id, type, season = 1, episode = 1, server = null) {
     this.closeDetails();
-    await this.player.open(id, type || 'movie', server, season, episode);
+    const mediaType = type || 'movie';
+    const s = season || 1;
+    const ep = episode || 1;
+    
+    // Synchronize current URL hash for direct bookmarking and clean sharing
+    if (typeof history !== 'undefined' && history.replaceState) {
+      const hashUrl = mediaType === 'tv' ? `/#watch/${id}/tv/${s}/${ep}` : `/#watch/${id}/movie`;
+      history.replaceState(null, '', hashUrl);
+    }
+    
+    await this.player.open(id, mediaType, server, s, ep);
   }
 
   switchPlayerSeason(seasonNum) {
@@ -2642,8 +2707,39 @@ class App {
   }
 
   shareCurrent() {
-    if (navigator.clipboard) navigator.clipboard.writeText(window.location.href).catch(() => {});
-    this.showToast('Link copied to clipboard! 🔗');
+    const m = this.player?.currentMedia;
+    let shareUrl = window.location.href;
+    let title = 'Movie / TV Show';
+
+    if (m && m.id) {
+      const type = m.type || m.mediaType || (m.first_air_date ? 'tv' : 'movie');
+      const isTv = type === 'tv';
+      const s = this.player.currentSeason || 1;
+      const e = this.player.currentEpisode || 1;
+      title = m.title || m.name || 'Title';
+      shareUrl = isTv 
+        ? `${window.location.origin}/#watch/${m.id}/tv/${s}/${e}`
+        : `${window.location.origin}/#watch/${m.id}/movie`;
+    } else if (this.currentDetailItem) {
+      const item = this.currentDetailItem;
+      const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+      title = item.title || item.name || 'Title';
+      shareUrl = `${window.location.origin}/#${type}/${item.id}`;
+    }
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).catch(() => {});
+    }
+
+    if (navigator.share && typeof navigator.share === 'function') {
+      navigator.share({
+        title: `Watch ${title} on CinemaStream`,
+        text: `Watch ${title} in 4K Ultra HD on CinemaStream!`,
+        url: shareUrl
+      }).catch(() => {});
+    }
+
+    this.showToast('Direct stream link copied to clipboard! 🔗', 'info');
   }
 
   skipIntro() {
